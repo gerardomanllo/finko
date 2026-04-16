@@ -10,10 +10,10 @@ import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/models/monthly_totals.dart';
 import '../../../core/data/models/upcoming_transaction.dart';
-import '../../../core/data/providers/dashboard_ui_stub_provider.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/locale/app_environment_provider.dart';
+import '../../../core/upcoming/materialize_upcoming_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
 import '../../../widgets/budgets/finko_monthly_budget_teaser.dart';
@@ -52,6 +52,13 @@ class DashboardScreen extends ConsumerWidget {
     return accounts
         .where((a) => a.includeInNetCash)
         .fold<int>(0, (s, a) => s + (a.balanceMinorMain ?? a.balanceMinor));
+  }
+
+  static int _netWorthFromAccountsMinor(Iterable<FinkoAccount> accounts) {
+    return accounts.fold<int>(
+      0,
+      (s, a) => s + (a.balanceMinorMain ?? a.balanceMinor),
+    );
   }
 
   static String _daysUntilLabel(AppLocalizations l10n, String yyyyMmDd) {
@@ -117,17 +124,27 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).valueOrNull;
 
     final accountsAsync = ref.watch(accountsStreamProvider);
+    final userProfileAsync = ref.watch(userProfileStreamProvider);
     final monthAsync = ref.watch(currentMonthTotalsStreamProvider);
     final recentAsync = ref.watch(recentTransactionsStreamProvider);
     final upcomingAsync = ref.watch(upcomingTransactionsStreamProvider);
-    final sparkline = ref.watch(netWorthSparklineStubProvider);
+    final sparkline = ref.watch(netWorthSparklineSeriesProvider);
 
     final locale = Localizations.localeOf(context).toString();
     final dateLine = DateFormat('E, MMM d', locale).format(DateTime.now());
 
-    final mainCurrency = accountsAsync.valueOrNull?.isNotEmpty == true
-        ? accountsAsync.valueOrNull!.first.currency
-        : 'MXN';
+    final mainCurrency =
+        userProfileAsync.valueOrNull?.mainCurrency ??
+        accountsAsync.valueOrNull?.firstOrNull?.currency ??
+        'MXN';
+    final accounts = accountsAsync.valueOrNull ?? const <FinkoAccount>[];
+    final netWorthFromAccounts = _netWorthFromAccountsMinor(accounts);
+    final hasSparklinePoints = sparkline.any((point) => point != 0);
+    final netWorthDisplayMinor = hasSparklinePoints
+        ? sparkline.last.toInt()
+        : netWorthFromAccounts;
+    final uid = ref.watch(authUidProvider);
+    final timezone = userProfileAsync.valueOrNull?.timezone;
 
     return Scaffold(
       appBar: AppBar(
@@ -138,180 +155,266 @@ class DashboardScreen extends ConsumerWidget {
         ),
         title: Text(l10n.dashboardTitle),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        children: [
-          Text(
-            l10n.environmentBanner(envLabel),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.labelSmall,
-          ),
-          if (user?.email != null) ...[
-            const SizedBox(height: 4),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          if (uid != null) {
+            await ref
+                .read(materializeUpcomingServiceProvider)
+                .forceRefreshIfSignedIn(uid, timezone: timezone);
+          }
+          ref.invalidate(accountsStreamProvider);
+          ref.invalidate(userProfileStreamProvider);
+          ref.invalidate(currentMonthTotalsStreamProvider);
+          ref.invalidate(recentTransactionsStreamProvider);
+          ref.invalidate(upcomingTransactionsStreamProvider);
+          ref.invalidate(netWorthSparklineSeriesProvider);
+          await Future<void>.delayed(const Duration(milliseconds: 150));
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          children: [
             Text(
-              l10n.dashboardSignedInAs(user!.email!),
+              l10n.environmentBanner(envLabel),
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall,
+              style: theme.textTheme.labelSmall,
             ),
-          ],
-          const SizedBox(height: 8),
-          Text(
-            dateLine,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.dashboardHeadline, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: 20),
-          FinkoTwoMetricCarousel(
-            first: FinkoMetricCarouselCard(
-              label: l10n.metricNetWorth,
-              valueText: _formatMoney(
-                context,
-                sparkline.last.toInt(),
-                mainCurrency,
+            if (user?.email != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                l10n.dashboardSignedInAs(user!.email!),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall,
               ),
-              deltaText: l10n.metricDeltaStubUp,
-              chart: FinkoNetWorthSparkline(values: sparkline),
-              onTap: () => context.push('/accounts'),
-            ),
-            second: FinkoMetricCarouselCard(
-              label: l10n.metricMonthlyExpense,
-              valueText: monthAsync.maybeWhen(
-                data: (m) => m == null
-                    ? '—'
-                    : _formatMoney(context, m.expenseMinorMain, mainCurrency),
-                orElse: () => '—',
+            ],
+            const SizedBox(height: 8),
+            Text(
+              dateLine,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              deltaText: l10n.metricDeltaStubDown,
-              chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
-              onTap: () => context.go('/spending'),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.dashboardAccountsHeading,
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          accountsAsync.when(
-            data: (accounts) {
-              if (accounts.isEmpty) {
-                return Text(l10n.emptyNoAccounts);
-              }
-              return FinkoCashFlowAccountsAccordion(
-                accounts: accounts,
-                netCashMinorMain: _netCashMinor(accounts),
-                formatMoney: (minor, code) =>
-                    _formatMoney(context, minor, code),
-                accountTypeLabel: (t) => _accountTypeLabel(l10n, t),
-                netCashTitle: l10n.netCashLabel,
-                otherLiabilitiesTitle: l10n.loansMortgageSectionTitle,
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.dashboardUpcomingHeading,
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          upcomingAsync.when(
-            data: (list) {
-              if (list.isEmpty) {
-                return Text(l10n.emptyNoUpcoming);
-              }
-              final sorted = [
-                ...list,
-              ]..sort((a, b) => a.transactionDate.compareTo(b.transactionDate));
-              return SizedBox(
-                height: 168,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: sorted.length.clamp(0, 20),
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const SizedBox(width: 10),
-                  itemBuilder: (context, i) {
-                    final u = sorted[i];
-                    return FinkoUpcomingTransactionCard(
-                      title: u.memo ?? u.kind.wireName,
-                      amountText: _txAmount(context, u),
-                      footerText: _daysUntilLabel(l10n, u.transactionDate),
-                    );
-                  },
+            const SizedBox(height: 8),
+            Text(l10n.dashboardHeadline, style: theme.textTheme.headlineSmall),
+            const SizedBox(height: 20),
+            FinkoTwoMetricCarousel(
+              first: FinkoMetricCarouselCard(
+                label: l10n.metricNetWorth,
+                valueText: _formatMoney(
+                  context,
+                  netWorthDisplayMinor,
+                  mainCurrency,
                 ),
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
-          const SizedBox(height: 24),
-          Text(l10n.dashboardRecentHeading, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          recentAsync.when(
-            data: (list) {
-              final recent = list.take(5).toList();
-              if (recent.isEmpty) {
-                return Text(l10n.emptyNoTransactions);
-              }
-              return FinkoPaperSeeMoreList(
-                seeMoreLabel: l10n.seeMore,
-                onSeeMore: () => context.go('/transactions'),
-                children: [
-                  for (final t in recent)
-                    FinkoTransactionRowCompact(
-                      title: t.memo ?? t.type.wireName,
-                      subtitle: t.transactionDate,
-                      amountText: _ledgerAmount(context, t),
-                    ),
-                ],
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
-          const SizedBox(height: 24),
-          monthAsync.when(
-            data: (m) {
-              if (m == null) {
-                return Text(l10n.emptyNoMonthlyTotals);
-              }
-              final budgetTotal = _totalExpenseBudgetMinor(m);
-              final spent = m.expenseMinorMain;
-              final left = (budgetTotal - spent).clamp(0, 1 << 62);
-              final progress = budgetTotal > 0
-                  ? (spent / budgetTotal).clamp(0.0, 1.0)
-                  : 0.0;
-              return FinkoMonthlyBudgetTeaser(
-                title: l10n.thisMonthsBudget,
-                leftForSpendingLabel: l10n.leftForSpending,
-                leftForSpendingText: _formatMoney(context, left, mainCurrency),
-                progress: progress,
-                categoryRings: _topCategoryRings(m),
-                onTap: () => context.push('/budgets'),
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
-          const SizedBox(height: 32),
-        ],
+                deltaText: l10n.metricDeltaStubUp,
+                chart: FinkoNetWorthSparkline(values: sparkline),
+                onTap: () => context.push('/accounts'),
+              ),
+              second: FinkoMetricCarouselCard(
+                label: l10n.metricMonthlyExpense,
+                valueText: monthAsync.maybeWhen(
+                  data: (m) => m == null
+                      ? '—'
+                      : _formatMoney(context, m.expenseMinorMain, mainCurrency),
+                  orElse: () => '—',
+                ),
+                deltaText: l10n.metricDeltaStubDown,
+                chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
+                onTap: () => context.go('/spending'),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.dashboardAccountsHeading,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            accountsAsync.when(
+              data: (accounts) {
+                return FinkoCashFlowAccountsAccordion(
+                  accounts: accounts,
+                  mainCurrencyCode: mainCurrency,
+                  netCashMinorMain: _netCashMinor(accounts),
+                  formatMoney: (minor, code) =>
+                      _formatMoney(context, minor, code),
+                  formatMoneyWithCode: (minor, code) {
+                    final locale = Localizations.localeOf(
+                      context,
+                    ).toLanguageTag();
+                    return formatMinorUnitsWithCode(minor, code, locale);
+                  },
+                  accountTypeLabel: (t) => _accountTypeLabel(l10n, t),
+                  netCashTitle: l10n.netCashLabel,
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('$e'),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.dashboardUpcomingHeading,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            upcomingAsync.when(
+              data: (list) {
+                if (list.isEmpty) {
+                  return Text(l10n.emptyNoUpcoming);
+                }
+                final today = ref.watch(todayYyyyMmDdProvider);
+                final sorted =
+                    list
+                        .where((u) => u.transactionDate.compareTo(today) > 0)
+                        .toList()
+                      ..sort(
+                        (a, b) =>
+                            a.transactionDate.compareTo(b.transactionDate),
+                      );
+                if (sorted.isEmpty) {
+                  return Text(l10n.emptyNoUpcoming);
+                }
+                return SizedBox(
+                  height: 168,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: sorted.length.clamp(0, 20),
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const SizedBox(width: 10),
+                    itemBuilder: (context, i) {
+                      final u = sorted[i];
+                      return FinkoUpcomingTransactionCard(
+                        title: u.memo ?? u.kind.wireName,
+                        amountText: _upcomingAmount(context, u, mainCurrency),
+                        secondaryAmountText: _upcomingSecondaryAmount(
+                          context,
+                          u,
+                          mainCurrency,
+                        ),
+                        footerText: _daysUntilLabel(l10n, u.transactionDate),
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('$e'),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.dashboardRecentHeading,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            recentAsync.when(
+              data: (list) {
+                final recent = list.take(5).toList();
+                if (recent.isEmpty) {
+                  return Text(l10n.emptyNoTransactions);
+                }
+                return FinkoPaperSeeMoreList(
+                  seeMoreLabel: l10n.seeMore,
+                  onSeeMore: () => context.go('/transactions'),
+                  children: [
+                    for (final t in recent)
+                      FinkoTransactionRowCompact(
+                        title: t.memo ?? t.type.wireName,
+                        subtitle: t.transactionDate,
+                        amountText: _ledgerAmount(context, t, mainCurrency),
+                        secondaryAmountText: _ledgerSecondaryAmount(
+                          context,
+                          t,
+                          mainCurrency,
+                        ),
+                      ),
+                  ],
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('$e'),
+            ),
+            const SizedBox(height: 24),
+            monthAsync.when(
+              data: (m) {
+                if (m == null) {
+                  return Text(l10n.emptyNoMonthlyTotals);
+                }
+                final budgetTotal = _totalExpenseBudgetMinor(m);
+                final spent = m.expenseMinorMain;
+                final left = (budgetTotal - spent).clamp(0, 1 << 62);
+                final progress = budgetTotal > 0
+                    ? (spent / budgetTotal).clamp(0.0, 1.0)
+                    : 0.0;
+                return FinkoMonthlyBudgetTeaser(
+                  title: l10n.thisMonthsBudget,
+                  leftForSpendingLabel: l10n.leftForSpending,
+                  leftForSpendingText: _formatMoney(
+                    context,
+                    left,
+                    mainCurrency,
+                  ),
+                  progress: progress,
+                  categoryRings: _topCategoryRings(m),
+                  onTap: () => context.push('/budgets'),
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('$e'),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
-  static String _ledgerAmount(BuildContext context, LedgerTransaction t) {
+  static String _ledgerAmount(
+    BuildContext context,
+    LedgerTransaction t,
+    String mainCurrency,
+  ) {
     final sign = t.direction == MoneyDirection.in_ ? '+' : '−';
-    final amt = _formatMoney(context, t.amountMinor, t.currency);
+    final amt = _formatMoney(
+      context,
+      t.amountMinorMain ?? t.amountMinor,
+      t.amountMinorMain != null ? mainCurrency : t.currency,
+    );
     return '$sign $amt';
   }
 
-  static String _txAmount(BuildContext context, UpcomingTransaction u) {
+  static String? _ledgerSecondaryAmount(
+    BuildContext context,
+    LedgerTransaction t,
+    String mainCurrency,
+  ) {
+    if (t.currency == mainCurrency || t.amountMinorMain == null) {
+      return null;
+    }
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return formatMinorUnitsWithCode(t.amountMinor, t.currency, locale);
+  }
+
+  static String _upcomingAmount(
+    BuildContext context,
+    UpcomingTransaction u,
+    String mainCurrency,
+  ) {
     final sign = u.direction == MoneyDirection.in_ ? '+' : '−';
-    final amt = _formatMoney(context, u.amountMinor, u.currency);
+    final amt = _formatMoney(
+      context,
+      u.amountMinorMain ?? u.amountMinor,
+      u.amountMinorMain != null ? mainCurrency : u.currency,
+    );
     return '$sign $amt';
+  }
+
+  static String? _upcomingSecondaryAmount(
+    BuildContext context,
+    UpcomingTransaction u,
+    String mainCurrency,
+  ) {
+    if (u.currency == mainCurrency || u.amountMinorMain == null) {
+      return null;
+    }
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return formatMinorUnitsWithCode(u.amountMinor, u.currency, locale);
   }
 }

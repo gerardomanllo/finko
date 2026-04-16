@@ -1,13 +1,18 @@
 ---
-description: docs/, CHANGELOG, references — agent-friendly docs hygiene
+description: docs/, CHANGELOG, references — living docs + revision logs for agents
 alwaysApply: true
 ---
 
 # Finko — project documentation
 
-- **Screen specs**: Product UI lives in **`docs/*.md`** per screen; **`docs/components-inventory.md`** lists shared widgets. Update these when behavior or navigation changes.
+## Living documents (`docs/`)
+
+- Treat everything under **`docs/`** as **living, authoritative text**: each file should describe the **current** product, data shape, or contract—not historical snapshots.
+- **When you change code, schemas, rules, or UX** in a way that affects what a doc describes, **update the relevant `docs/` file in the same change** (or immediately after in the same task). Do not leave docs stale.
+- **Revision history in-doc**: Many specs include a **Revision log** (or similar) at the end. When you fix a bug, change a decision, or alter behavior, add a **short dated entry** there: *what* changed and *why* (root cause, trade-off, or ticket reference). Keep entries concise; newest first is fine unless the file uses another convention.
+- **Root changelog**: Record **user-visible or notable** changes in **`CHANGELOG.md`** ([Keep a Changelog](https://keepachangelog.com/) style). Use it for release notes; use per-doc revision logs for technical “why” and decision traceability.
+- **Screen specs**: Product UI lives in **`docs/*.md`** per screen; **`docs/components-inventory.md`** lists shared widgets. Update when behavior or navigation changes.
 - **Data**: **`docs/data-model.md`** (Firestore shape) and **`docs/data-contract.md`** (streams, providers, widget rules)—keep aligned when backend or access patterns change.
-- **Changelog**: Record notable changes in root **`CHANGELOG.md`** ([Keep a Changelog](https://keepachangelog.com/) style). Link PRs when helpful.
 - **References**: Stable external links and env notes go in **`docs/references/`** — keep **`docs/references/README.md`** as the index.
 - **Agents**: Prefer **short, current** docs over duplicating long specs in rules; rules point to `docs/` for UI truth (`finko-product-spec.mdc`).
-- **ADR** (optional): For major decisions (state library, router), add brief `docs/adr/` entries if the team uses them.
+- **ADR** (optional): For major cross-cutting decisions, add brief **`docs/adr/`** entries if the team uses them; still add a pointer or summary in the relevant living doc’s revision log when it affects that area.

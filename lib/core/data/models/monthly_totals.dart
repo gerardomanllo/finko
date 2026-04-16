@@ -54,8 +54,16 @@ Map<String, MonthlyBudgetEntry> _budgetsFromJson(Object? json) {
   for (final e in json.entries) {
     final k = e.key;
     final v = e.value;
-    if (k is! String || v is! Map) continue;
-    out[k] = MonthlyBudgetEntry.fromJson(Map<String, dynamic>.from(v));
+    if (k is! String) continue;
+    if (v is Map) {
+      out[k] = MonthlyBudgetEntry.fromJson(Map<String, dynamic>.from(v));
+    } else if (v is num) {
+      // Legacy onboarding wrote categoryId -> minor amount only.
+      out[k] = MonthlyBudgetEntry(
+        targetMinorMain: v.toInt(),
+        kind: BudgetKind.expense,
+      );
+    }
   }
   return out;
 }

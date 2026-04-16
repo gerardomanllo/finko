@@ -73,6 +73,23 @@ void main() {
       final out = m.toFirestore();
       expect(out['yearMonth'], '2026-04');
     });
+
+    test('parses legacy flat numeric budgets (onboarding shorthand)', () {
+      final data = {
+        'yearMonth': '2026-04',
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 4, 1)),
+        'incomeMinorMain': 0,
+        'expenseMinorMain': 1000,
+        'byCategoryMinorMain': <String, int>{},
+        'budgets': {
+          'cat1': 50_000,
+        },
+        'days': <String, dynamic>{},
+      };
+      final m = MonthlyTotals.fromFirestore(data);
+      expect(m.budgets['cat1']?.targetMinorMain, 50_000);
+      expect(m.budgets['cat1']?.kind, BudgetKind.expense);
+    });
   });
 
   group('RecurringRule', () {

@@ -1,0 +1,12 @@
+---
+description: Greenfield prototyping — no legacy/version support obligation
+alwaysApply: true
+---
+
+# Finko — prototyping phase (greenfield)
+
+- The product is in **prototyping / greenfield** mode: optimize for **clear, current designs** and **forward-looking** code paths.
+- **Do not** invest in long-term **backward compatibility**, **multi-version APIs**, or **legacy code paths** “just in case” an older build or schema still exists. Prefer **one** canonical shape and **replace** outdated code rather than carrying parallel implementations.
+- **Do not** add compatibility shims, feature flags for old behavior, or sustained dual parsers/models for superseded formats—unless the team explicitly asks for a **time-bound migration**.
+- **Exception (data):** If real Firestore (or other) data was written under an earlier mistake, a **one-time** migration, server-side fix, or **minimal** read coercion is fine until data is corrected—then **remove** the workaround and document the change in `docs/` (see `finko-project-documentation.mdc`). Do not treat that as precedent for permanent legacy support.
+- **Docs and rules** describe the **latest** intent; avoid documenting “v1 vs v2” product branches unless the project formally splits releases.

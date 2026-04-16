@@ -489,7 +489,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navSpending => 'Gastos';
 
   @override
-  String get navTransactions => 'Movimientos';
+  String get navTransactions => 'Transacciones';
 
   @override
   String get openShellMenu => 'Abrir menú';
@@ -499,7 +499,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newTransactionSheetBody =>
-      'Aquí aparecerá el flujo para crear movimientos.';
+      'Aquí aparecerá el flujo para crear transacciones.';
 
   @override
   String get drawerCategories => 'Categorías';
@@ -523,7 +523,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get spendingTitle => 'Gastos';
 
   @override
-  String get transactionsTitle => 'Movimientos';
+  String get transactionsTitle => 'Transacciones';
 
   @override
   String get budgetsTitle => 'Presupuestos';
@@ -571,7 +571,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboardUpcomingHeading => 'Próximos';
 
   @override
-  String get dashboardRecentHeading => 'Movimientos recientes';
+  String get dashboardRecentHeading => 'Transacciones recientes';
 
   @override
   String get seeMore => 'Ver más';

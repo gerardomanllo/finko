@@ -4,6 +4,7 @@ import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import {
   isAuditOnlyTransactionUpdate,
+  isFinancialUnchanged,
   runLedgerAggregate,
   runLedgerAggregateUpdate,
   txDataToPayload,
@@ -34,20 +35,31 @@ export const onLedgerTransactionWritten = onDocumentWritten(
     const before = event.data?.before;
     const after = event.data?.after;
 
-    if (
-      isAuditOnlyTransactionUpdate(
-        before?.data() as Record<string, unknown> | undefined,
-        after?.data() as Record<string, unknown> | undefined
-      )
-    ) {
-      return;
-    }
-
     const db = getFirestore();
 
     try {
+      // Catch-up: meta-only edits (e.g. reload flag) net zero in update-diff path but
+      // aggregate never ran for this row (no aggregateApplied). Apply full +1 once.
+      if (before?.exists && after?.exists) {
+        const bd = before.data() as Record<string, unknown>;
+        const ad = after.data() as Record<string, unknown>;
+        if (isFinancialUnchanged(bd, ad) && ad["aggregateApplied"] !== true) {
+          await runLedgerAggregate(db, uid, eventId, txDataToPayload(ad), 1, after.ref);
+          return;
+        }
+      }
+
+      if (
+        isAuditOnlyTransactionUpdate(
+          before?.data() as Record<string, unknown> | undefined,
+          after?.data() as Record<string, unknown> | undefined
+        )
+      ) {
+        return;
+      }
+
       if (!before?.exists && after?.exists) {
-        await runLedgerAggregate(db, uid, eventId, txDataToPayload(after.data()!), 1);
+        await runLedgerAggregate(db, uid, eventId, txDataToPayload(after.data()!), 1, after.ref);
       } else if (before?.exists && !after?.exists) {
         await runLedgerAggregate(db, uid, eventId, txDataToPayload(before.data()!), -1);
       } else if (before?.exists && after?.exists) {
@@ -56,7 +68,8 @@ export const onLedgerTransactionWritten = onDocumentWritten(
           uid,
           eventId,
           txDataToPayload(before.data()!),
-          txDataToPayload(after.data()!)
+          txDataToPayload(after.data()!),
+          after.ref
         );
       }
     } catch (e) {

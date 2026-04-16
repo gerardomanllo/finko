@@ -29,10 +29,35 @@ int _daysFromToday(String yyyyMmDd) {
   return t.difference(today).inDays;
 }
 
-String _formatUpcomingAmount(BuildContext context, UpcomingTransaction u) {
+({String amountText, String? secondaryAmountText}) _upcomingRowAmounts(
+  BuildContext context,
+  UpcomingTransaction u,
+  String mainCurrency,
+) {
   final loc = Localizations.localeOf(context).toLanguageTag();
   final sign = u.direction == MoneyDirection.in_ ? '+' : '−';
-  return '$sign ${formatMinorUnits(u.amountMinor, u.currency, loc)}';
+  if (u.amountMinorMain != null && u.currency != mainCurrency) {
+    return (
+      amountText:
+          '$sign ${formatMinorUnits(u.amountMinorMain!, mainCurrency, loc)}',
+      secondaryAmountText: formatMinorUnitsWithCode(
+        u.amountMinor,
+        u.currency,
+        loc,
+      ),
+    );
+  }
+  if (u.currency == mainCurrency) {
+    return (
+      amountText: '$sign ${formatMinorUnits(u.amountMinor, u.currency, loc)}',
+      secondaryAmountText: null,
+    );
+  }
+  return (
+    amountText:
+        '$sign ${formatMinorUnitsWithCode(u.amountMinor, u.currency, loc)}',
+    secondaryAmountText: null,
+  );
 }
 
 class RecurringScreen extends ConsumerWidget {
@@ -42,6 +67,12 @@ class RecurringScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final upcomingAsync = ref.watch(upcomingTransactionsStreamProvider);
+    final accountsAsync = ref.watch(accountsStreamProvider);
+    final profileAsync = ref.watch(userProfileStreamProvider);
+    final mainCurrency =
+        profileAsync.valueOrNull?.mainCurrency ??
+        accountsAsync.valueOrNull?.firstOrNull?.currency ??
+        'MXN';
     final monday = _mondayOf(DateTime.now());
 
     return Scaffold(
@@ -98,7 +129,7 @@ class RecurringScreen extends ConsumerWidget {
                 final d = _daysFromToday(u.transactionDate);
                 return d >= 0 && d <= 7;
               },
-              amountLabel: _formatUpcomingAmount,
+              mainCurrency: mainCurrency,
             ),
             loading: () => const SizedBox.shrink(),
             error: (Object e, StackTrace stack) => const SizedBox.shrink(),
@@ -116,7 +147,7 @@ class RecurringScreen extends ConsumerWidget {
                 final d = _daysFromToday(u.transactionDate);
                 return d >= 8 && d <= 15;
               },
-              amountLabel: _formatUpcomingAmount,
+              mainCurrency: mainCurrency,
             ),
             loading: () => const SizedBox.shrink(),
             error: (Object e, StackTrace stack) => const SizedBox.shrink(),
@@ -131,13 +162,12 @@ class _DueList extends StatelessWidget {
   const _DueList({
     required this.list,
     required this.test,
-    required this.amountLabel,
+    required this.mainCurrency,
   });
 
   final List<UpcomingTransaction> list;
   final bool Function(UpcomingTransaction u) test;
-  final String Function(BuildContext context, UpcomingTransaction u)
-  amountLabel;
+  final String mainCurrency;
 
   @override
   Widget build(BuildContext context) {
@@ -150,12 +180,15 @@ class _DueList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Column(
         children: [
-          for (final u in filtered)
-            FinkoTransactionRowCompact(
+          ...filtered.map((u) {
+            final row = _upcomingRowAmounts(context, u, mainCurrency);
+            return FinkoTransactionRowCompact(
               title: u.memo ?? u.kind.wireName,
               subtitle: u.transactionDate,
-              amountText: amountLabel(context, u),
-            ),
+              amountText: row.amountText,
+              secondaryAmountText: row.secondaryAmountText,
+            );
+          }),
         ],
       ),
     );

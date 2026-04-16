@@ -7,6 +7,8 @@ import '../models/models.dart';
 
 /// Firestore reads for dashboard and lists — [`docs/data-contract.md`].
 abstract class FirestoreDataRepository {
+  Stream<UserProfile?> watchUserProfile(String uid);
+
   Stream<List<FinkoAccount>> watchAccounts(String uid);
 
   /// Emits `null` when the month doc is missing.
@@ -34,16 +36,29 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
   final FirebaseFirestore _db;
 
   @override
+  Stream<UserProfile?> watchUserProfile(String uid) {
+    return _db.doc(FirestorePaths.userDoc(uid)).snapshots().map((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) return null;
+      return UserProfile.fromFirestore(uid, snapshot.data()!);
+    });
+  }
+
+  @override
   Stream<List<FinkoAccount>> watchAccounts(String uid) {
     return _db
         .collection(FirestorePaths.accountsCollection(uid))
-        .orderBy('sortOrder')
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
+        .map((snapshot) {
+          final accounts = snapshot.docs
               .map((d) => FinkoAccount.fromFirestore(d.id, d.data()))
-              .toList(),
-        );
+              .toList();
+          accounts.sort((a, b) {
+            final byOrder = a.sortOrder.compareTo(b.sortOrder);
+            if (byOrder != 0) return byOrder;
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          });
+          return accounts;
+        });
   }
 
   @override

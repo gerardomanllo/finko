@@ -31,6 +31,8 @@ UpcomingTransaction _$UpcomingTransactionFromJson(
   memo: json['memo'] as String?,
   recurringRuleId: json['recurringRuleId'] as String?,
   cadence: json['cadence'] as String?,
+  amountMinorMain: (json['amountMinorMain'] as num?)?.toInt(),
+  fxRateDateUsed: json['fxRateDateUsed'] as String?,
   loadedAt: const FirestoreUtcDateTimeConverter().fromJson(json['loadedAt']),
   updatedAt: const FirestoreUtcDateTimeConverter().fromJson(json['updatedAt']),
 );
@@ -51,6 +53,8 @@ Map<String, dynamic> _$UpcomingTransactionToJson(
   'memo': ?instance.memo,
   'recurringRuleId': ?instance.recurringRuleId,
   'cadence': ?instance.cadence,
+  'amountMinorMain': ?instance.amountMinorMain,
+  'fxRateDateUsed': ?instance.fxRateDateUsed,
   'loadedAt': ?const FirestoreUtcDateTimeConverter().toJson(instance.loadedAt),
   'updatedAt': ?const FirestoreUtcDateTimeConverter().toJson(
     instance.updatedAt,

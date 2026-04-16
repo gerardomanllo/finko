@@ -27,16 +27,39 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     super.dispose();
   }
 
-  String _amount(BuildContext context, LedgerTransaction t) {
+  String _amount(
+    BuildContext context,
+    LedgerTransaction t, {
+    required int minor,
+    required String currency,
+  }) {
     final loc = Localizations.localeOf(context).toLanguageTag();
     final sign = t.direction == MoneyDirection.in_ ? '+' : '−';
-    return '$sign ${formatMinorUnits(t.amountMinor, t.currency, loc)}';
+    return '$sign ${formatMinorUnits(minor, currency, loc)}';
+  }
+
+  String? _secondaryAmount(
+    BuildContext context,
+    LedgerTransaction t,
+    String mainCurrency,
+  ) {
+    if (t.currency == mainCurrency || t.amountMinorMain == null) {
+      return null;
+    }
+    final loc = Localizations.localeOf(context).toLanguageTag();
+    return formatMinorUnitsWithCode(t.amountMinor, t.currency, loc);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final async = ref.watch(recentTransactionsStreamProvider);
+    final accountsAsync = ref.watch(accountsStreamProvider);
+    final profileAsync = ref.watch(userProfileStreamProvider);
+    final mainCurrency =
+        profileAsync.valueOrNull?.mainCurrency ??
+        accountsAsync.valueOrNull?.firstOrNull?.currency ??
+        'MXN';
 
     return Scaffold(
       appBar: AppBar(
@@ -85,7 +108,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       return FinkoTransactionRowCompact(
                         title: t.memo ?? t.type.wireName,
                         subtitle: t.transactionDate,
-                        amountText: _amount(context, t),
+                        amountText: _amount(
+                          context,
+                          t,
+                          minor: t.amountMinorMain != null &&
+                                  t.currency != mainCurrency
+                              ? t.amountMinorMain!
+                              : t.amountMinor,
+                          currency: mainCurrency,
+                        ),
+                        secondaryAmountText: _secondaryAmount(
+                          context,
+                          t,
+                          mainCurrency,
+                        ),
                       );
                     },
                   );

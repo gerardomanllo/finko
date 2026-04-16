@@ -90,7 +90,10 @@ The **main decision** is where each aggregate **lives** and **who maintains it**
 3. **Idempotency & edge cases**  
    Use **transaction IDs**, **writes with deterministic keys** for derived rows, or **Firestore transactions** when updating multiple aggregates so **retries** do not double-count. Transfers and splits must update **two** accounts and **category** logic consistently—centralizing in Functions reduces bugs.
 
-4. **Reads for dashboard**  
+4. **Catch-up when Functions lag first writes**  
+   Documented in [`data-model.md` §4.1a](data-model.md): if money fields on a transaction row are unchanged but **`aggregateApplied`** is still missing (e.g. Functions deployed after client writes), the trigger performs a **one-shot +1** apply once per delivery idempotency, then marks the row applied—so meta-only edits (e.g. **`reload`**) can repair totals without double-counting after the flag is set.
+
+5. **Reads for dashboard**  
    Prefer **a handful of document reads** (summaries + account list) instead of querying all transactions for the month.
 
 ### 4.3 Pricing & performance (practical tradeoffs)
@@ -277,3 +280,4 @@ So: **O(2) month documents** for a week straddling months is right; **derive wee
 | 2026-04-14 | Section 6.8: flat ledger + diffed summaries; which period docs to maintain vs derive; note on net-worth history and backdating. |
 | 2026-04-14 | Section 6.9: downside of many day-bucket writes for cumulative metrics; incremental OK for non-cumulative; recompute/checkpoint/dirty-queue patterns for net worth at scale. |
 | 2026-04-14 | Section 6.10: `monthlyTotals/{yyyy-mm}` with embedded JSON; weekly derivation needs day- or finer-grained fields; caveats (size, hotspot, NW). |
+| 2026-04-16 | §4.2: catch-up aggregate path when deploy lags writes (`aggregateApplied`, meta-only updates); cross-ref [`data-model.md`](data-model.md) §4.1a. |

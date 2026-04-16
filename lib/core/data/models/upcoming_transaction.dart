@@ -24,6 +24,8 @@ class UpcomingTransaction {
     this.memo,
     this.recurringRuleId,
     this.cadence,
+    this.amountMinorMain,
+    this.fxRateDateUsed,
     required this.loadedAt,
     required this.updatedAt,
   });
@@ -49,6 +51,11 @@ class UpcomingTransaction {
   final String? memo;
   final String? recurringRuleId;
   final String? cadence;
+
+  /// Amount in the user’s main currency (minor units), when populated by backend.
+  final int? amountMinorMain;
+
+  final String? fxRateDateUsed;
 
   @FirestoreUtcDateTimeConverter()
   final DateTime loadedAt;

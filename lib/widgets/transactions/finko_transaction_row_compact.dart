@@ -7,6 +7,7 @@ class FinkoTransactionRowCompact extends StatelessWidget {
     required this.title,
     this.subtitle,
     required this.amountText,
+    this.secondaryAmountText,
     this.leading,
     this.onTap,
   });
@@ -14,6 +15,7 @@ class FinkoTransactionRowCompact extends StatelessWidget {
   final String title;
   final String? subtitle;
   final String amountText;
+  final String? secondaryAmountText;
   final Widget? leading;
   final VoidCallback? onTap;
 
@@ -34,11 +36,22 @@ class FinkoTransactionRowCompact extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(subtitle!, style: theme.textTheme.bodySmall)
           : null,
-      trailing: Text(
-        amountText,
-        style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+      trailing: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            amountText,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (secondaryAmountText != null)
+            Text(
+              secondaryAmountText!,
+              style: theme.textTheme.bodySmall,
+            ),
+        ],
       ),
     );
   }

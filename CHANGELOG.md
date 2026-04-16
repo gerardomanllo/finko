@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Dashboard backend wiring: replaced net-worth sparkline stubs with a 30-day `monthlyTotals.days.*.netWorthEodMinorMain` series (forward-fill fallback), added user-profile stream usage for main-currency formatting, and enforced strictly-future upcoming rows on `/dashboard`.
+- Upcoming materialization hardening: listener now re-checks on app resume and timezone/profile changes, while the callable service runs once per user/day with timezone-aware payload fallback plus unit coverage for cadence/payload behavior.
 - Full onboarding v1 foundation: 9-step wizard at `/onboarding` with Riverpod draft state, step validation/gating, typewriter header, projected-savings step math, messaging OTP hooks, and commit-to-dashboard completion flow.
 - Firebase Functions onboarding backend: `commitOnboarding` callable (idempotent `requestId`, profile/accounts/categories/budgets/recurring writes, starting-balance adjustment transactions, server-side `onboardingCompleted`) plus `requestMessagingOtp` / `verifyMessagingOtp` callables for trusted messaging integration writes.
 - Onboarding tests for projected-savings model math and controller step validation (`test/features/onboarding/*`), plus expanded onboarding localization keys in `app_es.arb` and `app_en.arb`.
@@ -17,7 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Firebase/Auth operator runbook: [`docs/references/firebase-auth-manual-setup.md`](docs/references/firebase-auth-manual-setup.md) covering Google release SHA-1/SHA-256, Apple Services ID + OAuth code flow + callback URL, and password reset template checks.
 - Login widget tests for core auth affordances and forgot-password interactions (`test/features/auth/login_screen_test.dart`) using hermetic provider overrides.
 
+### Changed
+
+- [`docs/dashboard.md`](docs/dashboard.md): documented current Firestore-backed dashboard (providers, `monthlyTotals` usage, pull-to-refresh, remaining stubs); added revision log. [`docs/data-contract.md`](docs/data-contract.md) §5 and [`docs/data-model.md`](docs/data-model.md) §7 updated for dashboard subscriptions and budget map shapes. [`docs/README.md`](docs/README.md): data section aligned with live backend.
+
+- Documented ledger aggregate **catch-up**, **`aggregateApplied`**, optional **`reload`** fields, and embedded **`days`** maps in [`docs/data-model.md`](docs/data-model.md) §4.1a, [`docs/data-contract.md`](docs/data-contract.md) §12, [`docs/backend-strategy.md`](docs/backend-strategy.md) §4.2, and [`docs/README.md`](docs/README.md) backend index.
+
 ### Fixed
+
+- Ledger aggregation: `onLedgerTransactionWritten` now runs a one-shot catch-up when money fields are unchanged but `aggregateApplied` is still missing (so toggling a reload flag re-applies totals instead of netting zero), coerces `amountMinor` from Firestore into a finite int, writes `aggregateApplied` on the transaction after a successful aggregate, and `commitOnboarding` now persists `profile.mainCurrency` (defaulting to MXN when absent).
 
 - Post-logout stability: hardened locale subscription error handling during auth transitions and made Google local sign-out cleanup non-blocking so Firebase sign-out/redirect completes reliably.
 

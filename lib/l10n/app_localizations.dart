@@ -1001,7 +1001,7 @@ abstract class AppLocalizations {
   /// No description provided for @navTransactions.
   ///
   /// In es, this message translates to:
-  /// **'Movimientos'**
+  /// **'Transacciones'**
   String get navTransactions;
 
   /// No description provided for @openShellMenu.
@@ -1019,7 +1019,7 @@ abstract class AppLocalizations {
   /// No description provided for @newTransactionSheetBody.
   ///
   /// In es, this message translates to:
-  /// **'Aquí aparecerá el flujo para crear movimientos.'**
+  /// **'Aquí aparecerá el flujo para crear transacciones.'**
   String get newTransactionSheetBody;
 
   /// No description provided for @drawerCategories.
@@ -1067,7 +1067,7 @@ abstract class AppLocalizations {
   /// No description provided for @transactionsTitle.
   ///
   /// In es, this message translates to:
-  /// **'Movimientos'**
+  /// **'Transacciones'**
   String get transactionsTitle;
 
   /// No description provided for @budgetsTitle.
@@ -1163,7 +1163,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardRecentHeading.
   ///
   /// In es, this message translates to:
-  /// **'Movimientos recientes'**
+  /// **'Transacciones recientes'**
   String get dashboardRecentHeading;
 
   /// No description provided for @seeMore.

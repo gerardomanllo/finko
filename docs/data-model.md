@@ -97,6 +97,8 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | `fxRateDateUsed` | `string?` | | **`yyyy-mm-dd`** — which **`forexRates`** row was used (after walk-back per §10). |
 | `createdAt` | `Timestamp` | ✓ | UTC. |
 | `updatedAt` | `Timestamp` | ✓ | UTC. |
+| `aggregateApplied` | `bool?` | | **`true`** after Cloud Functions have successfully applied this row to **`accounts`** / **`monthlyTotals`** (same transaction as idempotent aggregate write). Omitted or **`false`** means a catch-up apply may still run (see §4.1a). **Clients must not set this to forge applied state**; restrict in security rules (see §11). |
+| `reload` / `aggregateReload` | `any?` | | Optional **client** fields used to re-fire the aggregate trigger when money fields are unchanged (e.g. debugging). Ignored for “financial equality” checks in Functions; do not rely on them for product UX unless documented. |
 
 **Display rule:** Render `transactionDate` in the user’s **locale**; store **no** wall-clock time on the business date.
 
@@ -120,6 +122,24 @@ Cloud Functions may **retry** the same event. Incremental aggregate patches must
 Alternative or supplement: drive reversals off **document revision** hashes—still keep **event id** as the primary dedupe for duplicate deliveries.
 
 **Deletes:** Use the **delete** event’s `event.id` the same way so reversals are not doubled.
+
+### 4.1a Ledger aggregate trigger (`onLedgerTransactionWritten`)
+
+Implementation lives in **`functions/src/index.ts`** + **`functions/src/aggregateLedger.ts`**. Behavior relevant to operators and client authors:
+
+| Case | Behavior |
+|------|----------|
+| **Create** | Apply the new row once (**+1**), then set **`aggregateApplied: true`** on the transaction document in the **same** Firestore transaction as the rollup (with idempotency via `_processedAggregateEvents/{eventId}` per §4.1). |
+| **Delete** | Reverse the row (**−1**); no `aggregateApplied` write on a deleted doc. |
+| **Update (money fields changed)** | Apply **−before + after** in one idempotent transaction so edits move deltas correctly. On success, set **`aggregateApplied: true`**. |
+| **Update (money fields unchanged)** | A pure “diff” would net **zero** (e.g. toggling **`reload`** only). If **`aggregateApplied` is not `true`**, the function runs a **one-shot catch-up**: apply the row as **+1** once (same idempotency rules), then set **`aggregateApplied: true`**. This repairs rows that were never aggregated (e.g. Functions deployed after writes) **without** double-counting once the flag is set. |
+| **Update (output-only / meta)** | If only server- or client-meta fields change (see skip list below) and money is unchanged, the trigger may **no-op** after `aggregateApplied` is true—by design. |
+
+**Numeric coercion:** `amountMinor` is coerced to a finite integer in Functions so Firestore/client quirks (string, odd numeric types) do not aggregate as zero.
+
+**Skip list (trigger “audit / meta only” comparison):** when deciding whether an update can be ignored as non-financial noise, the implementation ignores at least: `amountMinorMain`, `fxRateDateUsed`, `updatedAt`, **`aggregateApplied`**, **`reload`**, **`aggregateReload`**. Financial fields compared for equality include: `transactionDate`, `amountMinor`, `direction`, `currency`, `type`, `accountId`, `categoryId`.
+
+**`monthlyTotals` shape:** `days` is an **embedded map** on the month document (`days["01"]` … `days["31"]`), **not** a subcollection under `monthlyTotals/{yyyy-mm}/`.
 
 ---
 
@@ -201,7 +221,7 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `incomeMinorMain` | `int` | Month total, **main currency** (minor units). |
 | `expenseMinorMain` | `int` | Month total outflows, **main currency**. |
 | `byCategoryMinorMain` | `map<string, int>` | `categoryId` → net for month in **main currency**. |
-| `budgets` | `map<string, object>` | **Budget** = total budgeted to a category for this month (income or expense). Suggested value: `{ "targetMinorMain": int, "kind": "income"|"expense" }` keyed by `categoryId`. |
+| `budgets` | `map<string, object>` | **Budget** = total budgeted to a category for this month (income or expense). **Canonical value:** `{ "targetMinorMain": int, "kind": "income"|"expense" }` keyed by `categoryId`. **Legacy:** some docs store **`categoryId` → minor int** only; clients coerce to structured rows; **`commitOnboarding`** writes canonical shape. |
 | `days` | `map<string, object>` | Key **`"01"`…`"31"`**. Values: cashflow + optional **`netWorthEodMinorMain`** (see backend-strategy). |
 
 **Multi-currency:** Functions convert each transaction’s `amountMinor` × **FX rate for `transactionDate`** (see §10) into **main currency** before incrementing these fields.
@@ -289,6 +309,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 - **`forexRates`**: read for authenticated users (or public read if rates are non-sensitive); **write** only from **admin SDK** / scheduled Function.
 - **Aggregate docs** (`monthlyTotals`, `accounts.balance*`) — **client direct writes discouraged**; Functions as source of truth for denormalized fields.
 - **`_processedAggregateEvents`** — **write** only from Functions (admin SDK); clients must not create these docs.
+- **`transactions.*.aggregateApplied`** — **write** only from Cloud Functions (or omit); clients must not set **`true`** to skip real aggregation work.
 
 ---
 
@@ -303,7 +324,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | Budgets | Embedded under **`monthlyTotals.{yyyy-mm}.budgets`** (per category, month-scoped). |
 | Upcoming | **`upcomingTransactions`** collection; **materialize** to real `transactions` when due; advance or remove upcoming rows (prefer **Callable** on app open / daily). |
 | Transaction delete | **Hard delete**; Functions **reverse** aggregates on delete. |
-| Aggregate idempotency | **`_processedAggregateEvents/{eventId}`** + Cloud Function **`event.id`** (§4.1). |
+| Aggregate idempotency | **`_processedAggregateEvents/{eventId}`** + Cloud Function **`event.id`** (§4.1); **catch-up** when meta-only update and not yet applied (§4.1a). |
 | Audit on tx | **`amountMinorMain`**, **`fxRateDateUsed`** populated by Functions on write. |
 | Net worth vs net cash | **Net worth** = all accounts; **net cash** = accounts with **`includeInNetCash`** (§4.2). |
 | Upcoming transfers | **One** upcoming doc per scheduled transfer — **`kind: transfer`**, **`fromAccountId`** / **`toAccountId`**; materializer emits **two** `transactions` (§4.3). |
@@ -326,3 +347,5 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-14 | §4.3: **locked** — scheduled transfers use **one** `upcomingTransactions` template (`kind: transfer`); not two docs per leg. |
 | 2026-04-15 | §3: `locale`, `themePreference`, `onboardingCompleted`; §3.1 `integrations` (WhatsApp/Telegram, server-verified); §5: canonical account `type` enum; §6 `iconKey` + onboarding cross-ref; §11 integration/completion write rules; §12 onboarding/account/opening-balance rows. |
 | 2026-04-15 | §9: **locked** recurring rule schema (`kind`, `cadence`, `daysOfMonth`, `direction` only — dropped standalone `isIncome`). |
+| 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
+| 2026-04-16 | §7 `budgets`: note **legacy flat** category→amount maps vs canonical `{ targetMinorMain, kind }`; onboarding writes canonical rows. |

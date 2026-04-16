@@ -47,7 +47,48 @@ class FinkoAccount {
   Map<String, dynamic> toJson() => _$FinkoAccountToJson(this);
 
   factory FinkoAccount.fromFirestore(String id, Map<String, dynamic> data) {
-    return FinkoAccount.fromJson({...data, 'id': id});
+    int readInt(String key, {int fallback = 0}) {
+      final raw = data[key];
+      if (raw is num) return raw.toInt();
+      if (raw is String) return int.tryParse(raw) ?? fallback;
+      return fallback;
+    }
+
+    DateTime readDate(String key) {
+      final raw = data[key];
+      if (raw is Timestamp) return raw.toDate().toUtc();
+      if (raw is DateTime) return raw.toUtc();
+      return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    }
+
+    final rawType = data['type'] as String?;
+    final type =
+        FinkoAccountType.tryParse(rawType) ?? FinkoAccountType.checking;
+
+    final includeRaw = data['includeInNetCash'];
+    final includeInNetCash = includeRaw is bool
+        ? includeRaw
+        : (type == FinkoAccountType.checking ||
+              type == FinkoAccountType.creditCard);
+
+    return FinkoAccount(
+      id: id,
+      name: (data['name'] as String?)?.trim().isNotEmpty == true
+          ? (data['name'] as String).trim()
+          : id,
+      type: type,
+      currency: ((data['currency'] as String?)?.trim().isNotEmpty == true)
+          ? (data['currency'] as String).trim()
+          : 'MXN',
+      balanceMinor: readInt('balanceMinor'),
+      balanceMinorMain: data['balanceMinorMain'] == null
+          ? null
+          : readInt('balanceMinorMain'),
+      includeInNetCash: includeInNetCash,
+      sortOrder: readInt('sortOrder', fallback: 0),
+      createdAt: readDate('createdAt'),
+      updatedAt: readDate('updatedAt'),
+    );
   }
 
   Map<String, dynamic> toFirestore({bool useServerTimestamps = false}) {

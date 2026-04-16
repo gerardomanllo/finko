@@ -7,11 +7,13 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
     required this.title,
     required this.amountText,
     required this.footerText,
+    this.secondaryAmountText,
     this.avatarLetter,
   });
 
   final String title;
   final String amountText;
+  final String? secondaryAmountText;
   final String footerText;
   final String? avatarLetter;
 
@@ -51,6 +53,15 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              if (secondaryAmountText != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  secondaryAmountText!,
+                  style: theme.textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 footerText,

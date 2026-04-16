@@ -86,7 +86,7 @@ When a **transaction is created/updated**:
 
 | Screen / area | Primary subscriptions (examples) |
 |-----------------|-----------------------------------|
-| **Dashboard** | `accounts` stream; `monthlyTotals` for current `yyyy-mm`; `transactions` query for recent; **`upcomingTransactions`** where `transactionDate` ≥ today for “future” strip; optional `forexRates` if UI shows rate context. |
+| **Dashboard** | `accountsStreamProvider`; `userProfileStreamProvider`; **`currentMonthTotalsStreamProvider`** → `monthlyTotals/{yyyy-MM}` (expense totals + embedded `budgets` + `days` for net-worth sparkline); **`netWorthSparklineSeriesProvider`** (30-day series, may read two month docs); **`recentTransactionsStreamProvider`**; **`upcomingTransactionsStreamProvider`** (UI filters to **strictly future** dates); pull-to-refresh invalidates streams + **`materializeDueUpcoming`**. Optional `forexRates` if UI shows rate context. |
 | **Spending** | `monthlyTotals` for months in range; derive week/quarter/year in provider. |
 | **Transactions** | `transactions` query by `transactionDate` / `loadedAt` as designed; paginate. |
 | **Budgets** | **`monthlyTotals/{yyyy-mm}`** only (budgets embedded in doc). |
@@ -151,9 +151,26 @@ When a **transaction is created/updated**:
 
 ---
 
-## 12. Revision log
+## 12. Ledger aggregation (Cloud Functions)
+
+**Source of truth:** `accounts` balances and `monthlyTotals` (including embedded **`days.{dd}`** maps) are updated by **`onLedgerTransactionWritten`** in **`functions/`**, not by recomputing the full ledger in the Flutter client. See [`data-model.md` §4.1–4.1a](data-model.md) for idempotency, **`aggregateApplied`**, and **catch-up** when a transaction row exists but aggregates were never applied.
+
+**Client expectations**
+
+- After writing a **transaction**, watch **`accounts`** and **`monthlyTotals`** streams; totals update after Functions finish (usually one or two snapshot ticks).
+- **`monthlyTotals/{yyyy-mm}`** is a **single document**; **`days`** is a **map** on that document (not a subcollection).
+- **`aggregateApplied`** on a transaction is **server-owned**; the app may read it for diagnostics but **must not** set it to `true` in production (enforce in rules per [`data-model.md` §11](data-model.md)).
+- Optional **`reload`** / **`aggregateReload`** fields are only for **re-firing** the aggregate when money fields are unchanged (e.g. ops / debugging). Product UI should not depend on them unless we add a first-class “repair” flow.
+
+**Pull-to-refresh / materialization** (app): dashboard refresh and **`materializeDueUpcoming`** complement aggregates but do not replace the transaction trigger above.
+
+---
+
+## 13. Revision log
 
 | Date | Change |
 |------|--------|
 | 2026-04-14 | Initial contract: streams, Riverpod, widget rules, no batch jobs, screen→subscription map. |
 | 2026-04-14 | Scheduled **forex** allowed; budgets in `monthlyTotals`; `upcomingTransactions` + callable materialization; multi-currency. |
+| 2026-04-16 | **§12** Ledger aggregation (Functions vs client, `aggregateApplied`, `days` map, optional reload fields). |
+| 2026-04-16 | **§5** Dashboard row: named providers + net-worth sparkline source, refresh/materialize. |

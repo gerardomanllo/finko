@@ -30,6 +30,10 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
   const timezone = mustString(profile.timezone, "profile.timezone");
   const themePreference = mustString(profile.themePreference, "profile.themePreference");
   const locale = mustString(profile.locale, "profile.locale");
+  const mainCurrency =
+    typeof profile.mainCurrency === "string" && profile.mainCurrency.trim().length > 0
+      ? profile.mainCurrency.trim().toUpperCase()
+      : "MXN";
 
   const accounts = Array.isArray(payload.accounts) ? payload.accounts : [];
   if (accounts.length === 0) {
@@ -38,7 +42,31 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
   const categories = Array.isArray(payload.categories) ? payload.categories : [];
 
   const recurring = Array.isArray(payload.recurringIncome) ? payload.recurringIncome : [];
-  const budgets = ((payload.budgetsMinorByCategory ?? {}) as JsonMap) || {};
+  const budgetsMinorByCategory =
+    ((payload.budgetsMinorByCategory ?? {}) as JsonMap) || {};
+
+  const categoryKindById = new Map<string, "income" | "expense">();
+  for (const raw of categories) {
+    const category = raw as JsonMap;
+    const categoryId =
+      typeof category.id === "string" && category.id.trim().length > 0
+        ? category.id.trim()
+        : "";
+    if (!categoryId) continue;
+    const rawKind =
+      typeof category.kind === "string" ? category.kind.trim().toLowerCase() : "";
+    categoryKindById.set(categoryId, rawKind === "income" ? "income" : "expense");
+  }
+
+  const budgetsEmbedded: Record<string, { targetMinorMain: number; kind: "income" | "expense" }> =
+    {};
+  for (const [categoryId, rawMinor] of Object.entries(budgetsMinorByCategory)) {
+    if (typeof rawMinor !== "number" || !Number.isFinite(rawMinor)) continue;
+    const targetMinorMain = Math.trunc(rawMinor);
+    const kind = categoryKindById.get(categoryId) ?? "expense";
+    budgetsEmbedded[categoryId] = { targetMinorMain, kind };
+  }
+
   const messaging = (payload.messaging ?? {}) as JsonMap;
 
   const monthId = new Date().toISOString().slice(0, 7);
@@ -58,6 +86,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       timezone,
       themePreference,
       locale,
+      mainCurrency,
       onboardingCompleted: true,
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
@@ -72,12 +101,18 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
         ? account.id.trim()
         : randomUUID();
     const accountRef = db.doc(`users/${uid}/accounts/${accountId}`);
+    const accountType = mustString(account.type, "account.type");
+    const includeInNetCash =
+      typeof account.includeInNetCash === "boolean"
+        ? account.includeInNetCash
+        : accountType === "checking" || accountType === "creditCard";
     batch.set(
       accountRef,
       {
         name: mustString(account.name, "account.name"),
-        type: mustString(account.type, "account.type"),
+        type: accountType,
         currency: mustString(account.currency, "account.currency"),
+        includeInNetCash,
         colorArgb:
           typeof account.colorArgb === "number" ? account.colorArgb : 0xFF607D8B,
         iconKey:
@@ -85,6 +120,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
             ? account.iconKey.trim()
             : "account_balance",
         balanceMinor: 0,
+        sortOrder: typeof account.sortOrder === "number" ? account.sortOrder : 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       },
@@ -172,7 +208,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
     monthlyTotalsRef,
     {
       yearMonth: monthId,
-      budgets,
+      budgets: budgetsEmbedded,
       updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true }

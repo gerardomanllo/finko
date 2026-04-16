@@ -8,19 +8,21 @@ class FinkoCashFlowAccountsAccordion extends StatelessWidget {
   const FinkoCashFlowAccountsAccordion({
     super.key,
     required this.accounts,
+    required this.mainCurrencyCode,
     required this.netCashMinorMain,
     required this.formatMoney,
+    required this.formatMoneyWithCode,
     required this.accountTypeLabel,
     required this.netCashTitle,
-    required this.otherLiabilitiesTitle,
   });
 
   final List<FinkoAccount> accounts;
+  final String mainCurrencyCode;
   final int netCashMinorMain;
   final String Function(int minor, String currencyCode) formatMoney;
+  final String Function(int minor, String currencyCode) formatMoneyWithCode;
   final String Function(FinkoAccountType type) accountTypeLabel;
   final String netCashTitle;
-  final String otherLiabilitiesTitle;
 
   List<FinkoAccount> _ofType(FinkoAccountType t) =>
       accounts.where((a) => a.type == t).toList()
@@ -33,50 +35,42 @@ class FinkoCashFlowAccountsAccordion extends StatelessWidget {
         _ExpandableTypeSection(
           title: accountTypeLabel(FinkoAccountType.checking),
           accounts: _ofType(FinkoAccountType.checking),
+          mainCurrencyCode: mainCurrencyCode,
           formatMoney: formatMoney,
+          formatMoneyWithCode: formatMoneyWithCode,
           icon: Icons.account_balance,
         ),
         _ExpandableTypeSection(
           title: accountTypeLabel(FinkoAccountType.creditCard),
           accounts: _ofType(FinkoAccountType.creditCard),
+          mainCurrencyCode: mainCurrencyCode,
           formatMoney: formatMoney,
+          formatMoneyWithCode: formatMoneyWithCode,
           icon: Icons.credit_card,
         ),
         _NetCashRow(
-          amountText: formatMoney(netCashMinorMain, _mainCurrency(accounts)),
+          amountText: formatMoney(netCashMinorMain, mainCurrencyCode),
           title: netCashTitle,
         ),
         const SizedBox(height: 8),
         _ExpandableTypeSection(
           title: accountTypeLabel(FinkoAccountType.savings),
           accounts: _ofType(FinkoAccountType.savings),
+          mainCurrencyCode: mainCurrencyCode,
           formatMoney: formatMoney,
+          formatMoneyWithCode: formatMoneyWithCode,
           icon: Icons.savings_outlined,
         ),
         _ExpandableTypeSection(
           title: accountTypeLabel(FinkoAccountType.investment),
           accounts: _ofType(FinkoAccountType.investment),
+          mainCurrencyCode: mainCurrencyCode,
           formatMoney: formatMoney,
+          formatMoneyWithCode: formatMoneyWithCode,
           icon: Icons.trending_up,
         ),
-        if (_ofType(FinkoAccountType.loan).isNotEmpty ||
-            _ofType(FinkoAccountType.mortgage).isNotEmpty)
-          _ExpandableTypeSection(
-            title: otherLiabilitiesTitle,
-            accounts: [
-              ..._ofType(FinkoAccountType.loan),
-              ..._ofType(FinkoAccountType.mortgage),
-            ],
-            formatMoney: formatMoney,
-            icon: Icons.receipt_long_outlined,
-          ),
       ],
     );
-  }
-
-  String _mainCurrency(List<FinkoAccount> list) {
-    if (list.isEmpty) return 'MXN';
-    return list.first.currency;
   }
 }
 
@@ -107,13 +101,17 @@ class _ExpandableTypeSection extends StatefulWidget {
   const _ExpandableTypeSection({
     required this.title,
     required this.accounts,
+    required this.mainCurrencyCode,
     required this.formatMoney,
+    required this.formatMoneyWithCode,
     required this.icon,
   });
 
   final String title;
   final List<FinkoAccount> accounts;
+  final String mainCurrencyCode;
   final String Function(int minor, String currencyCode) formatMoney;
+  final String Function(int minor, String currencyCode) formatMoneyWithCode;
   final IconData icon;
 
   @override
@@ -126,14 +124,13 @@ class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (widget.accounts.isEmpty) {
-      return const SizedBox.shrink();
-    }
     final sum = widget.accounts.fold<int>(
       0,
       (s, a) => s + (a.balanceMinorMain ?? a.balanceMinor),
     );
-    final mainCur = widget.accounts.first.currency;
+    final usesMainCurrency = widget.accounts.any(
+      (a) => a.balanceMinorMain != null,
+    );
     return Column(
       children: [
         ListTile(
@@ -144,13 +141,26 @@ class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                widget.formatMoney(sum, mainCur),
+                widget.formatMoney(
+                  sum,
+                  usesMainCurrency
+                      ? widget.mainCurrencyCode
+                      : (widget.accounts.isNotEmpty
+                            ? widget.accounts.first.currency
+                            : widget.mainCurrencyCode),
+                ),
                 style: theme.textTheme.titleSmall,
               ),
-              Icon(_open ? Icons.expand_less : Icons.expand_more),
+              Icon(
+                widget.accounts.isEmpty
+                    ? Icons.expand_more
+                    : (_open ? Icons.expand_less : Icons.expand_more),
+              ),
             ],
           ),
-          onTap: () => setState(() => _open = !_open),
+          onTap: widget.accounts.isEmpty
+              ? null
+              : () => setState(() => _open = !_open),
         ),
         if (_open)
           ...widget.accounts.map(
@@ -160,10 +170,42 @@ class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 title: Text(a.name),
-                trailing: Text(widget.formatMoney(a.balanceMinor, a.currency)),
+                trailing: _AccountAmount(
+                  mainAmountText: widget.formatMoney(
+                    a.balanceMinorMain ?? a.balanceMinor,
+                    widget.mainCurrencyCode,
+                  ),
+                  actualAmountText:
+                      a.currency == widget.mainCurrencyCode
+                      ? null
+                      : widget.formatMoneyWithCode(a.balanceMinor, a.currency),
+                ),
               ),
             ),
           ),
+      ],
+    );
+  }
+}
+
+class _AccountAmount extends StatelessWidget {
+  const _AccountAmount({required this.mainAmountText, this.actualAmountText});
+
+  final String mainAmountText;
+  final String? actualAmountText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (actualAmountText == null) {
+      return Text(mainAmountText);
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text('~$mainAmountText', style: theme.textTheme.bodySmall),
+        Text(actualAmountText!, style: theme.textTheme.titleSmall),
       ],
     );
   }
