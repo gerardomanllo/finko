@@ -288,6 +288,7 @@
   "recurringComingUp": "Próximamente",
   "recurringDueSoon": "Pronto",
   "recurringComingLater": "Más adelante",
+  "actionRetry": "Reintentar",
   "categoriesEmpty": "Aún no hay categorías en los datos del mes.",
   "accountsListSubtitle": "Toca una cuenta cuando existan detalles."
 }

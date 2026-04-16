@@ -36,6 +36,7 @@ RecurringRule _$RecurringRuleFromJson(
   daysOfMonth: (json['daysOfMonth'] as List<dynamic>?)
       ?.map((e) => (e as num).toInt())
       .toList(),
+  weekday: (json['weekday'] as num?)?.toInt(),
   active: json['active'] as bool? ?? true,
   nextTransactionDate: json['nextTransactionDate'] as String,
   createdAt: const FirestoreUtcDateTimeConverter().fromJson(json['createdAt']),
@@ -56,6 +57,7 @@ Map<String, dynamic> _$RecurringRuleToJson(RecurringRule instance) =>
       'toAccountId': ?instance.toAccountId,
       'cadence': _$RecurringCadenceEnumMap[instance.cadence]!,
       'daysOfMonth': ?instance.daysOfMonth,
+      'weekday': ?instance.weekday,
       'active': instance.active,
       'nextTransactionDate': instance.nextTransactionDate,
       'createdAt': ?const FirestoreUtcDateTimeConverter().toJson(
@@ -80,4 +82,5 @@ const _$RecurringCadenceEnumMap = {
   RecurringCadence.monthly: 'monthly',
   RecurringCadence.twiceMonthly: 'twiceMonthly',
   RecurringCadence.biweekly: 'biweekly',
+  RecurringCadence.weekly: 'weekly',
 };

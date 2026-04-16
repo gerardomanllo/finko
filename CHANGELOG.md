@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Recurring screen Firestore wiring:** profile-timezone **“today”** (`timezone` package + `todayYyyyMmDdProvider`), `categoriesStreamProvider` and `recurringRulesStreamProvider`, enriched list rows (memo → rule name → category), category icons, error banner with retry, pull-to-refresh with `materializeDueUpcoming`. Cloud Functions: `scheduleNext.ts` (next occurrence + `resolveAsOfYmd`), `materializeDueUpcoming` updates linked **`recurring.nextTransactionDate`**, `commitOnboarding` sets **`recurringRuleId`** and maps onboarding “two paydays” to **`twiceMonthly`**. Docs: `docs/recurring.md`, `docs/data-model.md` §8–9, `docs/data-contract.md` §5/§11, `docs/references/product-todos.md`.
 - Dashboard backend wiring: replaced net-worth sparkline stubs with a 30-day `monthlyTotals.days.*.netWorthEodMinorMain` series (forward-fill fallback), added user-profile stream usage for main-currency formatting, and enforced strictly-future upcoming rows on `/dashboard`.
 - Upcoming materialization hardening: listener now re-checks on app resume and timezone/profile changes, while the callable service runs once per user/day with timezone-aware payload fallback plus unit coverage for cadence/payload behavior.
 - Full onboarding v1 foundation: 9-step wizard at `/onboarding` with Riverpod draft state, step validation/gating, typewriter header, projected-savings step math, messaging OTP hooks, and commit-to-dashboard completion flow.

@@ -706,6 +706,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get recurringComingLater => 'Más adelante';
 
   @override
+  String get actionRetry => 'Reintentar';
+
+  @override
   String get categoriesEmpty => 'Aún no hay categorías en los datos del mes.';
 
   @override

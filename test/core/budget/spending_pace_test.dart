@@ -24,10 +24,7 @@ void main() {
 
   group('paceMinorPerDay', () {
     test('divides and rounds', () {
-      expect(
-        paceMinorPerDay(leftMinor: 10000, daysRemaining: 3),
-        3333,
-      );
+      expect(paceMinorPerDay(leftMinor: 10000, daysRemaining: 3), 3333);
     });
 
     test('returns 0 when no days', () {

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timezone/data/latest.dart' as tzdata;
 
 import 'app/finko_app.dart';
 import 'core/app_environment.dart';
@@ -12,6 +13,7 @@ export 'core/app_environment.dart' show AppEnvironment;
 
 Future<void> bootstrapApp({required AppEnvironment environment}) async {
   WidgetsFlutterBinding.ensureInitialized();
+  tzdata.initializeTimeZones();
 
   final options = environment == AppEnvironment.dev
       ? dev_options.DefaultFirebaseOptions.currentPlatform

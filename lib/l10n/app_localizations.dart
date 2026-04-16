@@ -1394,6 +1394,12 @@ abstract class AppLocalizations {
   /// **'Más adelante'**
   String get recurringComingLater;
 
+  /// No description provided for @actionRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get actionRetry;
+
   /// No description provided for @categoriesEmpty.
   ///
   /// In es, this message translates to:

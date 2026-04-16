@@ -47,10 +47,7 @@ class FinkoTransactionRowCompact extends StatelessWidget {
             ),
           ),
           if (secondaryAmountText != null)
-            Text(
-              secondaryAmountText!,
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(secondaryAmountText!, style: theme.textTheme.bodySmall),
         ],
       ),
     );

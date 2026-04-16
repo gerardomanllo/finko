@@ -115,7 +115,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: navBar, matching: find.text('Movimientos')),
+      find.descendant(of: navBar, matching: find.text('Transacciones')),
       findsOneWidget,
     );
 
@@ -123,7 +123,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Nuevo movimiento'), findsOneWidget);
     expect(
-      find.text('Aquí aparecerá el flujo para crear movimientos.'),
+      find.text('Aquí aparecerá el flujo para crear transacciones.'),
       findsOneWidget,
     );
 

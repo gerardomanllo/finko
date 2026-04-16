@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/firebase_auth_providers.dart';
+import '../../datetime/user_calendar_date.dart';
 import '../models/models.dart';
 import '../repositories/firestore_data_repository.dart';
 
@@ -11,9 +12,20 @@ final currentYearMonthProvider = Provider<String>((ref) {
   return _yearMonthKey(ref.watch(nowProvider));
 });
 
-/// Device-local business date `yyyy-MM-dd` (fallback until profile timezone drives materialization).
+final userProfileStreamProvider = StreamProvider<UserProfile?>((ref) async* {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null) {
+    yield null;
+    return;
+  }
+  yield* ref.watch(firestoreDataRepositoryProvider).watchUserProfile(uid);
+});
+
+/// Business "today" as `yyyy-MM-dd`: profile [UserProfile.timezone] when set, else device-local.
 final todayYyyyMmDdProvider = Provider<String>((ref) {
-  return _yyyyMmDd(ref.watch(nowProvider));
+  final now = ref.watch(nowProvider);
+  final tzName = ref.watch(userProfileStreamProvider).valueOrNull?.timezone;
+  return userCalendarDateYyyyMmDd(utcNow: now.toUtc(), ianaTimezone: tzName);
 });
 
 final accountsStreamProvider = StreamProvider<List<FinkoAccount>>((ref) async* {
@@ -23,15 +35,6 @@ final accountsStreamProvider = StreamProvider<List<FinkoAccount>>((ref) async* {
     return;
   }
   yield* ref.watch(firestoreDataRepositoryProvider).watchAccounts(uid);
-});
-
-final userProfileStreamProvider = StreamProvider<UserProfile?>((ref) async* {
-  final uid = ref.watch(authUidProvider);
-  if (uid == null) {
-    yield null;
-    return;
-  }
-  yield* ref.watch(firestoreDataRepositoryProvider).watchUserProfile(uid);
 });
 
 final currentMonthTotalsStreamProvider = StreamProvider<MonthlyTotals?>((
@@ -83,6 +86,28 @@ final upcomingTransactionsStreamProvider =
           .watch(firestoreDataRepositoryProvider)
           .watchUpcomingFromDate(uid, from, limit: 50);
     });
+
+final categoriesStreamProvider = StreamProvider<List<FinkoCategory>>((
+  ref,
+) async* {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null) {
+    yield <FinkoCategory>[];
+    return;
+  }
+  yield* ref.watch(firestoreDataRepositoryProvider).watchCategories(uid);
+});
+
+final recurringRulesStreamProvider = StreamProvider<List<RecurringRule>>((
+  ref,
+) async* {
+  final uid = ref.watch(authUidProvider);
+  if (uid == null) {
+    yield <RecurringRule>[];
+    return;
+  }
+  yield* ref.watch(firestoreDataRepositoryProvider).watchRecurringRules(uid);
+});
 
 /// Latest known global rate doc for [dateKey] `yyyy-mm-dd` (often today).
 final forexRatesForDateStreamProvider =
@@ -137,8 +162,3 @@ DateTime _dateOnly(DateTime value) =>
 String _yearMonthKey(DateTime value) =>
     '${value.year.toString().padLeft(4, '0')}-'
     '${value.month.toString().padLeft(2, '0')}';
-
-String _yyyyMmDd(DateTime value) =>
-    '${value.year.toString().padLeft(4, '0')}-'
-    '${value.month.toString().padLeft(2, '0')}-'
-    '${value.day.toString().padLeft(2, '0')}';

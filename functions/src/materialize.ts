@@ -3,17 +3,7 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
-function addOneMonthYmd(ymd: string): string {
-  const [y, m, d] = ymd.split("-").map((x) => Number(x));
-  const dt = new Date(Date.UTC(y, m - 1 + 1, d));
-  return dt.toISOString().slice(0, 10);
-}
-
-function addDaysYmd(ymd: string, days: number): string {
-  const [y, m, d] = ymd.split("-").map((x) => Number(x));
-  const dt = new Date(Date.UTC(y, m - 1, d + days));
-  return dt.toISOString().slice(0, 10);
-}
+import { computeNextTransactionDate, resolveAsOfYmd } from "./scheduleNext";
 
 export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (request) => {
   const db = getFirestore();
@@ -24,9 +14,10 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
   if (!uid || uid !== request.auth.uid) {
     throw new HttpsError("permission-denied", "UID mismatch.");
   }
-  const asOfDate =
-    (request.data?.asOfDate as string | undefined) ??
-    new Date().toISOString().slice(0, 10);
+  const asOfDate = resolveAsOfYmd({
+    asOfDate: request.data?.asOfDate,
+    timezone: request.data?.timezone,
+  });
 
   const snap = await db
     .collection(`users/${uid}/upcomingTransactions`)
@@ -55,6 +46,7 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
     const u = doc.data();
     const kind = u.kind as string;
     const upcomingId = doc.id;
+    const recurringRuleId = typeof u.recurringRuleId === "string" ? u.recurringRuleId : undefined;
 
     if (kind === "standard") {
       const txRef = db.collection(`users/${uid}/transactions`).doc();
@@ -117,25 +109,39 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
       continue;
     }
 
-    const cadence = u.cadence as string | undefined;
     const ymd = u.transactionDate as string;
-    let nextDate: string | null = null;
-    if (cadence === "monthly" || cadence === "twiceMonthly") {
-      nextDate = addOneMonthYmd(ymd);
-    } else if (cadence === "biweekly") {
-      nextDate = addDaysYmd(ymd, 14);
-    } else if (cadence === "weekly") {
-      nextDate = addDaysYmd(ymd, 7);
-    }
+    const daysOfMonth = Array.isArray(u.daysOfMonth)
+      ? (u.daysOfMonth as unknown[]).map((x) => Number(x)).filter((n) => Number.isFinite(n) && n >= 1 && n <= 31)
+      : [];
+    const weekday = typeof u.weekday === "number" ? u.weekday : null;
+    const cadence = typeof u.cadence === "string" ? u.cadence : undefined;
+
+    const nextDate = computeNextTransactionDate(ymd, {
+      cadence,
+      daysOfMonth,
+      weekday,
+    });
+
     if (nextDate != null) {
       batch.update(doc.ref, {
         transactionDate: nextDate,
         updatedAt: FieldValue.serverTimestamp(),
       });
       ops++;
+      if (recurringRuleId) {
+        batch.update(db.doc(`users/${uid}/recurring/${recurringRuleId}`), {
+          nextTransactionDate: nextDate,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        ops++;
+      }
     } else {
       batch.delete(doc.ref);
       ops++;
+      if (recurringRuleId) {
+        batch.delete(db.doc(`users/${uid}/recurring/${recurringRuleId}`));
+        ops++;
+      }
     }
 
     processed++;

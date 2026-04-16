@@ -77,8 +77,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                   ? (spent / budgeted).clamp(0.0, 1.0)
                   : 0.0;
               final today = DateTime.now();
-              final daysRem =
-                  calendarDaysRemainingInViewedMonth(_month, today);
+              final daysRem = calendarDaysRemainingInViewedMonth(_month, today);
               final String? paceText = budgeted > 0 && daysRem > 0
                   ? l10n.budgetsSpendingPace(
                       '${_fmt(context, paceMinorPerDay(leftMinor: left, daysRemaining: daysRem), main)}${l10n.budgetsPaceSlashDay}',

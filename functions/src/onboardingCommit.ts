@@ -2,6 +2,8 @@ import { randomUUID } from "crypto";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
+import { resolveAsOfYmd } from "./scheduleNext";
+
 type JsonMap = Record<string, unknown>;
 
 function mustString(value: unknown, name: string): string {
@@ -9,6 +11,29 @@ function mustString(value: unknown, name: string): string {
     throw new HttpsError("invalid-argument", `${name} is required.`);
   }
   return value.trim();
+}
+
+/** Maps Flutter `OnboardingCadence` names to Firestore `recurring.cadence` (see `docs/data-model.md` §9). */
+function mapRecurringCadenceFromOnboarding(rule: JsonMap): {
+  cadence: string;
+  daysOfMonth: number[];
+  weekday: number | null;
+} {
+  const name = mustString(rule.cadence, "recurring.cadence");
+  const rawDays = Array.isArray(rule.daysOfMonth) ? (rule.daysOfMonth as number[]) : [];
+  const weekday = typeof rule.weekday === "number" ? rule.weekday : null;
+
+  if (name === "biweekly") {
+    const sorted = [...rawDays].sort((a, b) => a - b);
+    return { cadence: "twiceMonthly", daysOfMonth: sorted, weekday: null };
+  }
+  if (name === "weekly") {
+    return { cadence: "weekly", daysOfMonth: [], weekday };
+  }
+  if (name === "monthly") {
+    return { cadence: "monthly", daysOfMonth: rawDays, weekday: null };
+  }
+  throw new HttpsError("invalid-argument", "recurring.cadence must be monthly, biweekly, or weekly.");
 }
 
 export const commitOnboarding = onCall({ region: "us-central1" }, async (request) => {
@@ -70,7 +95,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
   const messaging = (payload.messaging ?? {}) as JsonMap;
 
   const monthId = new Date().toISOString().slice(0, 7);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = resolveAsOfYmd({ timezone });
   const userRef = db.doc(`users/${uid}`);
   const monthlyTotalsRef = db.doc(`users/${uid}/monthlyTotals/${monthId}`);
 
@@ -172,6 +197,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       continue;
     }
     const ruleRef = db.collection(`users/${uid}/recurring`).doc();
+    const mapped = mapRecurringCadenceFromOnboarding(rule);
     batch.set(ruleRef, {
       name: "Onboarding recurring income",
       kind: "standard",
@@ -180,9 +206,9 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       currency: "MXN",
       categoryId: mustString(rule.categoryId, "recurring.categoryId"),
       accountId: mustString(rule.accountId, "recurring.accountId"),
-      cadence: mustString(rule.cadence, "recurring.cadence"),
-      daysOfMonth: Array.isArray(rule.daysOfMonth) ? rule.daysOfMonth : [],
-      weekday: typeof rule.weekday === "number" ? rule.weekday : null,
+      cadence: mapped.cadence,
+      daysOfMonth: mapped.daysOfMonth.length > 0 ? mapped.daysOfMonth : [],
+      weekday: mapped.weekday,
       active: true,
       nextTransactionDate: today,
       createdAt: FieldValue.serverTimestamp(),
@@ -196,9 +222,10 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       currency: "MXN",
       accountId: mustString(rule.accountId, "recurring.accountId"),
       categoryId: mustString(rule.categoryId, "recurring.categoryId"),
-      cadence: mustString(rule.cadence, "recurring.cadence"),
-      daysOfMonth: Array.isArray(rule.daysOfMonth) ? rule.daysOfMonth : [],
-      weekday: typeof rule.weekday === "number" ? rule.weekday : null,
+      cadence: mapped.cadence,
+      daysOfMonth: mapped.daysOfMonth.length > 0 ? mapped.daysOfMonth : [],
+      weekday: mapped.weekday,
+      recurringRuleId: ruleRef.id,
       loadedAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });

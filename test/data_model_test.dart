@@ -81,9 +81,7 @@ void main() {
         'incomeMinorMain': 0,
         'expenseMinorMain': 1000,
         'byCategoryMinorMain': <String, int>{},
-        'budgets': {
-          'cat1': 50_000,
-        },
+        'budgets': {'cat1': 50_000},
         'days': <String, dynamic>{},
       };
       final m = MonthlyTotals.fromFirestore(data);
@@ -106,6 +104,7 @@ void main() {
         accountId: 'acc1',
         cadence: RecurringCadence.twiceMonthly,
         daysOfMonth: const [1, 15],
+        weekday: null,
         active: true,
         nextTransactionDate: '2026-05-01',
         createdAt: t,

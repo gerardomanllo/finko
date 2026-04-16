@@ -24,6 +24,8 @@ class UpcomingTransaction {
     this.memo,
     this.recurringRuleId,
     this.cadence,
+    this.daysOfMonth,
+    this.weekday,
     this.amountMinorMain,
     this.fxRateDateUsed,
     required this.loadedAt,
@@ -50,7 +52,15 @@ class UpcomingTransaction {
   final String? categoryId;
   final String? memo;
   final String? recurringRuleId;
-  final String? cadence;
+
+  @JsonKey(unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final RecurringCadence? cadence;
+
+  /// Mirrors `recurring` / materializer (monthly, twice-monthly).
+  final List<int>? daysOfMonth;
+
+  /// Mon=1 … Sun=7 when [cadence] is [RecurringCadence.weekly].
+  final int? weekday;
 
   /// Amount in the user’s main currency (minor units), when populated by backend.
   final int? amountMinorMain;

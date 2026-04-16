@@ -26,6 +26,9 @@ class RecurringRule {
     this.toAccountId,
     required this.cadence,
     this.daysOfMonth,
+
+    /// Dart [DateTime.weekday]: Mon=1 … Sun=7 when [cadence] is [RecurringCadence.weekly].
+    this.weekday,
     required this.active,
     required this.nextTransactionDate,
     required this.createdAt,
@@ -61,6 +64,9 @@ class RecurringRule {
 
   /// Calendar days 1–31 for monthly / twice-monthly schedules (e.g. 1st and 15th).
   final List<int>? daysOfMonth;
+
+  /// When [cadence] is [RecurringCadence.weekly] (see onboarding).
+  final int? weekday;
 
   @JsonKey(defaultValue: true)
   final bool active;

@@ -248,11 +248,13 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `categoryId` | `string?` | |
 | `memo` | `string?` | |
 | `recurringRuleId` | `string?` | If spawned from a rule. |
-| `cadence` | `string?` | e.g. `monthly` — used to compute the **next** date after post. |
+| `cadence` | `string?` | `monthly` \| `twiceMonthly` \| `biweekly` \| `weekly` — same values as `recurring.cadence` (§9); drives **next** date after post in `materializeDueUpcoming`. |
+| `daysOfMonth` | `array<int>?` | Days **1–31** for month-based schedules; omit when not used. |
+| `weekday` | `int?` | **1–7** (Mon=1 … Sun=7, same as Dart `DateTime.weekday`) when `cadence` is `weekly`. |
 | `loadedAt` | `Timestamp` | UTC. |
 | `updatedAt` | `Timestamp` | UTC. |
 
-**Materialization (product flow):** When the user opens the app (“first fetch of the day” or on resume), run a **materialization step** (prefer **Callable Cloud Function** for idempotency): query `upcomingTransactions` where **`transactionDate` ≤ today** (user’s calendar today in a defined timezone—**define in impl**). For each doc: if **`kind: standard`**, create **one** `transactions` row; if **`kind: transfer`**, create **two** legs (see §4.3). Then **advance** `transactionDate` on the upcoming doc to the **next period** per `cadence` / rule, or **delete** if non-repeating. Listeners then refresh dashboard data. See [`data-contract.md`](data-contract.md#11-upcomingtransactions--daily-materialization).
+**Materialization (product flow):** When the user opens the app (“first fetch of the day” or on resume), run a **materialization step** (prefer **Callable Cloud Function** for idempotency): query `upcomingTransactions` where **`transactionDate` ≤ today** (user’s calendar today: **IANA `timezone` on profile**, resolved in **`materializeDueUpcoming`**; client may pass `asOfDate` when no TZ). For each doc: if **`kind: standard`**, create **one** `transactions` row; if **`kind: transfer`**, create **two** legs (see §4.3). Then **advance** `transactionDate` on the upcoming doc to the **next period** per `cadence` / `daysOfMonth` / `weekday`, update linked **`recurring`** when `recurringRuleId` is set, or **delete** upcoming + linked rule when no next date is computable. Listeners then refresh dashboard data. See [`data-contract.md`](data-contract.md#11-upcomingtransactions--daily-materialization). Implementation: [`functions/src/scheduleNext.ts`](../functions/src/scheduleNext.ts) + [`functions/src/materialize.ts`](../functions/src/materialize.ts).
 
 ---
 
@@ -272,8 +274,9 @@ Templates / rules that **create or refresh** `upcomingTransactions` rows (e.g. w
 | `accountId` | `string?` | | **Required** when `kind: standard` — posting account (income deposit or expense withdrawal). |
 | `fromAccountId` | `string?` | | **Required** when `kind: transfer`. |
 | `toAccountId` | `string?` | | **Required** when `kind: transfer`. |
-| `cadence` | `string` | ✓ | `monthly` \| `twiceMonthly` \| `biweekly` (see [`onboarding.md`](onboarding.md) for product copy). |
-| `daysOfMonth` | `array<int>?` | | Days **1–31** for month-based schedules (e.g. `[1, 15]` for twice-monthly); omit when not applicable (e.g. biweekly driven by `nextTransactionDate` only). |
+| `cadence` | `string` | ✓ | `monthly` \| `twiceMonthly` \| `biweekly` \| `weekly` — onboarding maps UI “two paydays” to **`twiceMonthly`** (see [`onboarding.md`](onboarding.md)); **`biweekly`** = fixed **14-day** step from last post. |
+| `daysOfMonth` | `array<int>?` | | Days **1–31** for month-based schedules (e.g. `[1, 15]` for twice-monthly); omit when not applicable. |
+| `weekday` | `int?` | | **1–7** (Mon … Sun) when `cadence` is **`weekly`** (matches Dart `DateTime.weekday`). |
 | `active` | `bool` | ✓ | Default **`true`**. |
 | `nextTransactionDate` | `string` | ✓ | Next effective **`"yyyy-MM-dd"`**. |
 | `createdAt` | `Timestamp` | ✓ | UTC. |
@@ -349,3 +352,4 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-15 | §9: **locked** recurring rule schema (`kind`, `cadence`, `daysOfMonth`, `direction` only — dropped standalone `isIncome`). |
 | 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
 | 2026-04-16 | §7 `budgets`: note **legacy flat** category→amount maps vs canonical `{ targetMinorMain, kind }`; onboarding writes canonical rows. |
+| 2026-04-16 | §8–9: `cadence` includes **`weekly`** + optional **`weekday`**; **`daysOfMonth`** / **`weekday`** on `upcomingTransactions`; materializer advances **`recurring.nextTransactionDate`** when **`recurringRuleId`** links; onboarding maps UI biweekly (two DOM) → **`twiceMonthly`**. |

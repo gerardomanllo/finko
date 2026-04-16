@@ -30,7 +30,15 @@ UpcomingTransaction _$UpcomingTransactionFromJson(
   categoryId: json['categoryId'] as String?,
   memo: json['memo'] as String?,
   recurringRuleId: json['recurringRuleId'] as String?,
-  cadence: json['cadence'] as String?,
+  cadence: $enumDecodeNullable(
+    _$RecurringCadenceEnumMap,
+    json['cadence'],
+    unknownValue: JsonKey.nullForUndefinedEnumValue,
+  ),
+  daysOfMonth: (json['daysOfMonth'] as List<dynamic>?)
+      ?.map((e) => (e as num).toInt())
+      .toList(),
+  weekday: (json['weekday'] as num?)?.toInt(),
   amountMinorMain: (json['amountMinorMain'] as num?)?.toInt(),
   fxRateDateUsed: json['fxRateDateUsed'] as String?,
   loadedAt: const FirestoreUtcDateTimeConverter().fromJson(json['loadedAt']),
@@ -52,7 +60,9 @@ Map<String, dynamic> _$UpcomingTransactionToJson(
   'categoryId': ?instance.categoryId,
   'memo': ?instance.memo,
   'recurringRuleId': ?instance.recurringRuleId,
-  'cadence': ?instance.cadence,
+  'cadence': ?_$RecurringCadenceEnumMap[instance.cadence],
+  'daysOfMonth': ?instance.daysOfMonth,
+  'weekday': ?instance.weekday,
   'amountMinorMain': ?instance.amountMinorMain,
   'fxRateDateUsed': ?instance.fxRateDateUsed,
   'loadedAt': ?const FirestoreUtcDateTimeConverter().toJson(instance.loadedAt),
@@ -69,4 +79,11 @@ const _$UpcomingKindEnumMap = {
 const _$MoneyDirectionEnumMap = {
   MoneyDirection.in_: 'in',
   MoneyDirection.out_: 'out',
+};
+
+const _$RecurringCadenceEnumMap = {
+  RecurringCadence.monthly: 'monthly',
+  RecurringCadence.twiceMonthly: 'twiceMonthly',
+  RecurringCadence.biweekly: 'biweekly',
+  RecurringCadence.weekly: 'weekly',
 };

@@ -31,18 +31,26 @@
 ## Navigation
 
 - **In**: Bottom tab **Recurring**.
-- **Out**: Tapping a row may go to detail/edit — **TBD** (not specified).
+- **Out**: Tapping a row may go to detail/edit — **TBD** (not specified); tracked in [`references/product-todos.md`](references/product-todos.md).
 
 ## Reuse
 
 - `Two-week mini calendar`, paper list rows (`Transaction row` / recurring variant).
 
-## Data (frontend phase)
+## Data
 
-- Mock recurring rules with `name`, `kind` (`standard` \| `transfer`), `nextTransactionDate`, `direction` (`in` \| `out`), `amountMinor`, `cadence`, `categoryIcon` — see [`data-model.md`](data-model.md) §9.
+- **Firestore:** `upcomingTransactions` (canonical next occurrence per scheduled row) plus **`recurring`** for enrichment (rule `name`, linkage via `recurringRuleId`) and **`categories`** for titles/icons — see [`data-contract.md`](data-contract.md) §5 and [`data-model.md`](data-model.md) §8–9.
+- **“Today”** for list boundaries and the upcoming query lower bound: user profile **`timezone`** (IANA) when set, else device-local calendar date — [`lib/core/datetime/user_calendar_date.dart`](../lib/core/datetime/user_calendar_date.dart), [`todayYyyyMmDdProvider`](../lib/core/data/providers/finko_stream_providers.dart).
+- **Due soon / Coming later:** Implemented in [`lib/features/recurring/presentation/recurring_screen.dart`](../lib/features/recurring/presentation/recurring_screen.dart) using `daysBetweenYyyyMmDd(today, transactionDate)` — **Due soon** `0…7`, **Coming later** `8…15` (no overlap).
 
 ## Acceptance
 
-- [ ] Two-week grid matches “this week / next week” layout.
-- [ ] Dot vs green `$` distinction for income days.
-- [ ] Two lists do not duplicate the same item (define date boundaries explicitly in code).
+- [x] Two-week grid matches “this week / next week” layout.
+- [x] Dot vs green `$` distinction for income days.
+- [x] Two lists do not duplicate the same item (define date boundaries explicitly in code).
+
+## Revision log
+
+| Date | Change |
+|------|--------|
+| 2026-04-16 | Firestore-backed screen: profile timezone “today,” `upcomingTransactions` + `recurring` + `categories` streams, refresh/error/retry, row titles/icons; linked deferred row navigation in `docs/references/product-todos.md`. |

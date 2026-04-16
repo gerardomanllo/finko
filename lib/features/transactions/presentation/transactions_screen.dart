@@ -111,7 +111,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         amountText: _amount(
                           context,
                           t,
-                          minor: t.amountMinorMain != null &&
+                          minor:
+                              t.amountMinorMain != null &&
                                   t.currency != mainCurrency
                               ? t.amountMinorMain!
                               : t.amountMinor,

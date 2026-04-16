@@ -175,8 +175,7 @@ class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
                     a.balanceMinorMain ?? a.balanceMinor,
                     widget.mainCurrencyCode,
                   ),
-                  actualAmountText:
-                      a.currency == widget.mainCurrencyCode
+                  actualAmountText: a.currency == widget.mainCurrencyCode
                       ? null
                       : widget.formatMoneyWithCode(a.balanceMinor, a.currency),
                 ),

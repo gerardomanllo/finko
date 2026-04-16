@@ -91,7 +91,7 @@ When a **transaction is created/updated**:
 | **Transactions** | `transactions` query by `transactionDate` / `loadedAt` as designed; paginate. |
 | **Budgets** | **`monthlyTotals/{yyyy-mm}`** only (budgets embedded in doc). |
 | **Categories / accounts** | Collection snapshots. |
-| **Recurring / upcoming** | `recurring` + **`upcomingTransactions`** streams. |
+| **Recurring / upcoming** | **`upcomingTransactionsStreamProvider`** (canonical schedule rows); **`recurringRulesStreamProvider`** + **`categoriesStreamProvider`** for labels/icons; **`todayYyyyMmDdProvider`** uses profile timezone when set. Pull-to-refresh: **`materializeDueUpcoming`** + invalidate streams. |
 
 ---
 
@@ -138,10 +138,10 @@ When a **transaction is created/updated**:
 
 **Recommended implementation**
 
-1. **Callable Cloud Function** `materializeDueUpcoming` (name TBD), idempotent:
-   - Input: `uid`, optional `asOfDate` (default: **today** in user timezone—pass from client or resolve server-side from `users/{uid}.timezone`).
+1. **Callable Cloud Function** `materializeDueUpcoming`, idempotent:
+   - Input: `uid`, optional `asOfDate` (**yyyy-MM-dd**), optional `timezone` (IANA). **`resolveAsOfYmd`** in **`functions/src/scheduleNext.ts`**: explicit `asOfDate` wins; else **today’s calendar date in `timezone`** when set; else server-local calendar day.
    - Query `upcomingTransactions` where `transactionDate` **≤** `asOfDate`.
-   - For each doc: create **`transactions`** (and any transfer pair), update **`sourceUpcomingId`**, then **advance** `transactionDate` on the upcoming doc (per `cadence` / linked `recurringRuleId`) or **delete** if one-shot.
+   - For each doc: create **`transactions`** (and any transfer pair), **`sourceUpcomingId`** on new txs, then **advance** `transactionDate` using **`computeNextTransactionDate`** (cadence + `daysOfMonth` + `weekday`), **update** `recurring/{id}.nextTransactionDate` when **`recurringRuleId`** is set, or **delete** upcoming (and linked rule when applicable) if no next date.
 2. **When to call:** On **app start** and optionally **resume** (once per calendar day per device—use `SharedPreferences` / local flag `lastMaterializeDate` to avoid redundant calls, or rely on idempotent CF).
 3. **After return:** Existing **`snapshots()`** on `transactions` and `monthlyTotals` **emit**—widgets already watching **update automatically**.
 
@@ -174,3 +174,4 @@ When a **transaction is created/updated**:
 | 2026-04-14 | Scheduled **forex** allowed; budgets in `monthlyTotals`; `upcomingTransactions` + callable materialization; multi-currency. |
 | 2026-04-16 | **§12** Ledger aggregation (Functions vs client, `aggregateApplied`, `days` map, optional reload fields). |
 | 2026-04-16 | **§5** Dashboard row: named providers + net-worth sparkline source, refresh/materialize. |
+| 2026-04-16 | **§5** Recurring row: named providers; **§11** callable `asOfDate` / `timezone` resolution + next-date + `recurring` sync. |

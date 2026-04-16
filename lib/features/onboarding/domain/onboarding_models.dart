@@ -44,6 +44,7 @@ class OnboardingAccountDraft {
   final String currency;
   final int colorArgb;
   final int startingBalanceMinor;
+
   /// Material icon key for the account avatar (user-chosen; independent of [type]).
   final String iconKey;
 

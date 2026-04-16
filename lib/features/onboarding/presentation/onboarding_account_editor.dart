@@ -125,7 +125,10 @@ class _OnboardingAccountEditorSheetState
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Text(l10n.onboardingPickIcon, style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              l10n.onboardingPickIcon,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 160,

@@ -16,7 +16,10 @@ void main() {
       locale: 'es',
     );
     await controller.next();
-    expect(container.read(onboardingControllerProvider).step, OnboardingStep.accounts);
+    expect(
+      container.read(onboardingControllerProvider).step,
+      OnboardingStep.accounts,
+    );
 
     final ok = await controller.next();
     expect(ok, isFalse);

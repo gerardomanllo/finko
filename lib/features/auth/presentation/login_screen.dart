@@ -143,10 +143,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ).copyWith(bottom: 16 + MediaQuery.viewInsetsOf(context).bottom),
+                padding:
+                    const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ).copyWith(
+                      bottom: 16 + MediaQuery.viewInsetsOf(context).bottom,
+                    ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

@@ -414,12 +414,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case OnboardingStep.messaging:
         return _buildMessagingStep(context, l10n, draft, controller);
       case OnboardingStep.review:
-        return buildOnboardingReviewSummary(
-          context,
-          draft,
-          l10n,
-          localeTag,
-        );
+        return buildOnboardingReviewSummary(context, draft, l10n, localeTag);
       case OnboardingStep.commit:
         return const Center(child: CircularProgressIndicator());
       case OnboardingStep.completion:
@@ -611,8 +606,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     Widget rowFor(OnboardingCategoryDraft c) {
       final isFixed = c.id == OnboardingDraft.kFixedExpensesCategory.id;
-      final displayName =
-          isFixed ? l10n.onboardingCategoryFixedExpenses : c.name;
+      final displayName = isFixed
+          ? l10n.onboardingCategoryFixedExpenses
+          : c.name;
       final kindLabel = c.kind == OnboardingCategoryKind.income
           ? l10n.onboardingCategoryKindIncome
           : l10n.onboardingCategoryKindExpense;
@@ -1196,14 +1192,10 @@ class _RecurringIncomeTileState extends State<_RecurringIncomeTile> {
                         keyboardType: TextInputType.number,
                         onChanged: (t) {
                           final d1 = int.tryParse(t) ?? 1;
-                          final d2 =
-                              int.tryParse(_dayOfMonthB.text) ?? 15;
+                          final d2 = int.tryParse(_dayOfMonthB.text) ?? 15;
                           widget.onSave(
                             existing.copyWith(
-                              daysOfMonth: [
-                                d1.clamp(1, 31),
-                                d2.clamp(1, 31),
-                              ],
+                              daysOfMonth: [d1.clamp(1, 31), d2.clamp(1, 31)],
                             ),
                           );
                         },
@@ -1223,10 +1215,7 @@ class _RecurringIncomeTileState extends State<_RecurringIncomeTile> {
                           final d2 = int.tryParse(t) ?? 15;
                           widget.onSave(
                             existing.copyWith(
-                              daysOfMonth: [
-                                d1.clamp(1, 31),
-                                d2.clamp(1, 31),
-                              ],
+                              daysOfMonth: [d1.clamp(1, 31), d2.clamp(1, 31)],
                             ),
                           );
                         },

@@ -162,7 +162,8 @@ enum UpcomingKind {
 enum RecurringCadence {
   monthly,
   twiceMonthly,
-  biweekly;
+  biweekly,
+  weekly;
 
   static RecurringCadence? tryParse(String? raw) {
     switch (raw) {
@@ -172,6 +173,8 @@ enum RecurringCadence {
         return RecurringCadence.twiceMonthly;
       case 'biweekly':
         return RecurringCadence.biweekly;
+      case 'weekly':
+        return RecurringCadence.weekly;
       default:
         return null;
     }
@@ -181,6 +184,7 @@ enum RecurringCadence {
     RecurringCadence.monthly => 'monthly',
     RecurringCadence.twiceMonthly => 'twiceMonthly',
     RecurringCadence.biweekly => 'biweekly',
+    RecurringCadence.weekly => 'weekly',
   };
 }
 

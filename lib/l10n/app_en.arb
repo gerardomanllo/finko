@@ -288,6 +288,7 @@
   "recurringComingUp": "Coming up",
   "recurringDueSoon": "Due soon",
   "recurringComingLater": "Coming later",
+  "actionRetry": "Retry",
   "categoriesEmpty": "No categories in monthly data yet.",
   "accountsListSubtitle": "Tap an account when detail routes exist."
 }

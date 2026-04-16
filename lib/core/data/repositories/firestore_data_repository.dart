@@ -26,6 +26,10 @@ abstract class FirestoreDataRepository {
     int limit = 50,
   });
 
+  Stream<List<FinkoCategory>> watchCategories(String uid);
+
+  Stream<List<RecurringRule>> watchRecurringRules(String uid);
+
   /// Global `forexRates/{yyyy-mm-dd}` doc; `null` if missing.
   Stream<ForexRatesDoc?> watchForexRates(String yyyyMmDd);
 }
@@ -106,6 +110,41 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
               .map((d) => UpcomingTransaction.fromFirestore(d.id, d.data()))
               .toList(),
         );
+  }
+
+  @override
+  Stream<List<FinkoCategory>> watchCategories(String uid) {
+    return _db
+        .collection(FirestorePaths.categoriesCollection(uid))
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs
+              .map((d) => FinkoCategory.fromFirestore(d.id, d.data()))
+              .toList();
+          list.sort((a, b) {
+            final byOrder = a.sortOrder.compareTo(b.sortOrder);
+            if (byOrder != 0) return byOrder;
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          });
+          return list;
+        });
+  }
+
+  @override
+  Stream<List<RecurringRule>> watchRecurringRules(String uid) {
+    return _db
+        .collection(FirestorePaths.recurringCollection(uid))
+        .snapshots()
+        .map((snapshot) {
+          final list = snapshot.docs
+              .map((d) => RecurringRule.fromFirestore(d.id, d.data()))
+              .where((r) => r.active)
+              .toList();
+          list.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
+          return list;
+        });
   }
 
   @override
