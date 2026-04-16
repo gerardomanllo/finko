@@ -7,15 +7,20 @@
 ## Purpose
 
 - Persistent **bottom navigation** for the five primary areas.
-- **Navigation drawer** for secondary destinations, opened when user taps **More** on the bottom bar.
+- **Navigation drawer** for secondary destinations, opened from a **top-left settings cog** in the app bar.
 
 ## Bottom navigation — tabs (order)
 
 1. **Dashboard**
 2. **Recurring**
-3. **Spending**
-4. **Transactions**
-5. **More** — does **not** navigate to its own page; **opens the drawer** (toggle).
+3. **New transaction** — prominent center **plus** action (create flow trigger).
+4. **Spending**
+5. **Transactions**
+
+## App bar action
+
+- **Settings cog** in the top-left acts as the **drawer toggle**.
+- No bottom-bar **More** destination.
 
 ## Drawer
 
@@ -46,6 +51,8 @@ Close drawer on selection or scrim tap.
 
 ## Acceptance
 
-- [ ] Five bottom items; **More** opens drawer only.
+- [ ] Five bottom items in this order: Dashboard, Recurring, New transaction (+), Spending, Transactions.
+- [ ] Center plus action opens new transaction creation flow.
+- [ ] Top-left settings cog toggles drawer.
 - [ ] Drawer lists three destinations and navigates correctly.
 - [ ] Current tab state visible.

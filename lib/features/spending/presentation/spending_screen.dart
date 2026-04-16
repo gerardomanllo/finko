@@ -12,6 +12,7 @@ import '../../../widgets/charts/finko_donut_ring_chart.dart';
 import '../../../widgets/layout/pill_toggle_group.dart';
 import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../shell/presentation/shell_drawer_controller.dart';
 
 /// Spending analysis — period pills, mini cards, donut, accordion, top tx.
 enum SpendingPeriod { week, month, quarter, year }
@@ -50,7 +51,14 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
     final mainCurrency = 'MXN';
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.spendingTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => ShellDrawerController.open(context),
+          tooltip: l10n.openShellMenu,
+          icon: const Icon(Icons.settings_outlined),
+        ),
+        title: Text(l10n.spendingTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

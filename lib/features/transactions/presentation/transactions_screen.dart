@@ -8,6 +8,7 @@ import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/transactions/finko_search_filter_bar.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../shell/presentation/shell_drawer_controller.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -38,7 +39,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final async = ref.watch(recentTransactionsStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.transactionsTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => ShellDrawerController.open(context),
+          tooltip: l10n.openShellMenu,
+          icon: const Icon(Icons.settings_outlined),
+        ),
+        title: Text(l10n.transactionsTitle),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

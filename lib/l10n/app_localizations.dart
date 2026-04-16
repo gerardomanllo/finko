@@ -986,6 +986,12 @@ abstract class AppLocalizations {
   /// **'Recurrente'**
   String get navRecurring;
 
+  /// No description provided for @navNewTransaction.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo'**
+  String get navNewTransaction;
+
   /// No description provided for @navSpending.
   ///
   /// In es, this message translates to:
@@ -998,11 +1004,23 @@ abstract class AppLocalizations {
   /// **'Movimientos'**
   String get navTransactions;
 
-  /// No description provided for @navMore.
+  /// No description provided for @openShellMenu.
   ///
   /// In es, this message translates to:
-  /// **'Más'**
-  String get navMore;
+  /// **'Abrir menú'**
+  String get openShellMenu;
+
+  /// No description provided for @newTransactionSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo movimiento'**
+  String get newTransactionSheetTitle;
+
+  /// No description provided for @newTransactionSheetBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Aquí aparecerá el flujo para crear movimientos.'**
+  String get newTransactionSheetBody;
 
   /// No description provided for @drawerCategories.
   ///

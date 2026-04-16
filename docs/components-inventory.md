@@ -6,7 +6,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **App shell** | `Scaffold` + bottom navigation + `Drawer` toggled from **More** | All main tabs |
+| **App shell** | `Scaffold` + bottom navigation + center plus action + `Drawer` toggled from top-left settings cog | All main tabs |
 | **App drawer** | Header: avatar + name; items: Categories, Accounts, Settings | Shell |
 | **Screen scaffold** | Title (and optional actions) consistent with app style | Most routes |
 
@@ -80,4 +80,4 @@ If you copy the same **row layout** or **card header pattern** more than once, s
 
 ## Implementation (Flutter)
 
-Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files grouped by area: `surfaces/`, `layout/`, `metrics/`, `accounts/`, `transactions/`, `budgets/`, `charts/`, `calendar/`, `auth/`). The tabbed **app shell** (bottom nav + drawer from **More**) is `lib/features/shell/presentation/app_shell.dart`, wired in `lib/app/app_routes.dart`.
+Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files grouped by area: `surfaces/`, `layout/`, `metrics/`, `accounts/`, `transactions/`, `budgets/`, `charts/`, `calendar/`, `auth/`). The tabbed **app shell** (bottom nav with center plus action + drawer from top-left settings cog) is `lib/features/shell/presentation/app_shell.dart`, wired in `lib/app/app_routes.dart`.

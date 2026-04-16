@@ -483,13 +483,23 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navRecurring => 'Recurrente';
 
   @override
+  String get navNewTransaction => 'Nuevo';
+
+  @override
   String get navSpending => 'Gastos';
 
   @override
   String get navTransactions => 'Movimientos';
 
   @override
-  String get navMore => 'Más';
+  String get openShellMenu => 'Abrir menú';
+
+  @override
+  String get newTransactionSheetTitle => 'Nuevo movimiento';
+
+  @override
+  String get newTransactionSheetBody =>
+      'Aquí aparecerá el flujo para crear movimientos.';
 
   @override
   String get drawerCategories => 'Categorías';

@@ -16,7 +16,7 @@ Personal finance tracker (Flutter: iOS, Android, Web). Backend is Firebase later
 | [language-and-localization.md](language-and-localization.md) | — | Spanish (default) + English; ARB; profile `locale` |
 | [login.md](login.md) | `/login` | Email/password + Google + Apple |
 | [onboarding.md](onboarding.md) | `/onboarding` | Typeform-style wizard → `/dashboard` |
-| [shell-navigation.md](shell-navigation.md) | App shell | Bottom nav + drawer from **More** |
+| [shell-navigation.md](shell-navigation.md) | App shell | Bottom nav + center plus action + drawer from settings cog |
 | [dashboard.md](dashboard.md) | `/dashboard` | Main dashboard |
 | [recurring.md](recurring.md) | `/recurring` | Calendar + due soon / later |
 | [spending.md](spending.md) | `/spending` | Period pills + cards + accordion + pie |

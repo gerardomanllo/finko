@@ -23,6 +23,7 @@ import '../../../widgets/metrics/finko_two_metric_carousel.dart';
 import '../../../widgets/transactions/finko_paper_see_more_list.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/finko_upcoming_transaction_strip.dart';
+import '../../shell/presentation/shell_drawer_controller.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -129,7 +130,14 @@ class DashboardScreen extends ConsumerWidget {
         : 'MXN';
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.dashboardTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => ShellDrawerController.open(context),
+          tooltip: l10n.openShellMenu,
+          icon: const Icon(Icons.settings_outlined),
+        ),
+        title: Text(l10n.dashboardTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         children: [

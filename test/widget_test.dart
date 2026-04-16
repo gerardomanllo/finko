@@ -72,4 +72,71 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('shell nav order, plus action, and cog drawer work', (
+    tester,
+  ) async {
+    final GlobalKey<NavigatorState> rootKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appEnvironmentProvider.overrideWithValue(AppEnvironment.dev),
+          userLocaleRepositoryProvider.overrideWithValue(
+            FakeUserLocaleRepository(),
+          ),
+          goRouterProvider.overrideWithValue(
+            GoRouter(
+              navigatorKey: rootKey,
+              initialLocation: '/dashboard',
+              routes: buildAppRoutes(rootNavigatorKey: rootKey),
+            ),
+          ),
+        ],
+        child: const FinkoApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final navBar = find.byType(NavigationBar);
+    expect(
+      find.descendant(of: navBar, matching: find.text('Panel')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navBar, matching: find.text('Recurrente')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navBar, matching: find.text('Nuevo')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navBar, matching: find.text('Gastos')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: navBar, matching: find.text('Movimientos')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Nuevo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(
+      find.text('Aquí aparecerá el flujo para crear movimientos.'),
+      findsOneWidget,
+    );
+
+    Navigator.of(tester.element(find.text('Nuevo movimiento'))).pop();
+    await tester.pumpAndSettle();
+
+    final settingsButton = find.byTooltip('Abrir menú');
+    expect(settingsButton, findsOneWidget);
+    await tester.tap(settingsButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Categorías'), findsAtLeastNWidgets(1));
+    expect(find.text('Cuentas'), findsAtLeastNWidgets(1));
+    expect(find.text('Ajustes'), findsAtLeastNWidgets(1));
+  });
 }

@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../widgets/calendar/finko_two_week_calendar.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../shell/presentation/shell_drawer_controller.dart';
 
 DateTime _mondayOf(DateTime d) {
   final local = DateTime(d.year, d.month, d.day);
@@ -44,7 +45,14 @@ class RecurringScreen extends ConsumerWidget {
     final monday = _mondayOf(DateTime.now());
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.recurringTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => ShellDrawerController.open(context),
+          tooltip: l10n.openShellMenu,
+          icon: const Icon(Icons.settings_outlined),
+        ),
+        title: Text(l10n.recurringTitle),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
