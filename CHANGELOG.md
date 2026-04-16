@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Full onboarding v1 foundation: 9-step wizard at `/onboarding` with Riverpod draft state, step validation/gating, typewriter header, projected-savings step math, messaging OTP hooks, and commit-to-dashboard completion flow.
+- Firebase Functions onboarding backend: `commitOnboarding` callable (idempotent `requestId`, profile/accounts/categories/budgets/recurring writes, starting-balance adjustment transactions, server-side `onboardingCompleted`) plus `requestMessagingOtp` / `verifyMessagingOtp` callables for trusted messaging integration writes.
+- Onboarding tests for projected-savings model math and controller step validation (`test/features/onboarding/*`), plus expanded onboarding localization keys in `app_es.arb` and `app_en.arb`.
+
 - Login/Auth upgrades: forgot-password end-to-end flow on `/login` (localized CTA + success/error feedback via Firebase Auth `sendPasswordResetEmail`), keyboard-safe login form polish (`AutofillGroup`, submit actions, inset-aware scrolling), and Google provider button icon treatment.
 - Firebase/Auth operator runbook: [`docs/references/firebase-auth-manual-setup.md`](docs/references/firebase-auth-manual-setup.md) covering Google release SHA-1/SHA-256, Apple Services ID + OAuth code flow + callback URL, and password reset template checks.
 - Login widget tests for core auth affordances and forgot-password interactions (`test/features/auth/login_screen_test.dart`) using hermetic provider overrides.

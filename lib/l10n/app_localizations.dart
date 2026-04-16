@@ -194,6 +194,642 @@ abstract class AppLocalizations {
   /// **'Siguiente'**
   String get onboardingNext;
 
+  /// No description provided for @onboardingBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Atrás'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingCommit.
+  ///
+  /// In es, this message translates to:
+  /// **'Finalizar incorporación'**
+  String get onboardingCommit;
+
+  /// No description provided for @onboardingCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Incorporación completada.'**
+  String get onboardingCompleted;
+
+  /// No description provided for @onboardingStepProfileTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil y preferencias'**
+  String get onboardingStepProfileTitle;
+
+  /// No description provided for @onboardingStepAccountsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get onboardingStepAccountsTitle;
+
+  /// No description provided for @onboardingStepCategoriesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get onboardingStepCategoriesTitle;
+
+  /// No description provided for @onboardingStepRecurringTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos recurrentes'**
+  String get onboardingStepRecurringTitle;
+
+  /// No description provided for @onboardingStepBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get onboardingStepBudgetsTitle;
+
+  /// No description provided for @onboardingStepProjectedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro proyectado'**
+  String get onboardingStepProjectedTitle;
+
+  /// No description provided for @onboardingStepMessagingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajería'**
+  String get onboardingStepMessagingTitle;
+
+  /// No description provided for @onboardingStepReviewTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar y finalizar'**
+  String get onboardingStepReviewTitle;
+
+  /// No description provided for @onboardingReviewIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa lo siguiente. Toca finalizar para guardar tu configuración en Finko.'**
+  String get onboardingReviewIntro;
+
+  /// No description provided for @onboardingReviewPreferences.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus elecciones'**
+  String get onboardingReviewPreferences;
+
+  /// No description provided for @onboardingReviewSectionAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get onboardingReviewSectionAccounts;
+
+  /// No description provided for @onboardingReviewSectionCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get onboardingReviewSectionCategories;
+
+  /// No description provided for @onboardingReviewCategoriesCounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías de ingreso: {incomeCount} · Categorías de gasto: {expenseCount}'**
+  String onboardingReviewCategoriesCounts(int incomeCount, int expenseCount);
+
+  /// No description provided for @onboardingReviewSectionRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos recurrentes'**
+  String get onboardingReviewSectionRecurring;
+
+  /// No description provided for @onboardingReviewSectionBudgets.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos mensuales'**
+  String get onboardingReviewSectionBudgets;
+
+  /// No description provided for @onboardingReviewSectionProjected.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro mensual proyectado'**
+  String get onboardingReviewSectionProjected;
+
+  /// No description provided for @onboardingReviewSectionMessaging.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajería'**
+  String get onboardingReviewSectionMessaging;
+
+  /// No description provided for @onboardingReviewMessagingNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin canales verificados (puedes conectar después).'**
+  String get onboardingReviewMessagingNone;
+
+  /// No description provided for @onboardingReviewMessagingWhatsAppOk.
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp verificado'**
+  String get onboardingReviewMessagingWhatsAppOk;
+
+  /// No description provided for @onboardingReviewMessagingTelegramOk.
+  ///
+  /// In es, this message translates to:
+  /// **'Telegram verificado'**
+  String get onboardingReviewMessagingTelegramOk;
+
+  /// No description provided for @onboardingReviewRecurringOff.
+  ///
+  /// In es, this message translates to:
+  /// **'No recurrente'**
+  String get onboardingReviewRecurringOff;
+
+  /// No description provided for @onboardingReviewBiweeklyDays.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagos: días {day1} y {day2}'**
+  String onboardingReviewBiweeklyDays(int day1, int day2);
+
+  /// No description provided for @onboardingFirstPaydayLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Primer pago (día del mes)'**
+  String get onboardingFirstPaydayLabel;
+
+  /// No description provided for @onboardingSecondPaydayLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Segundo pago (día del mes)'**
+  String get onboardingSecondPaydayLabel;
+
+  /// No description provided for @onboardingStepCommitTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando configuración'**
+  String get onboardingStepCommitTitle;
+
+  /// No description provided for @onboardingStepDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get onboardingStepDoneTitle;
+
+  /// No description provided for @onboardingAccountName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la cuenta'**
+  String get onboardingAccountName;
+
+  /// No description provided for @onboardingAddAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar cuenta'**
+  String get onboardingAddAccount;
+
+  /// No description provided for @onboardingCategoryName.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de la categoría'**
+  String get onboardingCategoryName;
+
+  /// No description provided for @onboardingAddCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar categoría'**
+  String get onboardingAddCategory;
+
+  /// No description provided for @onboardingRecurringQuestion.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrente'**
+  String get onboardingRecurringQuestion;
+
+  /// No description provided for @onboardingNoIncomeCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay categorías de ingreso.'**
+  String get onboardingNoIncomeCategories;
+
+  /// No description provided for @onboardingExpectedIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso esperado'**
+  String get onboardingExpectedIncome;
+
+  /// No description provided for @onboardingFixedExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos fijos'**
+  String get onboardingFixedExpenses;
+
+  /// No description provided for @onboardingVariableExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos variables'**
+  String get onboardingVariableExpenses;
+
+  /// No description provided for @onboardingProjectedSavings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro proyectado'**
+  String get onboardingProjectedSavings;
+
+  /// No description provided for @onboardingMessagingIdentity.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono o usuario de Telegram'**
+  String get onboardingMessagingIdentity;
+
+  /// No description provided for @onboardingRequestOtpWhatsApp.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitar OTP de WhatsApp'**
+  String get onboardingRequestOtpWhatsApp;
+
+  /// No description provided for @onboardingRequestOtpTelegram.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitar OTP de Telegram'**
+  String get onboardingRequestOtpTelegram;
+
+  /// No description provided for @onboardingOtpCode.
+  ///
+  /// In es, this message translates to:
+  /// **'Código OTP'**
+  String get onboardingOtpCode;
+
+  /// No description provided for @onboardingVerifyWhatsApp.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificar WhatsApp'**
+  String get onboardingVerifyWhatsApp;
+
+  /// No description provided for @onboardingVerifyTelegram.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificar Telegram'**
+  String get onboardingVerifyTelegram;
+
+  /// No description provided for @onboardingRemindMeLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordármelo después'**
+  String get onboardingRemindMeLater;
+
+  /// No description provided for @onboardingContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get onboardingContinue;
+
+  /// No description provided for @onboardingLocaleSpanishMx.
+  ///
+  /// In es, this message translates to:
+  /// **'Español (México)'**
+  String get onboardingLocaleSpanishMx;
+
+  /// No description provided for @onboardingLocaleEnglishUs.
+  ///
+  /// In es, this message translates to:
+  /// **'Inglés (EE. UU.)'**
+  String get onboardingLocaleEnglishUs;
+
+  /// No description provided for @onboardingTimezoneMexicoSoutheast.
+  ///
+  /// In es, this message translates to:
+  /// **'México — Zona Sureste (UTC−5)'**
+  String get onboardingTimezoneMexicoSoutheast;
+
+  /// No description provided for @onboardingTimezoneMexicoCentral.
+  ///
+  /// In es, this message translates to:
+  /// **'México — Zona Centro (UTC−6)'**
+  String get onboardingTimezoneMexicoCentral;
+
+  /// No description provided for @onboardingTimezoneMexicoPacific.
+  ///
+  /// In es, this message translates to:
+  /// **'México — Zona Pacífico (UTC−7)'**
+  String get onboardingTimezoneMexicoPacific;
+
+  /// No description provided for @onboardingTimezoneMexicoNorthwest.
+  ///
+  /// In es, this message translates to:
+  /// **'México — Zona Noroeste (UTC−8)'**
+  String get onboardingTimezoneMexicoNorthwest;
+
+  /// No description provided for @onboardingTimezoneUsPacific.
+  ///
+  /// In es, this message translates to:
+  /// **'Estados Unidos — Pacífico'**
+  String get onboardingTimezoneUsPacific;
+
+  /// No description provided for @onboardingTimezoneUsMountain.
+  ///
+  /// In es, this message translates to:
+  /// **'Estados Unidos — Montaña'**
+  String get onboardingTimezoneUsMountain;
+
+  /// No description provided for @onboardingTimezoneUsEastern.
+  ///
+  /// In es, this message translates to:
+  /// **'Estados Unidos — Este'**
+  String get onboardingTimezoneUsEastern;
+
+  /// No description provided for @onboardingCategoryFixedExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos fijos'**
+  String get onboardingCategoryFixedExpenses;
+
+  /// No description provided for @onboardingFixedExpensesInfoTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Acerca de gastos fijos'**
+  String get onboardingFixedExpensesInfoTooltip;
+
+  /// No description provided for @onboardingFixedExpensesInfoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Por qué gastos fijos está bloqueado'**
+  String get onboardingFixedExpensesInfoTitle;
+
+  /// No description provided for @onboardingFixedExpensesInfoBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta categoría está reservada para gastos que se mantienen parecidos cada mes—renta, servicios, mínimos de préstamo, suscripciones y obligaciones similares.\n\nFinko la incluye para que puedas presupuestar esos montos aparte del gasto variable del día a día. Durante la incorporación no se puede renombrar ni eliminar; solo defines cuánto presupuestas en el siguiente paso.'**
+  String get onboardingFixedExpensesInfoBody;
+
+  /// No description provided for @onboardingGotIt.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get onboardingGotIt;
+
+  /// No description provided for @onboardingCategoryKindIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso'**
+  String get onboardingCategoryKindIncome;
+
+  /// No description provided for @onboardingCategoryKindExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get onboardingCategoryKindExpense;
+
+  /// No description provided for @onboardingPickIcon.
+  ///
+  /// In es, this message translates to:
+  /// **'Ícono'**
+  String get onboardingPickIcon;
+
+  /// No description provided for @onboardingSectionColor.
+  ///
+  /// In es, this message translates to:
+  /// **'Color'**
+  String get onboardingSectionColor;
+
+  /// No description provided for @onboardingCadenceWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Semanal'**
+  String get onboardingCadenceWeekly;
+
+  /// No description provided for @onboardingWeekdayLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Día de la semana'**
+  String get onboardingWeekdayLabel;
+
+  /// No description provided for @onboardingCategoriesSectionIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get onboardingCategoriesSectionIncome;
+
+  /// No description provided for @onboardingCategoriesSectionExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get onboardingCategoriesSectionExpense;
+
+  /// No description provided for @onboardingSaveCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar categoría'**
+  String get onboardingSaveCategory;
+
+  /// No description provided for @onboardingEditCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar categoría'**
+  String get onboardingEditCategory;
+
+  /// No description provided for @onboardingProjectedChartTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo suma tu presupuesto mensual'**
+  String get onboardingProjectedChartTitle;
+
+  /// No description provided for @onboardingSuggestedSalary.
+  ///
+  /// In es, this message translates to:
+  /// **'Salario'**
+  String get onboardingSuggestedSalary;
+
+  /// No description provided for @onboardingSuggestedFood.
+  ///
+  /// In es, this message translates to:
+  /// **'Comida'**
+  String get onboardingSuggestedFood;
+
+  /// No description provided for @onboardingSuggestedTransport.
+  ///
+  /// In es, this message translates to:
+  /// **'Transporte'**
+  String get onboardingSuggestedTransport;
+
+  /// No description provided for @onboardingAddSuggested.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir sugerida'**
+  String get onboardingAddSuggested;
+
+  /// No description provided for @onboardingAccountTypeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de cuenta'**
+  String get onboardingAccountTypeLabel;
+
+  /// No description provided for @onboardingCurrencyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda'**
+  String get onboardingCurrencyLabel;
+
+  /// No description provided for @onboardingStartingBalanceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo inicial'**
+  String get onboardingStartingBalanceLabel;
+
+  /// No description provided for @onboardingSaveAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cuenta'**
+  String get onboardingSaveAccount;
+
+  /// No description provided for @onboardingEditAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get onboardingEditAccount;
+
+  /// No description provided for @onboardingRecurringAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto (moneda principal)'**
+  String get onboardingRecurringAmountLabel;
+
+  /// No description provided for @onboardingDepositAccountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de depósito'**
+  String get onboardingDepositAccountLabel;
+
+  /// No description provided for @onboardingCadenceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Frecuencia'**
+  String get onboardingCadenceLabel;
+
+  /// No description provided for @onboardingCadenceMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensual'**
+  String get onboardingCadenceMonthly;
+
+  /// No description provided for @onboardingCadenceTwiceMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Dos veces al mes'**
+  String get onboardingCadenceTwiceMonthly;
+
+  /// No description provided for @onboardingCadenceBiweekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Quincenal (cada 14 días)'**
+  String get onboardingCadenceBiweekly;
+
+  /// No description provided for @onboardingDayOfMonthLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Día del mes (1–31)'**
+  String get onboardingDayOfMonthLabel;
+
+  /// No description provided for @onboardingSecondDayLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Segundo día (1–31)'**
+  String get onboardingSecondDayLabel;
+
+  /// No description provided for @onboardingHintInvalidMonthDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Si el día no existe en un mes, se usa el último día de ese mes.'**
+  String get onboardingHintInvalidMonthDay;
+
+  /// No description provided for @onboardingValidationProfileNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un nombre para mostrar.'**
+  String get onboardingValidationProfileNameRequired;
+
+  /// No description provided for @onboardingValidationProfileNameTooLong.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre para mostrar es demasiado largo.'**
+  String get onboardingValidationProfileNameTooLong;
+
+  /// No description provided for @onboardingValidationAccountsMinOne.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade al menos una cuenta.'**
+  String get onboardingValidationAccountsMinOne;
+
+  /// No description provided for @onboardingValidationAccountNameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada cuenta necesita un nombre.'**
+  String get onboardingValidationAccountNameRequired;
+
+  /// No description provided for @onboardingValidationCategoriesFixed.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta la categoría de gastos fijos.'**
+  String get onboardingValidationCategoriesFixed;
+
+  /// No description provided for @onboardingValidationRecurringAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Indica un monto recurrente mayor que cero.'**
+  String get onboardingValidationRecurringAmount;
+
+  /// No description provided for @onboardingValidationRecurringAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta de depósito para el ingreso recurrente.'**
+  String get onboardingValidationRecurringAccount;
+
+  /// No description provided for @onboardingValidationRecurringDaysTwice.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige ambos días de pago (días del mes) para ingreso quincenal.'**
+  String get onboardingValidationRecurringDaysTwice;
+
+  /// No description provided for @onboardingValidationRecurringDayMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un día del mes.'**
+  String get onboardingValidationRecurringDayMonthly;
+
+  /// No description provided for @onboardingValidationRecurringDayRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Usa días entre 1 y 31.'**
+  String get onboardingValidationRecurringDayRange;
+
+  /// No description provided for @onboardingValidationRecurringWeekday.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un día de la semana.'**
+  String get onboardingValidationRecurringWeekday;
+
+  /// No description provided for @onboardingValidationBudgetMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Indica un presupuesto para cada categoría.'**
+  String get onboardingValidationBudgetMissing;
+
+  /// No description provided for @onboardingMessagingWhatsAppHint.
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp: teléfono en E.164 (p. ej. +525512345678)'**
+  String get onboardingMessagingWhatsAppHint;
+
+  /// No description provided for @onboardingMessagingTelegramHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Telegram: @usuario'**
+  String get onboardingMessagingTelegramHint;
+
+  /// No description provided for @accountTypeLoan.
+  ///
+  /// In es, this message translates to:
+  /// **'Préstamo'**
+  String get accountTypeLoan;
+
+  /// No description provided for @accountTypeMortgage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hipoteca'**
+  String get accountTypeMortgage;
+
   /// No description provided for @themeLight.
   ///
   /// In es, this message translates to:
@@ -461,7 +1097,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountTypeChecking.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta corriente'**
+  /// **'Debito'**
   String get accountTypeChecking;
 
   /// No description provided for @accountTypeCreditCard.

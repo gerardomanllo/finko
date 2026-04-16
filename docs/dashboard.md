@@ -11,7 +11,7 @@
 ## UI — top
 
 - **Title** (screen title).
-- **Today’s date** — short format matching spec example: **`Tue, Apr 14`** (locale-aware formatting).
+- **Today’s date** — short format matching spec example: `**Tue, Apr 14`** (locale-aware formatting).
 
 ## UI — two-card carousel
 
@@ -29,7 +29,7 @@ Horizontal carousel with **exactly two** cards (order as designed):
 - Same header structure: label (e.g. monthly expense), large amount, period differential (this calendar month vs prior rule — stub if needed).
 - **Tap entire card** → `/spending`.
 
-**Reuse**: `Metric carousel card` + chart slot; see **`components-inventory.md`**.
+**Reuse**: `Metric carousel card` + chart slot; see `**components-inventory.md`**.
 
 ## UI — accounts accordion
 
@@ -38,8 +38,8 @@ Horizontal carousel with **exactly two** cards (order as designed):
   2. Credit cards
   3. **Net cash** — **aggregate only**, **not clickable**, not an expandable “account”
 - Small **spacer**
-  4. Savings
-  5. Investments
+  1. Savings
+  2. Investments
 
 Each row: **icon** (left), **label**, **amount** (right), **chevron/down** to expand.
 
@@ -86,7 +86,8 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
 
 ## Acceptance
 
-- [ ] Date format matches short weekday + month + day style.
-- [ ] Net cash is aggregate and non-clickable.
-- [ ] Upcoming sorted ascending; only future dates.
-- [ ] Recent capped at 5 with see more.
+- Date format matches short weekday + month + day style.
+- Net cash is aggregate and non-clickable.
+- Upcoming sorted ascending; only future dates.
+- Recent capped at 5 with see more.
+

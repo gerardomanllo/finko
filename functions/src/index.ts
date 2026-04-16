@@ -10,10 +10,18 @@ import {
 } from "./aggregateLedger";
 import { ingestDailyForexRates } from "./dailyForex";
 import { materializeDueUpcoming } from "./materialize";
+import { commitOnboarding } from "./onboardingCommit";
+import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
 
 initializeApp();
 
-export { ingestDailyForexRates, materializeDueUpcoming };
+export {
+  ingestDailyForexRates,
+  materializeDueUpcoming,
+  commitOnboarding,
+  requestMessagingOtp,
+  verifyMessagingOtp,
+};
 
 export const onLedgerTransactionWritten = onDocumentWritten(
   {

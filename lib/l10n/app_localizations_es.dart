@@ -57,6 +57,348 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onboardingNext => 'Siguiente';
 
   @override
+  String get onboardingBack => 'Atrás';
+
+  @override
+  String get onboardingCommit => 'Finalizar incorporación';
+
+  @override
+  String get onboardingCompleted => 'Incorporación completada.';
+
+  @override
+  String get onboardingStepProfileTitle => 'Perfil y preferencias';
+
+  @override
+  String get onboardingStepAccountsTitle => 'Cuentas';
+
+  @override
+  String get onboardingStepCategoriesTitle => 'Categorías';
+
+  @override
+  String get onboardingStepRecurringTitle => 'Ingresos recurrentes';
+
+  @override
+  String get onboardingStepBudgetsTitle => 'Presupuestos';
+
+  @override
+  String get onboardingStepProjectedTitle => 'Ahorro proyectado';
+
+  @override
+  String get onboardingStepMessagingTitle => 'Mensajería';
+
+  @override
+  String get onboardingStepReviewTitle => 'Revisar y finalizar';
+
+  @override
+  String get onboardingReviewIntro =>
+      'Revisa lo siguiente. Toca finalizar para guardar tu configuración en Finko.';
+
+  @override
+  String get onboardingReviewPreferences => 'Tus elecciones';
+
+  @override
+  String get onboardingReviewSectionAccounts => 'Cuentas';
+
+  @override
+  String get onboardingReviewSectionCategories => 'Categorías';
+
+  @override
+  String onboardingReviewCategoriesCounts(int incomeCount, int expenseCount) {
+    return 'Categorías de ingreso: $incomeCount · Categorías de gasto: $expenseCount';
+  }
+
+  @override
+  String get onboardingReviewSectionRecurring => 'Ingresos recurrentes';
+
+  @override
+  String get onboardingReviewSectionBudgets => 'Presupuestos mensuales';
+
+  @override
+  String get onboardingReviewSectionProjected => 'Ahorro mensual proyectado';
+
+  @override
+  String get onboardingReviewSectionMessaging => 'Mensajería';
+
+  @override
+  String get onboardingReviewMessagingNone =>
+      'Sin canales verificados (puedes conectar después).';
+
+  @override
+  String get onboardingReviewMessagingWhatsAppOk => 'WhatsApp verificado';
+
+  @override
+  String get onboardingReviewMessagingTelegramOk => 'Telegram verificado';
+
+  @override
+  String get onboardingReviewRecurringOff => 'No recurrente';
+
+  @override
+  String onboardingReviewBiweeklyDays(int day1, int day2) {
+    return 'Pagos: días $day1 y $day2';
+  }
+
+  @override
+  String get onboardingFirstPaydayLabel => 'Primer pago (día del mes)';
+
+  @override
+  String get onboardingSecondPaydayLabel => 'Segundo pago (día del mes)';
+
+  @override
+  String get onboardingStepCommitTitle => 'Guardando configuración';
+
+  @override
+  String get onboardingStepDoneTitle => 'Listo';
+
+  @override
+  String get onboardingAccountName => 'Nombre de la cuenta';
+
+  @override
+  String get onboardingAddAccount => 'Agregar cuenta';
+
+  @override
+  String get onboardingCategoryName => 'Nombre de la categoría';
+
+  @override
+  String get onboardingAddCategory => 'Agregar categoría';
+
+  @override
+  String get onboardingRecurringQuestion => 'Recurrente';
+
+  @override
+  String get onboardingNoIncomeCategories =>
+      'Aún no hay categorías de ingreso.';
+
+  @override
+  String get onboardingExpectedIncome => 'Ingreso esperado';
+
+  @override
+  String get onboardingFixedExpenses => 'Gastos fijos';
+
+  @override
+  String get onboardingVariableExpenses => 'Gastos variables';
+
+  @override
+  String get onboardingProjectedSavings => 'Ahorro proyectado';
+
+  @override
+  String get onboardingMessagingIdentity => 'Teléfono o usuario de Telegram';
+
+  @override
+  String get onboardingRequestOtpWhatsApp => 'Solicitar OTP de WhatsApp';
+
+  @override
+  String get onboardingRequestOtpTelegram => 'Solicitar OTP de Telegram';
+
+  @override
+  String get onboardingOtpCode => 'Código OTP';
+
+  @override
+  String get onboardingVerifyWhatsApp => 'Verificar WhatsApp';
+
+  @override
+  String get onboardingVerifyTelegram => 'Verificar Telegram';
+
+  @override
+  String get onboardingRemindMeLater => 'Recordármelo después';
+
+  @override
+  String get onboardingContinue => 'Continuar';
+
+  @override
+  String get onboardingLocaleSpanishMx => 'Español (México)';
+
+  @override
+  String get onboardingLocaleEnglishUs => 'Inglés (EE. UU.)';
+
+  @override
+  String get onboardingTimezoneMexicoSoutheast =>
+      'México — Zona Sureste (UTC−5)';
+
+  @override
+  String get onboardingTimezoneMexicoCentral => 'México — Zona Centro (UTC−6)';
+
+  @override
+  String get onboardingTimezoneMexicoPacific =>
+      'México — Zona Pacífico (UTC−7)';
+
+  @override
+  String get onboardingTimezoneMexicoNorthwest =>
+      'México — Zona Noroeste (UTC−8)';
+
+  @override
+  String get onboardingTimezoneUsPacific => 'Estados Unidos — Pacífico';
+
+  @override
+  String get onboardingTimezoneUsMountain => 'Estados Unidos — Montaña';
+
+  @override
+  String get onboardingTimezoneUsEastern => 'Estados Unidos — Este';
+
+  @override
+  String get onboardingCategoryFixedExpenses => 'Gastos fijos';
+
+  @override
+  String get onboardingFixedExpensesInfoTooltip => 'Acerca de gastos fijos';
+
+  @override
+  String get onboardingFixedExpensesInfoTitle =>
+      'Por qué gastos fijos está bloqueado';
+
+  @override
+  String get onboardingFixedExpensesInfoBody =>
+      'Esta categoría está reservada para gastos que se mantienen parecidos cada mes—renta, servicios, mínimos de préstamo, suscripciones y obligaciones similares.\n\nFinko la incluye para que puedas presupuestar esos montos aparte del gasto variable del día a día. Durante la incorporación no se puede renombrar ni eliminar; solo defines cuánto presupuestas en el siguiente paso.';
+
+  @override
+  String get onboardingGotIt => 'Entendido';
+
+  @override
+  String get onboardingCategoryKindIncome => 'Ingreso';
+
+  @override
+  String get onboardingCategoryKindExpense => 'Gasto';
+
+  @override
+  String get onboardingPickIcon => 'Ícono';
+
+  @override
+  String get onboardingSectionColor => 'Color';
+
+  @override
+  String get onboardingCadenceWeekly => 'Semanal';
+
+  @override
+  String get onboardingWeekdayLabel => 'Día de la semana';
+
+  @override
+  String get onboardingCategoriesSectionIncome => 'Ingresos';
+
+  @override
+  String get onboardingCategoriesSectionExpense => 'Gastos';
+
+  @override
+  String get onboardingSaveCategory => 'Guardar categoría';
+
+  @override
+  String get onboardingEditCategory => 'Editar categoría';
+
+  @override
+  String get onboardingProjectedChartTitle =>
+      'Cómo suma tu presupuesto mensual';
+
+  @override
+  String get onboardingSuggestedSalary => 'Salario';
+
+  @override
+  String get onboardingSuggestedFood => 'Comida';
+
+  @override
+  String get onboardingSuggestedTransport => 'Transporte';
+
+  @override
+  String get onboardingAddSuggested => 'Añadir sugerida';
+
+  @override
+  String get onboardingAccountTypeLabel => 'Tipo de cuenta';
+
+  @override
+  String get onboardingCurrencyLabel => 'Moneda';
+
+  @override
+  String get onboardingStartingBalanceLabel => 'Saldo inicial';
+
+  @override
+  String get onboardingSaveAccount => 'Guardar cuenta';
+
+  @override
+  String get onboardingEditAccount => 'Editar';
+
+  @override
+  String get onboardingRecurringAmountLabel => 'Monto (moneda principal)';
+
+  @override
+  String get onboardingDepositAccountLabel => 'Cuenta de depósito';
+
+  @override
+  String get onboardingCadenceLabel => 'Frecuencia';
+
+  @override
+  String get onboardingCadenceMonthly => 'Mensual';
+
+  @override
+  String get onboardingCadenceTwiceMonthly => 'Dos veces al mes';
+
+  @override
+  String get onboardingCadenceBiweekly => 'Quincenal (cada 14 días)';
+
+  @override
+  String get onboardingDayOfMonthLabel => 'Día del mes (1–31)';
+
+  @override
+  String get onboardingSecondDayLabel => 'Segundo día (1–31)';
+
+  @override
+  String get onboardingHintInvalidMonthDay =>
+      'Si el día no existe en un mes, se usa el último día de ese mes.';
+
+  @override
+  String get onboardingValidationProfileNameRequired =>
+      'Escribe un nombre para mostrar.';
+
+  @override
+  String get onboardingValidationProfileNameTooLong =>
+      'El nombre para mostrar es demasiado largo.';
+
+  @override
+  String get onboardingValidationAccountsMinOne => 'Añade al menos una cuenta.';
+
+  @override
+  String get onboardingValidationAccountNameRequired =>
+      'Cada cuenta necesita un nombre.';
+
+  @override
+  String get onboardingValidationCategoriesFixed =>
+      'Falta la categoría de gastos fijos.';
+
+  @override
+  String get onboardingValidationRecurringAmount =>
+      'Indica un monto recurrente mayor que cero.';
+
+  @override
+  String get onboardingValidationRecurringAccount =>
+      'Elige una cuenta de depósito para el ingreso recurrente.';
+
+  @override
+  String get onboardingValidationRecurringDaysTwice =>
+      'Elige ambos días de pago (días del mes) para ingreso quincenal.';
+
+  @override
+  String get onboardingValidationRecurringDayMonthly => 'Elige un día del mes.';
+
+  @override
+  String get onboardingValidationRecurringDayRange => 'Usa días entre 1 y 31.';
+
+  @override
+  String get onboardingValidationRecurringWeekday =>
+      'Elige un día de la semana.';
+
+  @override
+  String get onboardingValidationBudgetMissing =>
+      'Indica un presupuesto para cada categoría.';
+
+  @override
+  String get onboardingMessagingWhatsAppHint =>
+      'WhatsApp: teléfono en E.164 (p. ej. +525512345678)';
+
+  @override
+  String get onboardingMessagingTelegramHint => 'Telegram: @usuario';
+
+  @override
+  String get accountTypeLoan => 'Préstamo';
+
+  @override
+  String get accountTypeMortgage => 'Hipoteca';
+
+  @override
   String get themeLight => 'Claro';
 
   @override
@@ -195,7 +537,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get metricDeltaStubDown => '-1,0 %';
 
   @override
-  String get accountTypeChecking => 'Cuenta corriente';
+  String get accountTypeChecking => 'Debito';
 
   @override
   String get accountTypeCreditCard => 'Tarjetas de crédito';

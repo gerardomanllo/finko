@@ -9,6 +9,12 @@ function addOneMonthYmd(ymd: string): string {
   return dt.toISOString().slice(0, 10);
 }
 
+function addDaysYmd(ymd: string, days: number): string {
+  const [y, m, d] = ymd.split("-").map((x) => Number(x));
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  return dt.toISOString().slice(0, 10);
+}
+
 export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (request) => {
   const db = getFirestore();
   if (!request.auth?.uid) {
@@ -112,10 +118,18 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
     }
 
     const cadence = u.cadence as string | undefined;
-    if (cadence === "monthly" || cadence === "twiceMonthly" || cadence === "biweekly") {
-      const next = addOneMonthYmd(u.transactionDate as string);
+    const ymd = u.transactionDate as string;
+    let nextDate: string | null = null;
+    if (cadence === "monthly" || cadence === "twiceMonthly") {
+      nextDate = addOneMonthYmd(ymd);
+    } else if (cadence === "biweekly") {
+      nextDate = addDaysYmd(ymd, 14);
+    } else if (cadence === "weekly") {
+      nextDate = addDaysYmd(ymd, 7);
+    }
+    if (nextDate != null) {
       batch.update(doc.ref, {
-        transactionDate: next,
+        transactionDate: nextDate,
         updatedAt: FieldValue.serverTimestamp(),
       });
       ops++;

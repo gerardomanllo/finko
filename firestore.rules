@@ -18,7 +18,21 @@ service cloud.firestore {
 
     match /users/{userId} {
       // Profile document only (not subcollections).
-      allow read, write: if signedIn(userId);
+      allow read: if signedIn(userId);
+      allow create, update: if signedIn(userId)
+        && !request.resource.data.diff(resource.data).changedKeys().hasAny([
+          'onboardingCompleted',
+          'integrations'
+        ]);
+      allow delete: if false;
+
+      match /_onboardingCommits/{requestId} {
+        allow read, write: if false;
+      }
+
+      match /_otpChallenges/{challengeId} {
+        allow read, write: if false;
+      }
 
       match /monthlyTotals/{monthId} {
         allow read: if signedIn(userId);

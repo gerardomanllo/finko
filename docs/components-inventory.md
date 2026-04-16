@@ -63,6 +63,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Social / provider auth buttons** | Google, Apple per design system | Login |
 | **Email/password form** | Fields + submit | Login |
 | **Settings row / section** | Theme toggle; external service CTAs | Settings |
+| **Onboarding typewriter header** | Step title animation with reduced-motion + semantics-safe label | Onboarding |
+| **Onboarding wizard progress** | Global 9-step progress bar + nav controls | Onboarding |
 
 ## Calendar (recurring)
 
