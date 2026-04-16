@@ -13,6 +13,7 @@ import { ingestDailyForexRates } from "./dailyForex";
 import { materializeDueUpcoming } from "./materialize";
 import { commitOnboarding } from "./onboardingCommit";
 import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
+import { reconcileDeferredLedgerForUser } from "./reconcileDeferredLedgerCallable";
 
 initializeApp();
 
@@ -22,6 +23,7 @@ export {
   commitOnboarding,
   requestMessagingOtp,
   verifyMessagingOtp,
+  reconcileDeferredLedgerForUser,
 };
 
 export const onLedgerTransactionWritten = onDocumentWritten(
@@ -61,15 +63,26 @@ export const onLedgerTransactionWritten = onDocumentWritten(
       if (!before?.exists && after?.exists) {
         await runLedgerAggregate(db, uid, eventId, txDataToPayload(after.data()!), 1, after.ref);
       } else if (before?.exists && !after?.exists) {
-        await runLedgerAggregate(db, uid, eventId, txDataToPayload(before.data()!), -1);
+        const bd = before.data() as Record<string, unknown>;
+        await runLedgerAggregate(
+          db,
+          uid,
+          eventId,
+          txDataToPayload(bd),
+          -1,
+          undefined,
+          { beforeLedgerSnapshot: bd }
+        );
       } else if (before?.exists && after?.exists) {
+        const bd = before.data() as Record<string, unknown>;
         await runLedgerAggregateUpdate(
           db,
           uid,
           eventId,
-          txDataToPayload(before.data()!),
+          txDataToPayload(bd),
           txDataToPayload(after.data()!),
-          after.ref
+          after.ref,
+          { beforeLedgerSnapshot: bd }
         );
       }
     } catch (e) {

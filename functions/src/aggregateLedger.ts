@@ -2,16 +2,17 @@ import type { DocumentData, DocumentReference, Firestore } from "firebase-admin/
 import { FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 import { findForexDocWalkBack, foreignMinorToMainMinor } from "./forex";
+import {
+  applyAccountDelta,
+  applyMonthDelta as applyMonthDeltaPure,
+  computeLedgerUpdateOps,
+  monthKeyFromYmd,
+  type AggregateOp,
+  type TxPayload,
+} from "./ledgerAggregateMath";
+import { getUserTodayYmd, isLedgerDateEffectiveForAggregate } from "./userToday";
 
-export type TxPayload = {
-  transactionDate: string;
-  amountMinor: number;
-  direction: "in" | "out";
-  currency: string;
-  type: string;
-  accountId: string;
-  categoryId?: string;
-};
+export type { TxPayload } from "./ledgerAggregateMath";
 
 /** Ignore these keys when deciding if a transaction write should skip the ledger trigger. */
 const SKIP_TRIGGER_COMPARE_KEYS = new Set([
@@ -20,6 +21,8 @@ const SKIP_TRIGGER_COMPARE_KEYS = new Set([
   "updatedAt",
   /** Written by aggregate after a successful apply; must not re-trigger aggregation. */
   "aggregateApplied",
+  /** Server-owned: future-dated row pending inclusion in balances (see `reconcileDeferredLedgerForUser`). */
+  "aggregateDeferred",
   /** Client-only flags used to re-run catch-up aggregation. */
   "reload",
   "aggregateReload",
@@ -88,14 +91,6 @@ export function isAuditOnlyTransactionUpdate(
   return true;
 }
 
-function monthKeyFromYmd(yyyyMmDd: string): string {
-  return yyyyMmDd.slice(0, 7);
-}
-
-function dayKeyFromYmd(yyyyMmDd: string): string {
-  return yyyyMmDd.slice(8, 10);
-}
-
 function defaultMonthly(yearMonth: string) {
   return {
     yearMonth,
@@ -106,63 +101,6 @@ function defaultMonthly(yearMonth: string) {
     days: {} as Record<string, Record<string, unknown>>,
     updatedAt: FieldValue.serverTimestamp(),
   };
-}
-
-function mutDay(
-  days: Record<string, Record<string, unknown>>,
-  dd: string,
-  field: "incomeMinorMain" | "expenseMinorMain",
-  delta: number
-) {
-  if (!days[dd]) days[dd] = {};
-  const cur = (days[dd][field] as number | undefined) ?? 0;
-  days[dd][field] = cur + delta;
-}
-
-function ensureDay(days: Record<string, Record<string, unknown>>, dd: string) {
-  if (!days[dd]) days[dd] = {};
-}
-
-function netWorthAt(
-  days: Record<string, Record<string, unknown>>,
-  dd: string
-): number | undefined {
-  const value = days[dd]?.netWorthEodMinorMain;
-  return typeof value === "number" ? value : undefined;
-}
-
-function setNetWorth(
-  days: Record<string, Record<string, unknown>>,
-  dd: string,
-  value: number
-) {
-  ensureDay(days, dd);
-  days[dd].netWorthEodMinorMain = value;
-}
-
-/**
- * Applies a net-worth delta to day `dd` and carries it forward through any
- * existing later day points in the same month.
- */
-function applyNetWorthDelta(
-  days: Record<string, Record<string, unknown>>,
-  dd: string,
-  delta: number
-) {
-  const sortedKeys = Object.keys(days)
-    .filter((k) => /^\d{2}$/.test(k))
-    .sort((a, b) => a.localeCompare(b));
-  const prev = [...sortedKeys].reverse().find((k) => k < dd);
-  const base = prev ? (netWorthAt(days, prev) ?? 0) : 0;
-  const current = netWorthAt(days, dd) ?? base;
-  setNetWorth(days, dd, current + delta);
-
-  for (const key of sortedKeys) {
-    if (key <= dd) continue;
-    const value = netWorthAt(days, key);
-    if (value == null) continue;
-    setNetWorth(days, key, value + delta);
-  }
 }
 
 function toPayload(raw: DocumentData): TxPayload {
@@ -192,6 +130,30 @@ export function txDataToPayload(data: DocumentData): TxPayload {
   return toPayload(data);
 }
 
+/**
+ * True if this ledger row’s amounts should already be reflected in **`accounts`** /
+ * **`monthlyTotals`** (so delete / −before may reverse them).
+ *
+ * - **`aggregateDeferred: true`** — never applied (future-dated path); do not reverse money.
+ * - **`aggregateApplied: false`** — Functions did not finish applying; do not reverse (avoids
+ *   corrupting **`accounts`** when **`monthlyTotals`** never got the +1 either).
+ * - **`aggregateApplied: true`** or **omitted** (legacy) — treat as applied for reversal.
+ */
+export function snapshotBalancesIncludedThisRow(data: Record<string, unknown>): boolean {
+  if (data["aggregateDeferred"] === true) {
+    return false;
+  }
+  if (data["aggregateApplied"] === false) {
+    return false;
+  }
+  return true;
+}
+
+/** Pass the Firestore `before` snapshot for deletes and updates so reversals match reality. */
+export type LedgerAggregateSourceOptions = {
+  beforeLedgerSnapshot?: Record<string, unknown>;
+};
+
 async function computeAmountMain(
   db: Firestore,
   mainCurrency: string,
@@ -219,53 +181,6 @@ async function computeAmountMain(
     throw new Error(`Non-finite amountMain for tx on ${tx.transactionDate}`);
   }
   return main;
-}
-
-type AggregateOp = {
-  tx: TxPayload;
-  sign: 1 | -1;
-  amountMain: number;
-};
-
-function applyMonthDelta(
-  base: Record<string, unknown>,
-  tx: TxPayload,
-  sign: 1 | -1,
-  amountMain: number
-): void {
-  const dd = dayKeyFromYmd(tx.transactionDate);
-  const income = (base.incomeMinorMain as number) ?? 0;
-  const expense = (base.expenseMinorMain as number) ?? 0;
-  const byCat =
-    (base.byCategoryMinorMain as Record<string, number> | undefined) ?? {};
-  const days =
-    (base.days as Record<string, Record<string, unknown>> | undefined) ?? {};
-
-  const flow =
-    tx.direction === "in"
-      ? { inc: amountMain, exp: 0 }
-      : { inc: 0, exp: amountMain };
-  const netWorthDelta = sign * (tx.direction === "in" ? amountMain : -amountMain);
-
-  base.incomeMinorMain = income + sign * flow.inc;
-  base.expenseMinorMain = expense + sign * flow.exp;
-
-  if (tx.categoryId) {
-    const prev = byCat[tx.categoryId] ?? 0;
-    const catDelta = tx.direction === "in" ? sign * amountMain : -sign * amountMain;
-    byCat[tx.categoryId] = prev + catDelta;
-  }
-  base.byCategoryMinorMain = byCat;
-
-  if (flow.inc !== 0 && Number.isFinite(flow.inc)) {
-    mutDay(days, dd, "incomeMinorMain", sign * flow.inc);
-  }
-  if (flow.exp !== 0 && Number.isFinite(flow.exp)) {
-    mutDay(days, dd, "expenseMinorMain", sign * flow.exp);
-  }
-  applyNetWorthDelta(days, dd, netWorthDelta);
-  base.days = days;
-  base.updatedAt = FieldValue.serverTimestamp();
 }
 
 async function runAggregateOpsTransaction(
@@ -332,15 +247,14 @@ async function runAggregateOpsTransaction(
 
     for (const op of ops) {
       const { tx, sign, amountMain } = op;
-      const dirSign = tx.direction === "in" ? 1 : -1;
       const account = accountData.get(tx.accountId)!;
-      account.balanceMinor += sign * dirSign * tx.amountMinor;
-      account.balanceMinorMain += sign * dirSign * amountMain;
+      applyAccountDelta(account, tx, sign, amountMain);
 
       if (tx.type !== "transferLeg") {
         const ym = monthKeyFromYmd(tx.transactionDate);
         const month = monthData.get(ym)!;
-        applyMonthDelta(month.base, tx, sign, amountMain);
+        applyMonthDeltaPure(month.base, tx, sign, amountMain);
+        month.base.updatedAt = FieldValue.serverTimestamp();
       }
     }
 
@@ -361,6 +275,38 @@ async function runAggregateOpsTransaction(
         ledgerTxRef,
         {
           aggregateApplied: true,
+          aggregateDeferred: FieldValue.delete(),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+  });
+}
+
+/**
+ * Future-dated row: no balance/monthly changes yet; record idempotency and
+ * `aggregateDeferred` so a scheduled job can apply when the posting date arrives.
+ */
+async function markLedgerDeferredNoMoney(
+  db: Firestore,
+  uid: string,
+  eventId: string,
+  ledgerTxRef?: DocumentReference
+): Promise<void> {
+  await db.runTransaction(async (t) => {
+    const idemRef = db.doc(`users/${uid}/_processedAggregateEvents/${eventId}`);
+    const idemSnap = await t.get(idemRef);
+    if (idemSnap.exists) {
+      return;
+    }
+    t.create(idemRef, { createdAt: FieldValue.serverTimestamp() });
+    if (ledgerTxRef) {
+      t.set(
+        ledgerTxRef,
+        {
+          aggregateApplied: true,
+          aggregateDeferred: true,
           updatedAt: FieldValue.serverTimestamp(),
         },
         { merge: true }
@@ -372,6 +318,9 @@ async function runAggregateOpsTransaction(
 /**
  * One idempotent aggregate pass for create/delete.
  * `sign` +1 applies the row; -1 reverses it.
+ *
+ * Rows with `transactionDate` **after** the user’s calendar today (`users/{uid}.timezone`,
+ * else system default) do not change balances or `monthlyTotals`; idempotency is still recorded.
  */
 export async function runLedgerAggregate(
   db: Firestore,
@@ -379,10 +328,27 @@ export async function runLedgerAggregate(
   eventId: string,
   tx: TxPayload,
   sign: 1 | -1,
-  ledgerTxRef?: DocumentReference
+  ledgerTxRef?: DocumentReference,
+  sourceOpts?: LedgerAggregateSourceOptions
 ): Promise<void> {
   const userSnap = await db.doc(`users/${uid}`).get();
-  const mainCurrency = (userSnap.data()?.mainCurrency as string) ?? "MXN";
+  const userData = userSnap.data() as Record<string, unknown> | undefined;
+  const mainCurrency = (userData?.mainCurrency as string) ?? "MXN";
+  const todayYmd = getUserTodayYmd(userData);
+
+  // Delete: only reverse money if the row was actually applied to balances/monthly.
+  if (sign === -1 && sourceOpts?.beforeLedgerSnapshot) {
+    if (!snapshotBalancesIncludedThisRow(sourceOpts.beforeLedgerSnapshot)) {
+      await markLedgerDeferredNoMoney(db, uid, eventId);
+      return;
+    }
+  }
+
+  if (!isLedgerDateEffectiveForAggregate(tx.transactionDate, todayYmd)) {
+    await markLedgerDeferredNoMoney(db, uid, eventId, ledgerTxRef);
+    return;
+  }
+
   const amountMain = await computeAmountMain(db, mainCurrency, tx);
   await runAggregateOpsTransaction(
     db,
@@ -400,20 +366,49 @@ export async function runLedgerAggregateUpdate(
   eventId: string,
   beforeTx: TxPayload,
   afterTx: TxPayload,
-  ledgerTxRef?: DocumentReference
+  ledgerTxRef?: DocumentReference,
+  sourceOpts?: LedgerAggregateSourceOptions
 ): Promise<void> {
   const userSnap = await db.doc(`users/${uid}`).get();
-  const mainCurrency = (userSnap.data()?.mainCurrency as string) ?? "MXN";
+  const userData = userSnap.data() as Record<string, unknown> | undefined;
+  const mainCurrency = (userData?.mainCurrency as string) ?? "MXN";
+  const todayYmd = getUserTodayYmd(userData);
+
+  const beforeIn = isLedgerDateEffectiveForAggregate(beforeTx.transactionDate, todayYmd);
+  const afterIn = isLedgerDateEffectiveForAggregate(afterTx.transactionDate, todayYmd);
+
   const beforeMain = await computeAmountMain(db, mainCurrency, beforeTx);
   const afterMain = await computeAmountMain(db, mainCurrency, afterTx);
-  await runAggregateOpsTransaction(
-    db,
-    uid,
-    eventId,
-    [
-      { tx: beforeTx, sign: -1, amountMain: beforeMain },
-      { tx: afterTx, sign: 1, amountMain: afterMain },
-    ],
-    ledgerTxRef
+
+  const beforeSnap = sourceOpts?.beforeLedgerSnapshot;
+  const beforeMoneyIncluded =
+      beforeSnap == null || snapshotBalancesIncludedThisRow(beforeSnap);
+
+  const ops = computeLedgerUpdateOps(
+    beforeIn,
+    afterIn,
+    beforeMoneyIncluded,
+    beforeTx,
+    afterTx,
+    beforeMain,
+    afterMain
   );
+
+  if (ops.length === 0) {
+    await markLedgerDeferredNoMoney(db, uid, eventId, ledgerTxRef);
+    return;
+  }
+
+  await runAggregateOpsTransaction(db, uid, eventId, ops, ledgerTxRef);
+
+  if (ledgerTxRef && !afterIn) {
+    await ledgerTxRef.set(
+      {
+        aggregateApplied: true,
+        aggregateDeferred: true,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
 }

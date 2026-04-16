@@ -9,7 +9,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "lint": "eslint --ext .ts src/",
-    "test": "npm run build && node -e \"const { foreignMinorToMainMinor, convertMinorBetweenUsdMxnEur } = require('./lib/forex.js'); const assert = require('assert'); const r = { USD: 0.05, EUR: 0.048 }; assert.strictEqual(foreignMinorToMainMinor(10000,'USD','MXN',r), 200000); const eur = convertMinorBetweenUsdMxnEur(10000,'USD','EUR',r); assert.strictEqual(eur, 9600); assert.strictEqual(convertMinorBetweenUsdMxnEur(eur,'EUR','USD',r), 10000); console.log('forex ok');\" && node -e \"const { computeNextTransactionDate, resolveAsOfYmd } = require('./lib/scheduleNext.js'); const assert = require('assert'); assert.strictEqual(computeNextTransactionDate('2026-01-15', { cadence: 'twiceMonthly', daysOfMonth: [1,15], weekday: null }), '2026-02-01'); assert.strictEqual(computeNextTransactionDate('2026-01-31', { cadence: 'monthly', daysOfMonth: [31], weekday: null }), '2026-02-28'); assert.strictEqual(typeof resolveAsOfYmd({ timezone: 'America/Mexico_City' }), 'string'); console.log('schedule ok');\""
+    "test": "jest",
+    "test:ci": "npm run build && npm test"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",
@@ -17,7 +18,10 @@
     "luxon": "^3.5.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/luxon": "^3.4.2",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.7.2"
   }
 }

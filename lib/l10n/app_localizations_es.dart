@@ -495,11 +495,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get openShellMenu => 'Abrir menú';
 
   @override
-  String get newTransactionSheetTitle => 'Nuevo movimiento';
+  String get newTransactionSheetTitle => 'Nueva transacción';
 
   @override
-  String get newTransactionSheetBody =>
-      'Aquí aparecerá el flujo para crear transacciones.';
+  String get newTransactionSheetBody => 'Añade una transacción';
 
   @override
   String get drawerCategories => 'Categorías';
@@ -597,14 +596,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get emptyNoAccounts => 'Aún no hay cuentas.';
 
   @override
-  String get emptyNoTransactions => 'Aún no hay movimientos.';
+  String get emptyNoTransactions => 'Aún no hay transacciones.';
 
   @override
-  String get emptyNoUpcoming => 'No hay próximos movimientos.';
+  String get emptyNoUpcoming => 'No hay próximas transacciones.';
 
   @override
   String get emptyNoMonthlyTotals =>
-      'Aún no hay totales del mes — añade un movimiento.';
+      'Aún no hay totales del mes — añade un transacción.';
 
   @override
   String get spendingPeriodWeek => 'Semana';
@@ -633,10 +632,160 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get spendingTopTransactions => 'Principales movimientos';
+  String get spendingTopTransactions => 'Gastos más grandes';
 
   @override
-  String get transactionsSearchHint => 'Buscar movimientos';
+  String get transactionsSearchHint => 'Buscar transacciones';
+
+  @override
+  String get transactionsFilterAll => 'Todos los tipos';
+
+  @override
+  String get transactionsFilterStandard => 'Estándar';
+
+  @override
+  String get transactionsFilterTransfer => 'Transferencia';
+
+  @override
+  String get transactionsFilterAdjustment => 'Ajuste';
+
+  @override
+  String get transactionsFilterSheetTitle => 'Filtrar por tipo';
+
+  @override
+  String get transactionsSearchSearchingHistory =>
+      'No aparece en lo cargado. Buscando en todo el historial…';
+
+  @override
+  String get transactionsSearchHistoryLimitReached =>
+      'Sin coincidencias en esta parte del historial. Prueba un término más específico.';
+
+  @override
+  String get transactionsSearchNoMatches =>
+      'No hay transacciones que coincidan.';
+
+  @override
+  String get transactionEditorSheetEditTitle => 'Editar transacción';
+
+  @override
+  String get transactionEditorFieldDate => 'Fecha';
+
+  @override
+  String get transactionEditorFieldAmount => 'Importe';
+
+  @override
+  String get transactionEditorFieldDirection => 'Dirección';
+
+  @override
+  String get transactionEditorDirectionIn => 'Ingreso';
+
+  @override
+  String get transactionEditorDirectionOut => 'Gasto';
+
+  @override
+  String get transactionEditorEntryTransfer => 'Transferencia';
+
+  @override
+  String get transactionEditorFieldFromAccount => 'Cuenta origen';
+
+  @override
+  String get transactionEditorFieldToAccount => 'Cuenta destino';
+
+  @override
+  String get transactionEditorValidationFromAccount =>
+      'Elige la cuenta desde la que sale el dinero.';
+
+  @override
+  String get transactionEditorValidationToAccount =>
+      'Elige la cuenta a la que entra el dinero.';
+
+  @override
+  String get transactionEditorValidationTransferSameCurrency =>
+      'Ambas cuentas deben tener la misma moneda para una transferencia.';
+
+  @override
+  String get transactionEditorValidationTransferDistinctAccounts =>
+      'Elige dos cuentas distintas.';
+
+  @override
+  String get transactionEditorFieldAccount => 'Cuenta';
+
+  @override
+  String get transactionEditorFieldCategory => 'Categoría';
+
+  @override
+  String get transactionEditorCategoryNone => 'Ninguna';
+
+  @override
+  String get transactionEditorCategoryHint => 'Elige una categoría';
+
+  @override
+  String get transactionEditorValidationCategory => 'Elige una categoría.';
+
+  @override
+  String get transactionEditorValidationCategoryEmpty =>
+      'Añade al menos una categoría de ingreso o gasto (por ejemplo desde el menú).';
+
+  @override
+  String get transactionEditorFieldType => 'Tipo';
+
+  @override
+  String get transactionEditorTypeStandard => 'Estándar';
+
+  @override
+  String get transactionEditorTypeAdjustment => 'Ajuste';
+
+  @override
+  String get transactionEditorTypeTransferLeg => 'Tramo de transferencia';
+
+  @override
+  String get transactionEditorFieldMemo => 'Nota';
+
+  @override
+  String get transactionEditorFieldTransferGroupId =>
+      'ID de grupo de transferencia';
+
+  @override
+  String get transactionEditorFieldLinkedTransactionId =>
+      'ID de transacción vinculado';
+
+  @override
+  String get transactionEditorSave => 'Guardar';
+
+  @override
+  String get transactionEditorDelete => 'Eliminar transacción';
+
+  @override
+  String get transactionEditorValidationAmount =>
+      'Introduce un importe válido mayor que cero.';
+
+  @override
+  String get transactionEditorValidationAccount => 'Elige una cuenta.';
+
+  @override
+  String get transactionEditorValidationDate =>
+      'Introduce una fecha válida (AAAA-MM-DD).';
+
+  @override
+  String get transactionEditorDeleteConfirmTitle => '¿Eliminar transacción?';
+
+  @override
+  String get transactionEditorDeleteConfirmBody =>
+      'Esta acción no se puede deshacer.';
+
+  @override
+  String get transactionEditorCancel => 'Cancelar';
+
+  @override
+  String get transactionEditorDeleteConfirm => 'Eliminar';
+
+  @override
+  String get transactionEditorErrorSave =>
+      'No se pudo guardar. Inténtalo de nuevo.';
+
+  @override
+  String get transactionEditorErrorDelete =>
+      'No se pudo eliminar. Inténtalo de nuevo.';
 
   @override
   String get budgetsThisMonth => 'Este mes';

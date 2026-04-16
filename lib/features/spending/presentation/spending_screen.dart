@@ -12,6 +12,7 @@ import '../../../widgets/charts/finko_donut_ring_chart.dart';
 import '../../../widgets/layout/pill_toggle_group.dart';
 import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
 /// Spending analysis — period pills, mini cards, donut, accordion, top tx.
@@ -189,6 +190,10 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                       title: t.memo ?? t.type.wireName,
                       subtitle: t.transactionDate,
                       amountText: _tx(context, t),
+                      onTap: () => LedgerTransactionEditorSheet.show(
+                        context,
+                        transaction: t,
+                      ),
                     ),
                 ],
               );

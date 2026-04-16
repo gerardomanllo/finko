@@ -10,9 +10,11 @@ import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/models/monthly_totals.dart';
 import '../../../core/data/models/upcoming_transaction.dart';
+import '../../../core/data/monthly_totals_as_of_date.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/locale/app_environment_provider.dart';
+import '../../../core/upcoming/deferred_ledger_reconcile_provider.dart';
 import '../../../core/upcoming/materialize_upcoming_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
@@ -22,6 +24,7 @@ import '../../../widgets/metrics/finko_net_worth_sparkline.dart';
 import '../../../widgets/metrics/finko_two_metric_carousel.dart';
 import '../../../widgets/transactions/finko_paper_see_more_list.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../../widgets/transactions/finko_upcoming_transaction_strip.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
@@ -61,7 +64,11 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  static String _daysUntilLabel(AppLocalizations l10n, String yyyyMmDd) {
+  static String _daysUntilLabel(
+    AppLocalizations l10n,
+    String yyyyMmDd,
+    String todayYyyyMmDd,
+  ) {
     final parts = yyyyMmDd.split('-');
     if (parts.length != 3) return '';
     final target = DateTime(
@@ -69,8 +76,13 @@ class DashboardScreen extends ConsumerWidget {
       int.parse(parts[1]),
       int.parse(parts[2]),
     );
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final tp = todayYyyyMmDd.split('-');
+    if (tp.length != 3) return '';
+    final today = DateTime(
+      int.parse(tp[0]),
+      int.parse(tp[1]),
+      int.parse(tp[2]),
+    );
     final d = target.difference(today).inDays;
     if (d <= 0) return l10n.upcomingToday;
     if (d == 1) return l10n.upcomingTomorrow;
@@ -90,9 +102,11 @@ class DashboardScreen extends ConsumerWidget {
 
   static List<({String label, double ringProgress})> _topCategoryRings(
     MonthlyTotals? m,
+    String throughYyyyMmDd,
   ) {
     if (m == null) return [];
-    final sorted = m.byCategoryMinorMain.entries.toList()
+    final byCat = byCategoryMinorMainThroughDate(m, throughYyyyMmDd);
+    final sorted = byCat.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final top = sorted.take(6).toList();
     if (top.isEmpty) return [];
@@ -125,9 +139,14 @@ class DashboardScreen extends ConsumerWidget {
 
     final accountsAsync = ref.watch(accountsStreamProvider);
     final userProfileAsync = ref.watch(userProfileStreamProvider);
-    final monthAsync = ref.watch(currentMonthTotalsStreamProvider);
+    final monthAsync = ref.watch(
+      monthlyTotalsForMonthStreamProvider(
+        ref.watch(dashboardYearMonthProvider),
+      ),
+    );
     final recentAsync = ref.watch(recentTransactionsStreamProvider);
-    final upcomingAsync = ref.watch(upcomingTransactionsStreamProvider);
+    final upcomingAsync = ref.watch(dashboardUpcomingStripProvider);
+    final todayKey = ref.watch(todayYyyyMmDdProvider);
     final sparkline = ref.watch(netWorthSparklineSeriesProvider);
 
     final locale = Localizations.localeOf(context).toString();
@@ -161,12 +180,22 @@ class DashboardScreen extends ConsumerWidget {
             await ref
                 .read(materializeUpcomingServiceProvider)
                 .forceRefreshIfSignedIn(uid, timezone: timezone);
+            await ref
+                .read(deferredLedgerReconcileServiceProvider)
+                .forceReconcileIfSignedIn(uid, todayKey);
           }
           ref.invalidate(accountsStreamProvider);
           ref.invalidate(userProfileStreamProvider);
-          ref.invalidate(currentMonthTotalsStreamProvider);
+          ref.invalidate(
+            monthlyTotalsForMonthStreamProvider(
+              ref.read(dashboardYearMonthProvider),
+            ),
+          );
           ref.invalidate(recentTransactionsStreamProvider);
           ref.invalidate(upcomingTransactionsStreamProvider);
+          ref.invalidate(futureDatedLedgerTransactionsStreamProvider);
+          ref.invalidate(recurringRulesStreamProvider);
+          ref.invalidate(dashboardUpcomingStripProvider);
           ref.invalidate(netWorthSparklineSeriesProvider);
           await Future<void>.delayed(const Duration(milliseconds: 150));
         },
@@ -214,7 +243,11 @@ class DashboardScreen extends ConsumerWidget {
                 valueText: monthAsync.maybeWhen(
                   data: (m) => m == null
                       ? '—'
-                      : _formatMoney(context, m.expenseMinorMain, mainCurrency),
+                      : _formatMoney(
+                          context,
+                          expenseMinorMainThroughDate(m, todayKey),
+                          mainCurrency,
+                        ),
                   orElse: () => '—',
                 ),
                 deltaText: l10n.metricDeltaStubDown,
@@ -260,27 +293,15 @@ class DashboardScreen extends ConsumerWidget {
                 if (list.isEmpty) {
                   return Text(l10n.emptyNoUpcoming);
                 }
-                final today = ref.watch(todayYyyyMmDdProvider);
-                final sorted =
-                    list
-                        .where((u) => u.transactionDate.compareTo(today) > 0)
-                        .toList()
-                      ..sort(
-                        (a, b) =>
-                            a.transactionDate.compareTo(b.transactionDate),
-                      );
-                if (sorted.isEmpty) {
-                  return Text(l10n.emptyNoUpcoming);
-                }
                 return SizedBox(
                   height: 168,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: sorted.length.clamp(0, 20),
+                    itemCount: list.length.clamp(0, 20),
                     separatorBuilder: (BuildContext context, int index) =>
                         const SizedBox(width: 10),
                     itemBuilder: (context, i) {
-                      final u = sorted[i];
+                      final u = list[i];
                       return FinkoUpcomingTransactionCard(
                         title: u.memo ?? u.kind.wireName,
                         amountText: _upcomingAmount(context, u, mainCurrency),
@@ -289,7 +310,11 @@ class DashboardScreen extends ConsumerWidget {
                           u,
                           mainCurrency,
                         ),
-                        footerText: _daysUntilLabel(l10n, u.transactionDate),
+                        footerText: _daysUntilLabel(
+                          l10n,
+                          u.transactionDate,
+                          todayKey,
+                        ),
                       );
                     },
                   ),
@@ -306,7 +331,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             recentAsync.when(
               data: (list) {
-                final recent = list.take(5).toList();
+                final recent = list;
                 if (recent.isEmpty) {
                   return Text(l10n.emptyNoTransactions);
                 }
@@ -324,6 +349,10 @@ class DashboardScreen extends ConsumerWidget {
                           t,
                           mainCurrency,
                         ),
+                        onTap: () => LedgerTransactionEditorSheet.show(
+                          context,
+                          transaction: t,
+                        ),
                       ),
                   ],
                 );
@@ -338,7 +367,7 @@ class DashboardScreen extends ConsumerWidget {
                   return Text(l10n.emptyNoMonthlyTotals);
                 }
                 final budgetTotal = _totalExpenseBudgetMinor(m);
-                final spent = m.expenseMinorMain;
+                final spent = expenseMinorMainThroughDate(m, todayKey);
                 final left = (budgetTotal - spent).clamp(0, 1 << 62);
                 final progress = budgetTotal > 0
                     ? (spent / budgetTotal).clamp(0.0, 1.0)
@@ -352,7 +381,7 @@ class DashboardScreen extends ConsumerWidget {
                     mainCurrency,
                   ),
                   progress: progress,
-                  categoryRings: _topCategoryRings(m),
+                  categoryRings: _topCategoryRings(m, todayKey),
                   onTap: () => context.push('/budgets'),
                 );
               },

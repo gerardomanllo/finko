@@ -3,6 +3,8 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../json/json_converters.dart';
 import 'finko_enums.dart';
+import 'ledger_transaction.dart';
+import 'recurring_rule.dart';
 
 part 'upcoming_transaction.g.dart';
 
@@ -83,6 +85,68 @@ class UpcomingTransaction {
     Map<String, dynamic> data,
   ) {
     return UpcomingTransaction.fromJson({...data, 'id': id});
+  }
+
+  /// Dashboard strip when [RecurringRule.nextTransactionDate] is not yet in
+  /// `upcomingTransactions` (e.g. not materialized).
+  factory UpcomingTransaction.fromRecurringRulePreview(
+    RecurringRule rule, {
+    DateTime? now,
+  }) {
+    final n = now ?? DateTime.now();
+    return UpcomingTransaction(
+      id: 'recurring_preview_${rule.id}',
+      transactionDate: rule.nextTransactionDate,
+      kind: rule.kind,
+      amountMinor: rule.amountMinor,
+      direction: rule.direction,
+      currency: rule.currency,
+      accountId: rule.accountId,
+      fromAccountId: rule.fromAccountId,
+      toAccountId: rule.toAccountId,
+      transferGroupId: null,
+      categoryId: rule.categoryId,
+      memo: rule.memo ?? rule.name,
+      recurringRuleId: rule.id,
+      cadence: rule.cadence,
+      daysOfMonth: rule.daysOfMonth,
+      weekday: rule.weekday,
+      amountMinorMain: null,
+      fxRateDateUsed: null,
+      loadedAt: n,
+      updatedAt: n,
+    );
+  }
+
+  /// Dashboard strip for **future-dated** rows in `transactions/` (not in
+  /// `upcomingTransactions`).
+  factory UpcomingTransaction.fromLedgerPreview(
+    LedgerTransaction t, {
+    DateTime? now,
+  }) {
+    final n = now ?? DateTime.now();
+    return UpcomingTransaction(
+      id: 'ledger_preview_${t.id}',
+      transactionDate: t.transactionDate,
+      kind: UpcomingKind.standard,
+      amountMinor: t.amountMinor,
+      direction: t.direction,
+      currency: t.currency,
+      accountId: t.accountId,
+      fromAccountId: null,
+      toAccountId: null,
+      transferGroupId: t.transferGroupId,
+      categoryId: t.categoryId,
+      memo: t.memo,
+      recurringRuleId: null,
+      cadence: null,
+      daysOfMonth: null,
+      weekday: null,
+      amountMinorMain: t.amountMinorMain,
+      fxRateDateUsed: t.fxRateDateUsed,
+      loadedAt: n,
+      updatedAt: n,
+    );
   }
 
   Map<String, dynamic> toFirestore({bool useServerTimestamps = false}) {

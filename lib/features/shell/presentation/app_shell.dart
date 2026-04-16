@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import 'shell_drawer_controller.dart';
 
 /// App shell: [Scaffold] + bottom navigation + [Drawer].
@@ -34,28 +35,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   Future<void> _openCreateTransactionSheet(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.newTransactionSheetTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(l10n.newTransactionSheetBody),
-            ],
-          ),
-        );
-      },
-    );
+    await LedgerTransactionEditorSheet.show(context);
   }
 
   @override

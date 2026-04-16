@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Docs:** [`docs/ledger-aggregations-and-ui-flow.md`](docs/ledger-aggregations-and-ui-flow.md) — canonical **functional** flow from `transactions` to Firestore aggregates and dashboard numbers, with **traceability** to Jest (`functions/test/`) and Dart tests; mermaid charts for CF deltas and UI derivation paths. Linked from [`docs/data-contract.md`](docs/data-contract.md) §12 and [`docs/README.md`](docs/README.md).
+
+- **Tests:** [`test/core/monthly_totals_as_of_date_test.dart`](test/core/monthly_totals_as_of_date_test.dart) for `expenseMinorMainThroughDate` and `byCategoryMinorMainThroughDate` (MTD expense and category ring scaling).
+
+- **Transactions screen:** paginated ledger (`fetchTransactionsPage`, 20 per page, infinite scroll), debounced search, **LedgerTransactionKind** filter ring, background “full history” page fetch when search has no match in loaded rows, pull-to-refresh; shell **New** opens ledger editor slide-up. Docs: `docs/transactions.md`, `docs/data-contract.md` §9.
+
 - **Recurring screen Firestore wiring:** profile-timezone **“today”** (`timezone` package + `todayYyyyMmDdProvider`), `categoriesStreamProvider` and `recurringRulesStreamProvider`, enriched list rows (memo → rule name → category), category icons, error banner with retry, pull-to-refresh with `materializeDueUpcoming`. Cloud Functions: `scheduleNext.ts` (next occurrence + `resolveAsOfYmd`), `materializeDueUpcoming` updates linked **`recurring.nextTransactionDate`**, `commitOnboarding` sets **`recurringRuleId`** and maps onboarding “two paydays” to **`twiceMonthly`**. Docs: `docs/recurring.md`, `docs/data-model.md` §8–9, `docs/data-contract.md` §5/§11, `docs/references/product-todos.md`.
 - Dashboard backend wiring: replaced net-worth sparkline stubs with a 30-day `monthlyTotals.days.*.netWorthEodMinorMain` series (forward-fill fallback), added user-profile stream usage for main-currency formatting, and enforced strictly-future upcoming rows on `/dashboard`.
 - Upcoming materialization hardening: listener now re-checks on app resume and timezone/profile changes, while the callable service runs once per user/day with timezone-aware payload fallback plus unit coverage for cadence/payload behavior.
@@ -22,11 +28,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Cloud Functions — ledger aggregate:** Rows with **`transactionDate` after** the user’s calendar today **do not** update **`accounts`** / **`monthlyTotals`** until applied; they set **`aggregateDeferred: true`**. Callable **`reconcileDeferredLedgerForUser`** applies due rows; the **Flutter app** invokes it on lifecycle (once per profile calendar day, SharedPreferences) and on **every** dashboard/recurring pull-to-refresh—**no** scheduled job. See `docs/data-model.md` §4, `lib/core/upcoming/deferred_ledger_reconcile_service.dart`.
+
+- **Dashboard:** “Recent” lists only transactions on or before profile today; “Próximos” merges scheduled upcoming rows after today with active recurring rules not yet represented there and **future-dated ledger (`transactions/`) rows** so editor-scheduled expenses appear; monthly expense, budget teaser, and net-worth sparkline use **month-to-date** / profile-calendar bounds so future-dated ledger rows do not affect aggregates.
+
+- Transactions filter: **bottom sheet** with explicit type options instead of cycling on the filter button.
+- **Ledger create/edit:** unified [`LedgerTransactionEditorSheet`](lib/widgets/transactions/ledger_transaction_editor_sheet.dart) slide-up (no `/transactions/new` route); center nav = create, ledger row tap on Dashboard / Spending / Transactions = edit.
+
 - [`docs/dashboard.md`](docs/dashboard.md): documented current Firestore-backed dashboard (providers, `monthlyTotals` usage, pull-to-refresh, remaining stubs); added revision log. [`docs/data-contract.md`](docs/data-contract.md) §5 and [`docs/data-model.md`](docs/data-model.md) §7 updated for dashboard subscriptions and budget map shapes. [`docs/README.md`](docs/README.md): data section aligned with live backend.
 
 - Documented ledger aggregate **catch-up**, **`aggregateApplied`**, optional **`reload`** fields, and embedded **`days`** maps in [`docs/data-model.md`](docs/data-model.md) §4.1a, [`docs/data-contract.md`](docs/data-contract.md) §12, [`docs/backend-strategy.md`](docs/backend-strategy.md) §4.2, and [`docs/README.md`](docs/README.md) backend index.
 
 ### Fixed
+
+- **Ledger delete/update:** Monetary reversal runs only when `snapshotBalancesIncludedThisRow` (`functions/src/aggregateLedger.ts`) — skip if **`aggregateDeferred`** (pending future) **or** explicit **`aggregateApplied: false`** (aggregate never applied; any date). Fixes **`accounts`** drifting when **`monthlyTotals`/NW** did not get the matching +1. See `docs/data-model.md` §4.1a.
 
 - Ledger aggregation: `onLedgerTransactionWritten` now runs a one-shot catch-up when money fields are unchanged but `aggregateApplied` is still missing (so toggling a reload flag re-applies totals instead of netting zero), coerces `amountMinor` from Firestore into a finite int, writes `aggregateApplied` on the transaction after a successful aggregate, and `commitOnboarding` now persists `profile.mainCurrency` (defaulting to MXN when absent).
 

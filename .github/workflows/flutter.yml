@@ -28,3 +28,16 @@ jobs:
       - run: flutter analyze
 
       - run: flutter test
+
+      - name: Setup Node (Cloud Functions)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Cloud Functions unit tests
+        working-directory: functions
+        run: |
+          npm ci
+          npm test

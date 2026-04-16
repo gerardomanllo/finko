@@ -97,7 +97,8 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | `fxRateDateUsed` | `string?` | | **`yyyy-mm-dd`** — which **`forexRates`** row was used (after walk-back per §10). |
 | `createdAt` | `Timestamp` | ✓ | UTC. |
 | `updatedAt` | `Timestamp` | ✓ | UTC. |
-| `aggregateApplied` | `bool?` | | **`true`** after Cloud Functions have successfully applied this row to **`accounts`** / **`monthlyTotals`** (same transaction as idempotent aggregate write). Omitted or **`false`** means a catch-up apply may still run (see §4.1a). **Clients must not set this to forge applied state**; restrict in security rules (see §11). |
+| `aggregateApplied` | `bool?` | | **`true`** after Cloud Functions have processed this row for idempotency (see §4.1a). When **`aggregateDeferred`** is **`true`**, balances/`monthlyTotals` are **not** yet updated because **`transactionDate`** is still **after** the user’s calendar today; a scheduled job applies them when the date becomes effective. Omitted or **`false`** (without deferred) means a catch-up apply may still run. **Clients must not set these flags**; restrict in security rules (see §11). |
+| `aggregateDeferred` | `bool?` | | **`true`** only from Functions: posting date is in the **future** relative to `users/{uid}.timezone` (or server default); real aggregates run when the client invokes callable **`reconcileDeferredLedgerForUser`** (app open / refresh). Cleared when balances include the row. |
 | `reload` / `aggregateReload` | `any?` | | Optional **client** fields used to re-fire the aggregate trigger when money fields are unchanged (e.g. debugging). Ignored for “financial equality” checks in Functions; do not rely on them for product UX unless documented. |
 
 **Display rule:** Render `transactionDate` in the user’s **locale**; store **no** wall-clock time on the business date.
@@ -129,15 +130,17 @@ Implementation lives in **`functions/src/index.ts`** + **`functions/src/aggregat
 
 | Case | Behavior |
 |------|----------|
-| **Create** | Apply the new row once (**+1**), then set **`aggregateApplied: true`** on the transaction document in the **same** Firestore transaction as the rollup (with idempotency via `_processedAggregateEvents/{eventId}` per §4.1). |
-| **Delete** | Reverse the row (**−1**); no `aggregateApplied` write on a deleted doc. |
-| **Update (money fields changed)** | Apply **−before + after** in one idempotent transaction so edits move deltas correctly. On success, set **`aggregateApplied: true`**. |
-| **Update (money fields unchanged)** | A pure “diff” would net **zero** (e.g. toggling **`reload`** only). If **`aggregateApplied` is not `true`**, the function runs a **one-shot catch-up**: apply the row as **+1** once (same idempotency rules), then set **`aggregateApplied: true`**. This repairs rows that were never aggregated (e.g. Functions deployed after writes) **without** double-counting once the flag is set. |
+| **Create** | If **`transactionDate` ≤ user today** (`users/{uid}.timezone`, else system default): apply **+1** to **`accounts`** / **`monthlyTotals`**, then **`aggregateApplied: true`** (and clear **`aggregateDeferred`**). If the date is **in the future**: **no** balance/monthly change; set **`aggregateApplied: true`** + **`aggregateDeferred: true`** until the **`reconcileDeferredLedgerForUser`** callable applies them (same idempotency rules). |
+| **Delete** | Monetary **−1** only if `snapshotBalancesIncludedThisRow(deleted)` is true: not **`aggregateDeferred`**, and **`aggregateApplied` is not explicitly `false`**. If **`aggregateApplied: false`** (aggregate never succeeded for that doc — any posting date), **no** monetary reverse — otherwise **`accounts`** drift while **`monthlyTotals`** never received the +1. Legacy rows with **`aggregateApplied` omitted** are still reversed (treated as applied). No `aggregateApplied` write on a deleted doc. |
+| **Update (money fields changed)** | **−before** only when **before** date is effective and `snapshotBalancesIncludedThisRow(before)` is true; **+after** when after date is effective. On success, merge **`aggregateApplied: true`**; if the resulting row is still future-dated, set **`aggregateDeferred: true`**. |
+| **Update (money fields unchanged)** | A pure “diff” would net **zero** (e.g. toggling **`reload`** only). If **`aggregateApplied` is not `true`** (and not the deferred path), the function runs a **one-shot catch-up**: apply the row as **+1** once when the posting date is effective, then set **`aggregateApplied: true`**. |
 | **Update (output-only / meta)** | If only server- or client-meta fields change (see skip list below) and money is unchanged, the trigger may **no-op** after `aggregateApplied` is true—by design. |
 
 **Numeric coercion:** `amountMinor` is coerced to a finite integer in Functions so Firestore/client quirks (string, odd numeric types) do not aggregate as zero.
 
-**Skip list (trigger “audit / meta only” comparison):** when deciding whether an update can be ignored as non-financial noise, the implementation ignores at least: `amountMinorMain`, `fxRateDateUsed`, `updatedAt`, **`aggregateApplied`**, **`reload`**, **`aggregateReload`**. Financial fields compared for equality include: `transactionDate`, `amountMinor`, `direction`, `currency`, `type`, `accountId`, `categoryId`.
+**Skip list (trigger “audit / meta only” comparison):** when deciding whether an update can be ignored as non-financial noise, the implementation ignores at least: `amountMinorMain`, `fxRateDateUsed`, `updatedAt`, **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**. Financial fields compared for equality include: `transactionDate`, `amountMinor`, `direction`, `currency`, `type`, `accountId`, `categoryId`.
+
+**Deferred reconciliation:** Callable **`reconcileDeferredLedgerForUser`** (HTTPS, signed-in user only) queries `users/{uid}/transactions` where **`aggregateDeferred == true`** and applies rows whose **`transactionDate`** is **≤** user today, using idempotency keys `reconcile-{txId}-{yyyy-mm-dd}`. The Flutter app invokes it at most **once per profile calendar day** (SharedPreferences) on cold start / resume / profile TZ change, and on **every** dashboard/recurring pull-to-refresh (see `DeferredLedgerReconcileService`).
 
 **`monthlyTotals` shape:** `days` is an **embedded map** on the month document (`days["01"]` … `days["31"]`), **not** a subcollection under `monthlyTotals/{yyyy-mm}/`.
 
@@ -350,6 +353,9 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-14 | §4.3: **locked** — scheduled transfers use **one** `upcomingTransactions` template (`kind: transfer`); not two docs per leg. |
 | 2026-04-15 | §3: `locale`, `themePreference`, `onboardingCompleted`; §3.1 `integrations` (WhatsApp/Telegram, server-verified); §5: canonical account `type` enum; §6 `iconKey` + onboarding cross-ref; §11 integration/completion write rules; §12 onboarding/account/opening-balance rows. |
 | 2026-04-15 | §9: **locked** recurring rule schema (`kind`, `cadence`, `daysOfMonth`, `direction` only — dropped standalone `isIncome`). |
+| 2026-04-16 | §4.1a: **`snapshotBalancesIncludedThisRow`** — skip monetary delete/−before when **`aggregateDeferred: true`** or explicit **`aggregateApplied: false`** (any posting date, not only future); fixes **`accounts`** vs `monthlyTotals` drift. |
+| 2026-04-16 | Deferred reconcile: **`reconcileDeferredLedgerForUser`** callable + app-driven schedule (replaces scheduled job). |
+| 2026-04-16 | §4: **`aggregateDeferred`** for future-dated ledger rows; aggregates skip until posting date ≤ user today + reconcile callable; §4.1a table updated. |
 | 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
 | 2026-04-16 | §7 `budgets`: note **legacy flat** category→amount maps vs canonical `{ targetMinorMain, kind }`; onboarding writes canonical rows. |
 | 2026-04-16 | §8–9: `cadence` includes **`weekly`** + optional **`weekday`**; **`daysOfMonth`** / **`weekday`** on `upcomingTransactions`; materializer advances **`recurring.nextTransactionDate`** when **`recurringRuleId`** links; onboarding maps UI biweekly (two DOM) → **`twiceMonthly`**. |

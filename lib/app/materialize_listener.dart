@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/auth/firebase_auth_providers.dart';
-import '../core/data/providers/finko_stream_providers.dart';
+import '../core/data/providers/finko_stream_providers.dart'
+    show todayYyyyMmDdProvider, userProfileStreamProvider;
+import '../core/upcoming/deferred_ledger_reconcile_provider.dart';
 import '../core/upcoming/materialize_upcoming_provider.dart';
 
-/// After login, calls `materializeDueUpcoming` once per day (docs/data-contract.md §11).
+/// After login / resume, calls `materializeDueUpcoming` once per day and
+/// `reconcileDeferredLedgerForUser` once per profile calendar day (deferred aggregates).
 class MaterializeDueUpcomingListener extends ConsumerStatefulWidget {
   const MaterializeDueUpcomingListener({required this.child, super.key});
 
@@ -51,6 +54,11 @@ class _MaterializeDueUpcomingListenerState
         _schedule();
       }
     });
+    ref.listen<String>(todayYyyyMmDdProvider, (previous, next) {
+      if (previous != next) {
+        _schedule();
+      }
+    });
     return widget.child;
   }
 
@@ -59,9 +67,13 @@ class _MaterializeDueUpcomingListenerState
     if (uid == null) return;
     final timezone = ref.read(userProfileStreamProvider).valueOrNull?.timezone;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final todayKey = ref.read(todayYyyyMmDdProvider);
       await ref
           .read(materializeUpcomingServiceProvider)
           .runOncePerDayIfSignedIn(uid, timezone: timezone);
+      await ref
+          .read(deferredLedgerReconcileServiceProvider)
+          .runOncePerProfileDayIfSignedIn(uid, todayKey);
     });
   }
 }

@@ -7,4 +7,5 @@ export 'monthly_totals.dart';
 export 'processed_aggregate_event.dart';
 export 'recurring_rule.dart';
 export 'upcoming_transaction.dart';
+export 'transactions_page_result.dart';
 export 'user_profile.dart';

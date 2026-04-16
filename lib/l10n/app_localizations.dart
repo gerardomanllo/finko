@@ -1013,13 +1013,13 @@ abstract class AppLocalizations {
   /// No description provided for @newTransactionSheetTitle.
   ///
   /// In es, this message translates to:
-  /// **'Nuevo movimiento'**
+  /// **'Nueva transacción'**
   String get newTransactionSheetTitle;
 
   /// No description provided for @newTransactionSheetBody.
   ///
   /// In es, this message translates to:
-  /// **'Aquí aparecerá el flujo para crear transacciones.'**
+  /// **'Añade una transacción'**
   String get newTransactionSheetBody;
 
   /// No description provided for @drawerCategories.
@@ -1211,19 +1211,19 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoTransactions.
   ///
   /// In es, this message translates to:
-  /// **'Aún no hay movimientos.'**
+  /// **'Aún no hay transacciones.'**
   String get emptyNoTransactions;
 
   /// No description provided for @emptyNoUpcoming.
   ///
   /// In es, this message translates to:
-  /// **'No hay próximos movimientos.'**
+  /// **'No hay próximas transacciones.'**
   String get emptyNoUpcoming;
 
   /// No description provided for @emptyNoMonthlyTotals.
   ///
   /// In es, this message translates to:
-  /// **'Aún no hay totales del mes — añade un movimiento.'**
+  /// **'Aún no hay totales del mes — añade un transacción.'**
   String get emptyNoMonthlyTotals;
 
   /// No description provided for @spendingPeriodWeek.
@@ -1277,14 +1277,284 @@ abstract class AppLocalizations {
   /// No description provided for @spendingTopTransactions.
   ///
   /// In es, this message translates to:
-  /// **'Principales movimientos'**
+  /// **'Gastos más grandes'**
   String get spendingTopTransactions;
 
   /// No description provided for @transactionsSearchHint.
   ///
   /// In es, this message translates to:
-  /// **'Buscar movimientos'**
+  /// **'Buscar transacciones'**
   String get transactionsSearchHint;
+
+  /// No description provided for @transactionsFilterAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los tipos'**
+  String get transactionsFilterAll;
+
+  /// No description provided for @transactionsFilterStandard.
+  ///
+  /// In es, this message translates to:
+  /// **'Estándar'**
+  String get transactionsFilterStandard;
+
+  /// No description provided for @transactionsFilterTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get transactionsFilterTransfer;
+
+  /// No description provided for @transactionsFilterAdjustment.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste'**
+  String get transactionsFilterAdjustment;
+
+  /// No description provided for @transactionsFilterSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por tipo'**
+  String get transactionsFilterSheetTitle;
+
+  /// No description provided for @transactionsSearchSearchingHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'No aparece en lo cargado. Buscando en todo el historial…'**
+  String get transactionsSearchSearchingHistory;
+
+  /// No description provided for @transactionsSearchHistoryLimitReached.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin coincidencias en esta parte del historial. Prueba un término más específico.'**
+  String get transactionsSearchHistoryLimitReached;
+
+  /// No description provided for @transactionsSearchNoMatches.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay transacciones que coincidan.'**
+  String get transactionsSearchNoMatches;
+
+  /// No description provided for @transactionEditorSheetEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar transacción'**
+  String get transactionEditorSheetEditTitle;
+
+  /// No description provided for @transactionEditorFieldDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get transactionEditorFieldDate;
+
+  /// No description provided for @transactionEditorFieldAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Importe'**
+  String get transactionEditorFieldAmount;
+
+  /// No description provided for @transactionEditorFieldDirection.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección'**
+  String get transactionEditorFieldDirection;
+
+  /// No description provided for @transactionEditorDirectionIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso'**
+  String get transactionEditorDirectionIn;
+
+  /// No description provided for @transactionEditorDirectionOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get transactionEditorDirectionOut;
+
+  /// No description provided for @transactionEditorEntryTransfer.
+  ///
+  /// In es, this message translates to:
+  /// **'Transferencia'**
+  String get transactionEditorEntryTransfer;
+
+  /// No description provided for @transactionEditorFieldFromAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta origen'**
+  String get transactionEditorFieldFromAccount;
+
+  /// No description provided for @transactionEditorFieldToAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta destino'**
+  String get transactionEditorFieldToAccount;
+
+  /// No description provided for @transactionEditorValidationFromAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la cuenta desde la que sale el dinero.'**
+  String get transactionEditorValidationFromAccount;
+
+  /// No description provided for @transactionEditorValidationToAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la cuenta a la que entra el dinero.'**
+  String get transactionEditorValidationToAccount;
+
+  /// No description provided for @transactionEditorValidationTransferSameCurrency.
+  ///
+  /// In es, this message translates to:
+  /// **'Ambas cuentas deben tener la misma moneda para una transferencia.'**
+  String get transactionEditorValidationTransferSameCurrency;
+
+  /// No description provided for @transactionEditorValidationTransferDistinctAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige dos cuentas distintas.'**
+  String get transactionEditorValidationTransferDistinctAccounts;
+
+  /// No description provided for @transactionEditorFieldAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get transactionEditorFieldAccount;
+
+  /// No description provided for @transactionEditorFieldCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get transactionEditorFieldCategory;
+
+  /// No description provided for @transactionEditorCategoryNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna'**
+  String get transactionEditorCategoryNone;
+
+  /// No description provided for @transactionEditorCategoryHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una categoría'**
+  String get transactionEditorCategoryHint;
+
+  /// No description provided for @transactionEditorValidationCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una categoría.'**
+  String get transactionEditorValidationCategory;
+
+  /// No description provided for @transactionEditorValidationCategoryEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade al menos una categoría de ingreso o gasto (por ejemplo desde el menú).'**
+  String get transactionEditorValidationCategoryEmpty;
+
+  /// No description provided for @transactionEditorFieldType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo'**
+  String get transactionEditorFieldType;
+
+  /// No description provided for @transactionEditorTypeStandard.
+  ///
+  /// In es, this message translates to:
+  /// **'Estándar'**
+  String get transactionEditorTypeStandard;
+
+  /// No description provided for @transactionEditorTypeAdjustment.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste'**
+  String get transactionEditorTypeAdjustment;
+
+  /// No description provided for @transactionEditorTypeTransferLeg.
+  ///
+  /// In es, this message translates to:
+  /// **'Tramo de transferencia'**
+  String get transactionEditorTypeTransferLeg;
+
+  /// No description provided for @transactionEditorFieldMemo.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get transactionEditorFieldMemo;
+
+  /// No description provided for @transactionEditorFieldTransferGroupId.
+  ///
+  /// In es, this message translates to:
+  /// **'ID de grupo de transferencia'**
+  String get transactionEditorFieldTransferGroupId;
+
+  /// No description provided for @transactionEditorFieldLinkedTransactionId.
+  ///
+  /// In es, this message translates to:
+  /// **'ID de transacción vinculado'**
+  String get transactionEditorFieldLinkedTransactionId;
+
+  /// No description provided for @transactionEditorSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get transactionEditorSave;
+
+  /// No description provided for @transactionEditorDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar transacción'**
+  String get transactionEditorDelete;
+
+  /// No description provided for @transactionEditorValidationAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce un importe válido mayor que cero.'**
+  String get transactionEditorValidationAmount;
+
+  /// No description provided for @transactionEditorValidationAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta.'**
+  String get transactionEditorValidationAccount;
+
+  /// No description provided for @transactionEditorValidationDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce una fecha válida (AAAA-MM-DD).'**
+  String get transactionEditorValidationDate;
+
+  /// No description provided for @transactionEditorDeleteConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar transacción?'**
+  String get transactionEditorDeleteConfirmTitle;
+
+  /// No description provided for @transactionEditorDeleteConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta acción no se puede deshacer.'**
+  String get transactionEditorDeleteConfirmBody;
+
+  /// No description provided for @transactionEditorCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get transactionEditorCancel;
+
+  /// No description provided for @transactionEditorDeleteConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar'**
+  String get transactionEditorDeleteConfirm;
+
+  /// No description provided for @transactionEditorErrorSave.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar. Inténtalo de nuevo.'**
+  String get transactionEditorErrorSave;
+
+  /// No description provided for @transactionEditorErrorDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo eliminar. Inténtalo de nuevo.'**
+  String get transactionEditorErrorDelete;
 
   /// No description provided for @budgetsThisMonth.
   ///

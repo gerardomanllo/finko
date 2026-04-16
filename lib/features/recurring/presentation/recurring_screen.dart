@@ -9,6 +9,7 @@ import '../../../core/data/models/upcoming_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/datetime/user_calendar_date.dart';
 import '../../../core/formatting/money_format.dart';
+import '../../../core/upcoming/deferred_ledger_reconcile_provider.dart';
 import '../../../core/upcoming/materialize_upcoming_provider.dart';
 import '../../../features/onboarding/presentation/onboarding_category_icons.dart';
 import '../../../l10n/app_localizations.dart';
@@ -87,10 +88,14 @@ class RecurringScreen extends ConsumerWidget {
   Future<void> _onRefresh(WidgetRef ref) async {
     final uid = ref.read(authUidProvider);
     final timezone = ref.read(userProfileStreamProvider).valueOrNull?.timezone;
+    final todayKey = ref.read(todayYyyyMmDdProvider);
     if (uid != null) {
       await ref
           .read(materializeUpcomingServiceProvider)
           .forceRefreshIfSignedIn(uid, timezone: timezone);
+      await ref
+          .read(deferredLedgerReconcileServiceProvider)
+          .forceReconcileIfSignedIn(uid, todayKey);
     }
     ref.invalidate(accountsStreamProvider);
     ref.invalidate(userProfileStreamProvider);

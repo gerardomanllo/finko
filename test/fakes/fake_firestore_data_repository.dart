@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:finko/core/data/models/models.dart';
 import 'package:finko/core/data/repositories/firestore_data_repository.dart';
 
@@ -8,6 +10,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     Stream<List<FinkoAccount>>? accounts,
     Stream<MonthlyTotals?>? monthly,
     Stream<List<LedgerTransaction>>? recent,
+    Stream<List<LedgerTransaction>>? ledgerAfterDate,
     Stream<List<UpcomingTransaction>>? upcoming,
     Stream<List<FinkoCategory>>? categories,
     Stream<List<RecurringRule>>? recurringRules,
@@ -16,6 +19,8 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
        _accounts = accounts ?? Stream<List<FinkoAccount>>.value(const []),
        _monthly = monthly ?? Stream<MonthlyTotals?>.value(null),
        _recent = recent ?? Stream<List<LedgerTransaction>>.value(const []),
+       _ledgerAfterDate =
+           ledgerAfterDate ?? Stream<List<LedgerTransaction>>.value(const []),
        _upcoming =
            upcoming ?? Stream<List<UpcomingTransaction>>.value(const []),
        _categories = categories ?? Stream<List<FinkoCategory>>.value(const []),
@@ -27,6 +32,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
   final Stream<List<FinkoAccount>> _accounts;
   final Stream<MonthlyTotals?> _monthly;
   final Stream<List<LedgerTransaction>> _recent;
+  final Stream<List<LedgerTransaction>> _ledgerAfterDate;
   final Stream<List<UpcomingTransaction>> _upcoming;
   final Stream<List<FinkoCategory>> _categories;
   final Stream<List<RecurringRule>> _recurringRules;
@@ -47,6 +53,60 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     String uid, {
     int limit = 20,
   }) => _recent;
+
+  @override
+  Stream<List<LedgerTransaction>> watchLedgerTransactionsAfterDate(
+    String uid,
+    String afterYyyyMmDd, {
+    int limit = 40,
+  }) => _ledgerAfterDate;
+
+  @override
+  Future<TransactionsPageResult> fetchTransactionsPage(
+    String uid, {
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+    int pageSize = 20,
+  }) async {
+    return const TransactionsPageResult(
+      items: [],
+      hasMore: false,
+      lastDocument: null,
+    );
+  }
+
+  @override
+  Future<LedgerTransaction?> fetchTransaction(
+    String uid,
+    String transactionId,
+  ) async => null;
+
+  @override
+  Future<({String fromLegId, String toLegId})> createTransferLegPair(
+    String uid, {
+    required String transactionDate,
+    required int amountMinor,
+    required String fromAccountId,
+    required String toAccountId,
+    required String currency,
+    String? memo,
+  }) async => (fromLegId: 'fake_from', toLegId: 'fake_to');
+
+  @override
+  Future<void> updateTransferLegPair(
+    String uid,
+    LedgerTransaction outLeg,
+    LedgerTransaction inLeg,
+  ) async {}
+
+  @override
+  Future<String> createTransaction(String uid, LedgerTransaction data) async =>
+      'fake_tx';
+
+  @override
+  Future<void> updateTransaction(String uid, LedgerTransaction data) async {}
+
+  @override
+  Future<void> deleteTransaction(String uid, String transactionId) async {}
 
   @override
   Stream<List<UpcomingTransaction>> watchUpcomingFromDate(

@@ -493,8 +493,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newTransactionSheetTitle => 'New transaction';
 
   @override
-  String get newTransactionSheetBody =>
-      'Transaction creation flow will appear here.';
+  String get newTransactionSheetBody => 'Add a movement to your ledger.';
 
   @override
   String get drawerCategories => 'Categories';
@@ -632,6 +631,151 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionsSearchHint => 'Search transactions';
+
+  @override
+  String get transactionsFilterAll => 'All types';
+
+  @override
+  String get transactionsFilterStandard => 'Standard';
+
+  @override
+  String get transactionsFilterTransfer => 'Transfer';
+
+  @override
+  String get transactionsFilterAdjustment => 'Adjustment';
+
+  @override
+  String get transactionsFilterSheetTitle => 'Filter by type';
+
+  @override
+  String get transactionsSearchSearchingHistory =>
+      'Not found in loaded transactions. Searching full history…';
+
+  @override
+  String get transactionsSearchHistoryLimitReached =>
+      'No match in the first part of your history. Try a more specific search.';
+
+  @override
+  String get transactionsSearchNoMatches => 'No matching transactions.';
+
+  @override
+  String get transactionEditorSheetEditTitle => 'Edit transaction';
+
+  @override
+  String get transactionEditorFieldDate => 'Date';
+
+  @override
+  String get transactionEditorFieldAmount => 'Amount';
+
+  @override
+  String get transactionEditorFieldDirection => 'Direction';
+
+  @override
+  String get transactionEditorDirectionIn => 'Income';
+
+  @override
+  String get transactionEditorDirectionOut => 'Expense';
+
+  @override
+  String get transactionEditorEntryTransfer => 'Transfer';
+
+  @override
+  String get transactionEditorFieldFromAccount => 'From account';
+
+  @override
+  String get transactionEditorFieldToAccount => 'To account';
+
+  @override
+  String get transactionEditorValidationFromAccount =>
+      'Choose an account to move money from.';
+
+  @override
+  String get transactionEditorValidationToAccount =>
+      'Choose an account to move money to.';
+
+  @override
+  String get transactionEditorValidationTransferSameCurrency =>
+      'Both accounts must use the same currency for a transfer.';
+
+  @override
+  String get transactionEditorValidationTransferDistinctAccounts =>
+      'Choose two different accounts.';
+
+  @override
+  String get transactionEditorFieldAccount => 'Account';
+
+  @override
+  String get transactionEditorFieldCategory => 'Category';
+
+  @override
+  String get transactionEditorCategoryNone => 'None';
+
+  @override
+  String get transactionEditorCategoryHint => 'Select a category';
+
+  @override
+  String get transactionEditorValidationCategory => 'Choose a category.';
+
+  @override
+  String get transactionEditorValidationCategoryEmpty =>
+      'Add at least one category for income or expense (e.g. from the menu).';
+
+  @override
+  String get transactionEditorFieldType => 'Type';
+
+  @override
+  String get transactionEditorTypeStandard => 'Standard';
+
+  @override
+  String get transactionEditorTypeAdjustment => 'Adjustment';
+
+  @override
+  String get transactionEditorTypeTransferLeg => 'Transfer leg';
+
+  @override
+  String get transactionEditorFieldMemo => 'Memo';
+
+  @override
+  String get transactionEditorFieldTransferGroupId => 'Transfer group ID';
+
+  @override
+  String get transactionEditorFieldLinkedTransactionId =>
+      'Linked transaction ID';
+
+  @override
+  String get transactionEditorSave => 'Save';
+
+  @override
+  String get transactionEditorDelete => 'Delete transaction';
+
+  @override
+  String get transactionEditorValidationAmount =>
+      'Enter a valid amount greater than zero.';
+
+  @override
+  String get transactionEditorValidationAccount => 'Choose an account.';
+
+  @override
+  String get transactionEditorValidationDate =>
+      'Enter a valid calendar date (YYYY-MM-DD).';
+
+  @override
+  String get transactionEditorDeleteConfirmTitle => 'Delete transaction?';
+
+  @override
+  String get transactionEditorDeleteConfirmBody => 'This cannot be undone.';
+
+  @override
+  String get transactionEditorCancel => 'Cancel';
+
+  @override
+  String get transactionEditorDeleteConfirm => 'Delete';
+
+  @override
+  String get transactionEditorErrorSave => 'Could not save. Try again.';
+
+  @override
+  String get transactionEditorErrorDelete => 'Could not delete. Try again.';
 
   @override
   String get budgetsThisMonth => 'This month';

@@ -45,6 +45,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Paper list with “see more”** | List + final row navigates to full list | Dashboard → `/transactions` |
 | **Full-width scrollable list** | Standard list layout for many rows | Transactions, categories, accounts |
 | **Search + filter bar** | Top search/filter UI | Transactions |
+| **Transaction kind filter sheet** | Bottom sheet: All / Standard / Transfer / Adjustment | Transactions |
+| **Ledger transaction editor sheet** | Slide-up create/edit stub (`LedgerTransactionEditorSheet.show`); center (+) = create, row tap = edit | App shell, any screen with ledger rows |
 
 ## Budgets
 

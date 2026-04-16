@@ -13,7 +13,7 @@
 
 1. **Dashboard**
 2. **Recurring**
-3. **New transaction** — prominent center **plus** action (create flow trigger).
+3. **New transaction** — prominent center **plus** action; opens the **ledger transaction editor** bottom sheet (create mode — no route).
 4. **Spending**
 5. **Transactions**
 
@@ -52,7 +52,7 @@ Close drawer on selection or scrim tap.
 ## Acceptance
 
 - [ ] Five bottom items in this order: Dashboard, Recurring, New transaction (+), Spending, Transactions.
-- [ ] Center plus action opens new transaction creation flow.
+- [x] Center plus action opens new-transaction **slide-up** ([`LedgerTransactionEditorSheet`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart)), not a separate route.
 - [ ] Top-left settings cog toggles drawer.
 - [ ] Drawer lists three destinations and navigates correctly.
 - [ ] Current tab state visible.

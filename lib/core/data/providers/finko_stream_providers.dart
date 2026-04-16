@@ -12,6 +12,12 @@ final currentYearMonthProvider = Provider<String>((ref) {
   return _yearMonthKey(ref.watch(nowProvider));
 });
 
+/// `yyyy-MM` from profile-aware [`todayYyyyMmDdProvider`] — use on **dashboard** so
+/// month docs align with business "today".
+final dashboardYearMonthProvider = Provider<String>(
+  (ref) => ref.watch(todayYyyyMmDdProvider).substring(0, 7),
+);
+
 final userProfileStreamProvider = StreamProvider<UserProfile?>((ref) async* {
   final uid = ref.watch(authUidProvider);
   if (uid == null) {
@@ -69,9 +75,16 @@ final recentTransactionsStreamProvider =
         yield <LedgerTransaction>[];
         return;
       }
+      final today = ref.watch(todayYyyyMmDdProvider);
       yield* ref
           .watch(firestoreDataRepositoryProvider)
-          .watchRecentTransactions(uid, limit: 20);
+          .watchRecentTransactions(uid, limit: 80)
+          .map(
+            (list) => list
+                .where((t) => t.transactionDate.compareTo(today) <= 0)
+                .take(5)
+                .toList(),
+          );
     });
 
 final upcomingTransactionsStreamProvider =
@@ -86,6 +99,93 @@ final upcomingTransactionsStreamProvider =
           .watch(firestoreDataRepositoryProvider)
           .watchUpcomingFromDate(uid, from, limit: 50);
     });
+
+/// Future-dated **`transactions/`** rows (editor-created), strictly after profile today.
+final futureDatedLedgerTransactionsStreamProvider =
+    StreamProvider<List<LedgerTransaction>>((ref) async* {
+      final uid = ref.watch(authUidProvider);
+      if (uid == null) {
+        yield <LedgerTransaction>[];
+        return;
+      }
+      final today = ref.watch(todayYyyyMmDdProvider);
+      yield* ref
+          .watch(firestoreDataRepositoryProvider)
+          .watchLedgerTransactionsAfterDate(uid, today, limit: 40);
+    });
+
+/// Upcoming strip for dashboard: scheduled rows **after** today plus recurring
+/// rules whose [RecurringRule.nextTransactionDate] is not already represented.
+final dashboardUpcomingStripProvider =
+    Provider<AsyncValue<List<UpcomingTransaction>>>((ref) {
+      final today = ref.watch(todayYyyyMmDdProvider);
+      return ref
+          .watch(upcomingTransactionsStreamProvider)
+          .when(
+            data: (upcomingList) => ref
+                .watch(recurringRulesStreamProvider)
+                .when(
+                  data: (rules) => ref
+                      .watch(futureDatedLedgerTransactionsStreamProvider)
+                      .when(
+                        data: (ledgerFuture) => AsyncValue.data(
+                          mergeDashboardUpcoming(
+                            upcomingList,
+                            rules,
+                            today,
+                            ledgerFuture: ledgerFuture,
+                          ),
+                        ),
+                        loading: () => const AsyncValue.loading(),
+                        error: AsyncValue.error,
+                      ),
+                  loading: () => const AsyncValue.loading(),
+                  error: AsyncValue.error,
+                ),
+            loading: () => const AsyncValue.loading(),
+            error: AsyncValue.error,
+          );
+    });
+
+List<UpcomingTransaction> mergeDashboardUpcoming(
+  List<UpcomingTransaction> upcoming,
+  List<RecurringRule> rules,
+  String todayYyyyMmDd, {
+  List<LedgerTransaction> ledgerFuture = const [],
+}) {
+  final out = upcoming
+      .where((u) => u.transactionDate.compareTo(todayYyyyMmDd) > 0)
+      .toList();
+
+  final covered = <String>{};
+  for (final u in out) {
+    if (u.recurringRuleId != null) {
+      covered.add('${u.recurringRuleId}|${u.transactionDate}');
+    }
+  }
+
+  final now = DateTime.now();
+  for (final rule in rules) {
+    if (!rule.active) continue;
+    if (rule.nextTransactionDate.compareTo(todayYyyyMmDd) <= 0) continue;
+    final key = '${rule.id}|${rule.nextTransactionDate}';
+    if (covered.contains(key)) continue;
+    out.add(UpcomingTransaction.fromRecurringRulePreview(rule, now: now));
+    covered.add(key);
+  }
+
+  for (final t in ledgerFuture) {
+    if (t.transactionDate.compareTo(todayYyyyMmDd) <= 0) continue;
+    if (t.type == LedgerTransactionKind.transferLeg &&
+        t.direction == MoneyDirection.in_) {
+      continue;
+    }
+    out.add(UpcomingTransaction.fromLedgerPreview(t, now: now));
+  }
+
+  out.sort((a, b) => a.transactionDate.compareTo(b.transactionDate));
+  return out;
+}
 
 final categoriesStreamProvider = StreamProvider<List<FinkoCategory>>((
   ref,
@@ -121,8 +221,11 @@ final forexRatesForDateStreamProvider =
 ///
 /// Missing days use forward-fill inside the 30-day window; if no prior value
 /// exists in-window yet, the point is `0`.
+///
+/// Window ends on profile-aware **today** ([`todayYyyyMmDdProvider`]) so points
+/// are not tied to device-local midnight when the user has a timezone set.
 final netWorthSparklineSeriesProvider = Provider<List<double>>((ref) {
-  final endDate = _dateOnly(ref.watch(nowProvider));
+  final endDate = _dateOnlyFromYyyyMmDd(ref.watch(todayYyyyMmDdProvider));
   final startDate = endDate.subtract(const Duration(days: 29));
   final endMonthKey = _yearMonthKey(endDate);
   final startMonthKey = _yearMonthKey(startDate);
@@ -155,6 +258,18 @@ final netWorthSparklineSeriesProvider = Provider<List<double>>((ref) {
   }
   return series;
 });
+
+DateTime _dateOnlyFromYyyyMmDd(String yyyyMmDd) {
+  final parts = yyyyMmDd.split('-');
+  if (parts.length != 3) {
+    return _dateOnly(DateTime.now());
+  }
+  return DateTime(
+    int.tryParse(parts[0]) ?? 0,
+    int.tryParse(parts[1]) ?? 1,
+    int.tryParse(parts[2]) ?? 1,
+  );
+}
 
 DateTime _dateOnly(DateTime value) =>
     DateTime(value.year, value.month, value.day);

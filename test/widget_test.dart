@@ -121,13 +121,13 @@ void main() {
 
     await tester.tap(find.text('Nuevo'));
     await tester.pumpAndSettle();
-    expect(find.text('Nuevo movimiento'), findsOneWidget);
+    expect(find.text('Nueva transacción'), findsOneWidget);
     expect(
-      find.text('Aquí aparecerá el flujo para crear transacciones.'),
+      find.text('Añade una transacción'),
       findsOneWidget,
     );
 
-    Navigator.of(tester.element(find.text('Nuevo movimiento'))).pop();
+    Navigator.of(tester.element(find.text('Nueva transacción'))).pop();
     await tester.pumpAndSettle();
 
     final settingsButton = find.byTooltip('Abrir menú');

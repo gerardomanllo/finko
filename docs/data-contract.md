@@ -10,7 +10,7 @@ This document defines **how Flutter code accesses data** so **widgets stay in sy
 |-------------|-------------|
 | **Real-time** | Use Firestore **`snapshots()`** streams for all **authoritative** UI state that must reflect remote changes (including other devices). |
 | **Single source of truth** | **`transactions`** + denormalized docs (`accounts`, `monthlyTotals`, …) updated by **Cloud Functions** on write—never rely on stale client-only math for dashboard numbers. |
-| **No scheduled *aggregate* repair** | **No** cron-driven recomputation of transaction totals for MVP; Functions run **on transaction write** to keep aggregates current. **Exception:** **daily forex ingestion** only (see [`data-model.md` §10](data-model.md)). |
+| **No full-ledger *repair* cron** | **No** nightly re-sum of the entire ledger for MVP. Aggregates run **on transaction write** and, for **future-dated** rows, when the app invokes **`reconcileDeferredLedgerForUser`** (see §11). **Exception:** **daily forex ingestion** (see [`data-model.md` §10](data-model.md)). |
 | **Reactive UI** | Widgets **`ref.watch`** stream-based providers so they **rebuild automatically** when new snapshot data arrives. |
 | **Explicit async** | Loading/error/empty states use a **consistent** pattern (`AsyncValue` or sealed union). |
 
@@ -86,12 +86,12 @@ When a **transaction is created/updated**:
 
 | Screen / area | Primary subscriptions (examples) |
 |-----------------|-----------------------------------|
-| **Dashboard** | `accountsStreamProvider`; `userProfileStreamProvider`; **`currentMonthTotalsStreamProvider`** → `monthlyTotals/{yyyy-MM}` (expense totals + embedded `budgets` + `days` for net-worth sparkline); **`netWorthSparklineSeriesProvider`** (30-day series, may read two month docs); **`recentTransactionsStreamProvider`**; **`upcomingTransactionsStreamProvider`** (UI filters to **strictly future** dates); pull-to-refresh invalidates streams + **`materializeDueUpcoming`**. Optional `forexRates` if UI shows rate context. |
+| **Dashboard** | `accountsStreamProvider`; `userProfileStreamProvider`; **`monthlyTotalsForMonthStreamProvider(dashboardYearMonthProvider)`** (MTD expense/budget math through profile today); **`netWorthSparklineSeriesProvider`** (30-day series ending profile today); **`recentTransactionsStreamProvider`** (last 5 **≤ today**); **`dashboardUpcomingStripProvider`** ( **`upcomingTransactions`** + **`futureDatedLedgerTransactionsStreamProvider`** + recurring previews); pull-to-refresh invalidates streams + **`materializeDueUpcoming`** + **`reconcileDeferredLedgerForUser`**. Optional `forexRates` if UI shows rate context. |
 | **Spending** | `monthlyTotals` for months in range; derive week/quarter/year in provider. |
-| **Transactions** | `transactions` query by `transactionDate` / `loadedAt` as designed; paginate. |
+| **Transactions** | Paged `get()` on `transactions` (`orderBy transactionDate desc`, cursor `startAfter`); accumulated list + client search/filter in `transactionsListNotifierProvider` (see §9). |
 | **Budgets** | **`monthlyTotals/{yyyy-mm}`** only (budgets embedded in doc). |
 | **Categories / accounts** | Collection snapshots. |
-| **Recurring / upcoming** | **`upcomingTransactionsStreamProvider`** (canonical schedule rows); **`recurringRulesStreamProvider`** + **`categoriesStreamProvider`** for labels/icons; **`todayYyyyMmDdProvider`** uses profile timezone when set. Pull-to-refresh: **`materializeDueUpcoming`** + invalidate streams. |
+| **Recurring / upcoming** | **`upcomingTransactionsStreamProvider`** (canonical schedule rows); **`recurringRulesStreamProvider`** + **`categoriesStreamProvider`** for labels/icons; **`todayYyyyMmDdProvider`** uses profile timezone when set. Pull-to-refresh: **`materializeDueUpcoming`**, **`reconcileDeferredLedgerForUser`**, + invalidate streams. |
 
 ---
 
@@ -113,15 +113,16 @@ When a **transaction is created/updated**:
 ## 8. Non-goals (MVP)
 
 - **No** `Timer.periodic` refresh for core money data.
-- **No** nightly jobs that **re-sum** transactions from scratch—**forex daily job** is allowed ([`data-model.md` §10](data-model.md)).
+- **No** nightly jobs that **re-sum** transactions from scratch—**forex daily job** is allowed ([`data-model.md` §10](data-model.md)). **Deferred ledger reconcile** is **client-triggered** (`reconcileDeferredLedgerForUser`), not a schedule.
 
 ---
 
 ## 9. Open questions (product / impl)
 
 1. **Firestore persistence** on mobile/web for offline-first UX?
-2. **Transaction list pagination:** cursor + stream strategy vs paged futures.
-3. **Optimistic UI:** spinner until aggregates match vs optimistic row-only feedback.
+2. **Optimistic UI:** spinner until aggregates match vs optimistic row-only feedback.
+
+**Transactions list (resolved for `/transactions`):** Use **imperative cursor pagination** — `orderBy('transactionDate', descending: true)`, `limit(20)`, `startAfter` the last snapshot for the next page. The screen **accumulates** loaded rows in a `Notifier` (not a single `snapshots()` of the whole collection). **Live cross-device updates** for the full ledger are not modeled in MVP; pull-to-refresh reloads page one. **Search** has no Firestore substring index: filter **client-side** over loaded rows; if the debounced query matches nothing loaded but more pages may exist, the client **sequentially fetches** additional pages (same query + `startAfter`) until a match, exhaustion, or a safety cap on pages per search.
 
 ---
 
@@ -153,7 +154,9 @@ When a **transaction is created/updated**:
 
 ## 12. Ledger aggregation (Cloud Functions)
 
-**Source of truth:** `accounts` balances and `monthlyTotals` (including embedded **`days.{dd}`** maps) are updated by **`onLedgerTransactionWritten`** in **`functions/`**, not by recomputing the full ledger in the Flutter client. See [`data-model.md` §4.1–4.1a](data-model.md) for idempotency, **`aggregateApplied`**, and **catch-up** when a transaction row exists but aggregates were never applied.
+**Source of truth:** `accounts` balances and `monthlyTotals` (including embedded **`days.{dd}`** maps) are updated by **`onLedgerTransactionWritten`** in **`functions/`**, not by recomputing the full ledger in the Flutter client. **Future-dated** posting rows defer real aggregates until the posting date (see **`aggregateDeferred`** and **`reconcileDeferredLedgerForUser`** in [`data-model.md` §4](data-model.md)). See [`data-model.md` §4.1–4.1a](data-model.md) for idempotency, **`aggregateApplied`**, and **catch-up** when a transaction row exists but aggregates were never applied.
+
+**Detailed walkthrough** (formulas, gates, Flutter streams and MTD math): [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md).
 
 **Client expectations**
 
@@ -162,7 +165,7 @@ When a **transaction is created/updated**:
 - **`aggregateApplied`** on a transaction is **server-owned**; the app may read it for diagnostics but **must not** set it to `true` in production (enforce in rules per [`data-model.md` §11](data-model.md)).
 - Optional **`reload`** / **`aggregateReload`** fields are only for **re-firing** the aggregate when money fields are unchanged (e.g. ops / debugging). Product UI should not depend on them unless we add a first-class “repair” flow.
 
-**Pull-to-refresh / materialization** (app): dashboard refresh and **`materializeDueUpcoming`** complement aggregates but do not replace the transaction trigger above.
+**Pull-to-refresh / materialization** (app): dashboard/recurring refresh runs **`materializeDueUpcoming`** and **`reconcileDeferredLedgerForUser`** (always); lifecycle also runs deferred reconcile **once per profile calendar day** (SharedPreferences flag). These complement aggregates but do not replace the transaction trigger above.
 
 ---
 
@@ -170,8 +173,12 @@ When a **transaction is created/updated**:
 
 | Date | Change |
 |------|--------|
+| 2026-04-16 | **§12** [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md): formulas, functional mermaid pipelines, calculation→test traceability. |
+| 2026-04-16 | §1 / §11–12: **`reconcileDeferredLedgerForUser`** callable + app lifecycle (replaces scheduled aggregate job). |
+| 2026-04-16 | §1 / §12: future-dated ledger aggregates deferred + scheduled reconcile (superseded). |
 | 2026-04-14 | Initial contract: streams, Riverpod, widget rules, no batch jobs, screen→subscription map. |
 | 2026-04-14 | Scheduled **forex** allowed; budgets in `monthlyTotals`; `upcomingTransactions` + callable materialization; multi-currency. |
 | 2026-04-16 | **§12** Ledger aggregation (Functions vs client, `aggregateApplied`, `days` map, optional reload fields). |
 | 2026-04-16 | **§5** Dashboard row: named providers + net-worth sparkline source, refresh/materialize. |
 | 2026-04-16 | **§5** Recurring row: named providers; **§11** callable `asOfDate` / `timezone` resolution + next-date + `recurring` sync. |
+| 2026-04-16 | **§9** Transactions tab: cursor pagination + accumulated rows; search uses sequential page reads when needed; open question #2 (pagination strategy) superseded for `/transactions`. |
