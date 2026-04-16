@@ -9,6 +9,8 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
     required this.expenseFraction,
     this.incomeColor,
     this.expenseColor,
+    this.isSelected = false,
+    this.onTap,
   });
 
   final String bottomLabel;
@@ -16,6 +18,8 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
   final double expenseFraction;
   final Color? incomeColor;
   final Color? expenseColor;
+  final bool isSelected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +28,19 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
     final exp = expenseFraction.clamp(0.05, 1.0);
     final ic = incomeColor ?? theme.colorScheme.primary;
     final ec = expenseColor ?? theme.colorScheme.tertiary;
-    return SizedBox(
+    final card = SizedBox(
       width: 96,
       child: Card(
         elevation: 0,
         color: theme.colorScheme.surfaceContainerHighest.withValues(
           alpha: 0.75,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: isSelected
+              ? BorderSide(color: theme.colorScheme.primary, width: 2)
+              : BorderSide.none,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
@@ -83,6 +92,15 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+    if (onTap == null) return card;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: card,
       ),
     );
   }

@@ -236,6 +236,11 @@
   "spendingIncome": "Income",
   "spendingExpense": "Expense",
   "spendingTotalSpend": "Total spend",
+  "spendingTotalSpendIn": "Total spend in",
+  "spendingFixedExpenses": "Fixed expenses",
+  "spendingVariableExpenses": "Variable expenses",
+  "spendingUncategorized": "Uncategorized",
+  "spendingStripEmpty": "No periods with transactions in this range yet.",
   "spendingInPeriod": "In {period}",
   "@spendingInPeriod": {
     "placeholders": {

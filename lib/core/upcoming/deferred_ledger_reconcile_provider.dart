@@ -5,7 +5,7 @@ import 'deferred_ledger_reconcile_service.dart';
 
 final deferredLedgerReconcileServiceProvider =
     Provider<DeferredLedgerReconcileService>(
-  (ref) => DeferredLedgerReconcileService(
-    functions: ref.watch(firebaseFunctionsProvider),
-  ),
-);
+      (ref) => DeferredLedgerReconcileService(
+        functions: ref.watch(firebaseFunctionsProvider),
+      ),
+    );

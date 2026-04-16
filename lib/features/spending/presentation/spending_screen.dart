@@ -2,21 +2,31 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/data/models/finko_enums.dart';
+import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
+import '../../../core/spending/fixed_variable_expense.dart';
+import '../../../core/spending/spending_by_category_expense.dart';
+import '../../../core/spending/spending_granularity.dart';
+import '../../../core/spending/spending_labels.dart';
+import '../../../core/spending/spending_period_descriptor.dart';
+import '../../../core/spending/spending_period_filter.dart';
+import '../../../core/spending/spending_period_generator.dart';
+import '../../../core/spending/spending_transaction_aggregate.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../widgets/accounts/finko_income_expense_accordion.dart';
-import '../../../widgets/charts/finko_donut_ring_chart.dart';
+import '../../../widgets/accounts/finko_spending_income_fixed_variable_accordion.dart';
+import '../../../widgets/charts/finko_donut_with_side_legend.dart';
 import '../../../widgets/layout/pill_toggle_group.dart';
 import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
+import 'spending_providers.dart';
 
-/// Spending analysis — period pills, mini cards, donut, accordion, top tx.
-enum SpendingPeriod { week, month, quarter, year }
+/// Outer radius minus [kDonutCenterSpaceRadius] → **very thin** ring (fl_chart).
+const double kDonutSectionOuterRadius = 10;
+const double kDonutCenterSpaceRadius = 75;
 
 class SpendingScreen extends ConsumerStatefulWidget {
   const SpendingScreen({super.key});
@@ -26,30 +36,92 @@ class SpendingScreen extends ConsumerStatefulWidget {
 }
 
 class _SpendingScreenState extends ConsumerState<SpendingScreen> {
-  SpendingPeriod _period = SpendingPeriod.month;
+  SpendingGranularity _granularity = SpendingGranularity.month;
 
-  String _periodLabel(AppLocalizations l10n, SpendingPeriod p) {
-    return switch (p) {
-      SpendingPeriod.week => l10n.spendingPeriodWeek,
-      SpendingPeriod.month => l10n.spendingPeriodMonth,
-      SpendingPeriod.quarter => l10n.spendingPeriodQuarter,
-      SpendingPeriod.year => l10n.spendingPeriodYear,
+  /// `null` → right-most card in the **filtered** strip.
+  String? _selectedPeriodKey;
+
+  final ScrollController _stripScrollController = ScrollController();
+
+  /// After pill change, scroll strip to the right once the list has layout.
+  bool _scrollStripAfterPillChange = false;
+
+  @override
+  void dispose() {
+    _stripScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scheduleScrollStripToEnd() {
+    void tick() {
+      if (!mounted) return;
+      if (_stripScrollController.hasClients) {
+        final p = _stripScrollController.position;
+        p.jumpTo(p.maxScrollExtent);
+        _scrollStripAfterPillChange = false;
+        return;
+      }
+      if (_scrollStripAfterPillChange) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => tick());
+      }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => tick());
+  }
+
+  String _granularityLabel(AppLocalizations l10n, SpendingGranularity g) {
+    return switch (g) {
+      SpendingGranularity.week => l10n.spendingPeriodWeek,
+      SpendingGranularity.month => l10n.spendingPeriodMonth,
+      SpendingGranularity.quarter => l10n.spendingPeriodQuarter,
+      SpendingGranularity.year => l10n.spendingPeriodYear,
     };
   }
 
-  String _format(BuildContext context, int minor, String code) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return formatMinorUnits(minor, code, locale);
+  SpendingPeriodDescriptor _resolveSelected(
+    List<SpendingPeriodDescriptor> filtered,
+  ) {
+    final i = filtered.indexWhere((e) => e.key == _selectedPeriodKey);
+    final idx = i >= 0 ? i : filtered.length - 1;
+    return filtered[idx];
+  }
+
+  List<LedgerTransaction> _txsInSelectedPeriod(
+    List<LedgerTransaction> windowTxs,
+    SpendingPeriodDescriptor selected,
+  ) {
+    return windowTxs
+        .where(
+          (t) =>
+              t.transactionDate.compareTo(selected.startYyyyMmDd) >= 0 &&
+              t.transactionDate.compareTo(selected.endYyyyMmDd) <= 0,
+        )
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final monthAsync = ref.watch(currentMonthTotalsStreamProvider);
-    final recentAsync = ref.watch(recentTransactionsStreamProvider);
+    final today = ref.watch(todayYyyyMmDdProvider);
+    final fullStrip = buildSpendingPeriodStrip(
+      granularity: _granularity,
+      todayYyyyMmDd: today,
+    );
 
-    final mainCurrency = 'MXN';
+    final windowStart = fullStrip.isEmpty
+        ? today
+        : fullStrip.first.startYyyyMmDd;
+    final windowEnd = fullStrip.isEmpty ? today : fullStrip.last.endYyyyMmDd;
+    final windowAsync = ref.watch(
+      transactionsForDateRangeStreamProvider((
+        start: windowStart,
+        end: windowEnd,
+      )),
+    );
+
+    final profile = ref.watch(userProfileStreamProvider).valueOrNull;
+    final mainCurrency = profile?.mainCurrency ?? 'MXN';
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
 
     return Scaffold(
       appBar: AppBar(
@@ -63,151 +135,366 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          PillToggleGroup<SpendingPeriod>(
-            values: SpendingPeriod.values,
-            selected: _period,
-            onChanged: (v) => setState(() => _period = v),
-            labelOf: (p) => _periodLabel(l10n, p),
+          PillToggleGroup<SpendingGranularity>(
+            values: SpendingGranularity.values,
+            selected: _granularity,
+            onChanged: (v) {
+              setState(() {
+                _granularity = v;
+                _selectedPeriodKey = null;
+                _scrollStripAfterPillChange = true;
+              });
+              _scheduleScrollStripToEnd();
+            },
+            labelOf: (g) => _granularityLabel(l10n, g),
           ),
           const SizedBox(height: 20),
-          SizedBox(
-            height: 148,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 6,
-              separatorBuilder: (BuildContext context, int index) =>
-                  const SizedBox(width: 10),
-              itemBuilder: (context, i) {
-                final label = switch (i) {
-                  0 => 'W1',
-                  1 => 'W2',
-                  2 => 'W3',
-                  3 => 'W4',
-                  4 => 'W5',
-                  _ => 'W6',
-                };
-                return FinkoMiniIncomeExpenseCard(
-                  bottomLabel: _period == SpendingPeriod.month
-                      ? _periodLabel(l10n, SpendingPeriod.month)
-                      : label,
-                  incomeFraction: 0.35 + (i % 4) * 0.1,
-                  expenseFraction: 0.45 + (i % 3) * 0.08,
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-          monthAsync.when(
-            data: (m) {
-              final income = m?.incomeMinorMain ?? 0;
-              final expense = m?.expenseMinorMain ?? 0;
-              return FinkoIncomeExpenseAccordion(
-                incomeLabel: l10n.spendingIncome,
-                expenseLabel: l10n.spendingExpense,
-                incomeAmountText: _format(context, income, mainCurrency),
-                expenseAmountText: _format(context, expense, mainCurrency),
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: monthAsync.when(
-              data: (m) {
-                final total = m?.expenseMinorMain ?? 0;
-                final byCat = m?.byCategoryMinorMain ?? {};
-                final entries = byCat.entries.toList()
-                  ..sort((a, b) => b.value.compareTo(a.value));
-                final palette = <Color>[
-                  theme.colorScheme.primary,
-                  theme.colorScheme.secondary,
-                  theme.colorScheme.tertiary,
-                  theme.colorScheme.primaryContainer,
-                  theme.colorScheme.secondaryContainer,
-                ];
-                final sections = <PieChartSectionData>[];
-                var i = 0;
-                for (final e in entries.take(5)) {
-                  sections.add(
-                    PieChartSectionData(
-                      value: e.value.toDouble().clamp(1, 1e15),
-                      color: palette[i % palette.length],
-                      radius: 28,
-                      title: '',
-                    ),
-                  );
-                  i++;
-                }
-                if (sections.isEmpty) {
-                  sections.add(
-                    PieChartSectionData(
-                      value: 1,
-                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
-                      radius: 28,
-                      title: '',
-                    ),
-                  );
-                }
-                return FinkoDonutRingChart(
-                  sections: sections,
-                  centerTitle: l10n.spendingTotalSpend,
-                  centerTotal: _format(context, total, mainCurrency),
-                );
-              },
+          if (fullStrip.isEmpty)
+            const SizedBox.shrink()
+          else
+            windowAsync.when(
               loading: () => const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, _) => Text('$e'),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.spendingInPeriod(_periodLabel(l10n, _period)),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.spendingTopTransactions,
-            style: theme.textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          recentAsync.when(
-            data: (list) {
-              final top = list
-                  .where((t) => t.direction == MoneyDirection.out_)
-                  .take(4)
-                  .toList();
-              if (top.isEmpty) {
-                return Text(l10n.emptyNoTransactions);
-              }
-              return Column(
-                children: [
-                  for (final t in top)
-                    FinkoTransactionRowCompact(
-                      title: t.memo ?? t.type.wireName,
-                      subtitle: t.transactionDate,
-                      amountText: _tx(context, t),
-                      onTap: () => LedgerTransactionEditorSheet.show(
-                        context,
-                        transaction: t,
+              data: (windowTxs) {
+                final filtered = periodsWithTransactions(fullStrip, windowTxs);
+                if (filtered.isEmpty) {
+                  _scrollStripAfterPillChange = false;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      l10n.spendingStripEmpty,
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                final selected = _resolveSelected(filtered);
+                final selectedIdx = filtered.indexWhere(
+                  (e) => e.key == selected.key,
+                );
+                final selectedTxs = _txsInSelectedPeriod(windowTxs, selected);
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 148,
+                      child: ListView.separated(
+                        controller: _stripScrollController,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 10),
+                        itemBuilder: (context, i) {
+                          final d = filtered[i];
+                          return _SpendingMiniCard(
+                            descriptor: d,
+                            isSelected: i == selectedIdx,
+                            localeTag: localeTag,
+                            onTap: () =>
+                                setState(() => _selectedPeriodKey = d.key),
+                          );
+                        },
                       ),
                     ),
-                ],
-              );
-            },
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text('$e'),
-          ),
+                    const SizedBox(height: 24),
+                    _SpendingPeriodDetailColumn(
+                      granularity: _granularity,
+                      selected: selected,
+                      selectedTxs: selectedTxs,
+                      mainCurrency: mainCurrency,
+                      localeTag: localeTag,
+                    ),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );
+  }
+}
+
+class _SpendingPeriodDetailColumn extends ConsumerWidget {
+  const _SpendingPeriodDetailColumn({
+    required this.granularity,
+    required this.selected,
+    required this.selectedTxs,
+    required this.mainCurrency,
+    required this.localeTag,
+  });
+
+  final SpendingGranularity granularity;
+  final SpendingPeriodDescriptor selected;
+  final List<LedgerTransaction> selectedTxs;
+  final String mainCurrency;
+  final String localeTag;
+
+  String _format(BuildContext context, int minor, String code) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return formatMinorUnits(minor, code, locale);
   }
 
   static String _tx(BuildContext context, LedgerTransaction t) {
     final locale = Localizations.localeOf(context).toLanguageTag();
     return '− ${formatMinorUnits(t.amountMinor, t.currency, locale)}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final mergedAsync = ref.watch(
+      spendingMergedMonthlyRollupProvider(selected),
+    );
+    final flowAsync = ref.watch(spendingPeriodIncomeExpenseProvider(selected));
+    final categories = ref.watch(categoriesStreamProvider).valueOrNull ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        flowAsync.when(
+          data: (tuple) {
+            return mergedAsync.when(
+              data: (merged) {
+                final useTxDonut = granularity == SpendingGranularity.week;
+                final txRollup = aggregateSpendingTransactions(
+                  selectedTxs,
+                  mainCurrency: mainCurrency,
+                );
+                final totalExpense = useTxDonut
+                    ? txRollup.totalExpenseMinorMain
+                    : merged.expenseMinorMain;
+                final fixedVar = useTxDonut
+                    ? splitFixedVariableFromPositiveByCategory(
+                        totalExpenseMinorMain: totalExpense,
+                        byCategoryPositiveMinorMain:
+                            txRollup.byCategoryMinorMain,
+                      )
+                    : splitFixedVariableExpense(
+                        totalExpenseMinorMain: totalExpense,
+                        byCategoryMinorMain: merged.byCategoryMinorMain,
+                      );
+                return FinkoSpendingIncomeFixedVariableAccordion(
+                  incomeLabel: l10n.spendingIncome,
+                  fixedLabel: l10n.spendingFixedExpenses,
+                  variableLabel: l10n.spendingVariableExpenses,
+                  incomeAmountText: _format(
+                    context,
+                    tuple.income,
+                    mainCurrency,
+                  ),
+                  fixedAmountText: _format(
+                    context,
+                    fixedVar.fixedMinorMain,
+                    mainCurrency,
+                  ),
+                  variableAmountText: _format(
+                    context,
+                    fixedVar.variableMinorMain,
+                    mainCurrency,
+                  ),
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('$e'),
+            );
+          },
+          loading: () => const LinearProgressIndicator(),
+          error: (e, _) => Text('$e'),
+        ),
+        const SizedBox(height: 24),
+        mergedAsync.when(
+          data: (merged) {
+            final useTxDonut = granularity == SpendingGranularity.week;
+            final txRollup = aggregateSpendingTransactions(
+              selectedTxs,
+              mainCurrency: mainCurrency,
+            );
+            final totalExpense = useTxDonut
+                ? txRollup.totalExpenseMinorMain
+                : merged.expenseMinorMain;
+
+            final positiveByCat = useTxDonut
+                ? txRollup.byCategoryMinorMain
+                : positiveExpenseByCategoryId(
+                    signedByCategoryMinorMain: merged.byCategoryMinorMain,
+                    categories: categories,
+                  );
+
+            final entries = positiveByCat.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value));
+            final topEntries = entries.take(5).toList();
+
+            final palette = <Color>[
+              theme.colorScheme.primary,
+              theme.colorScheme.secondary,
+              theme.colorScheme.tertiary,
+              theme.colorScheme.primaryContainer,
+              theme.colorScheme.secondaryContainer,
+            ];
+
+            FinkoCategory? catById(String id) {
+              if (id.isEmpty) return null;
+              for (final c in categories) {
+                if (c.id == id) return c;
+              }
+              return null;
+            }
+
+            Color colorAt(int i, String catId) {
+              final c = catById(catId);
+              final argb = c?.colorArgb;
+              if (argb != null) return Color(argb);
+              return palette[i % palette.length];
+            }
+
+            final sections = <PieChartSectionData>[];
+            var si = 0;
+            for (final e in topEntries) {
+              sections.add(
+                PieChartSectionData(
+                  value: e.value.toDouble().clamp(1, 1e15),
+                  color: colorAt(si, e.key),
+                  radius: kDonutSectionOuterRadius,
+                  title: '',
+                ),
+              );
+              si++;
+            }
+            if (sections.isEmpty) {
+              sections.add(
+                PieChartSectionData(
+                  value: 1,
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  radius: kDonutSectionOuterRadius,
+                  title: '',
+                ),
+              );
+            }
+
+            final legendRows = <FinkoDonutLegendRow>[];
+            var li = 0;
+            for (final e in topEntries) {
+              final name = e.key.isEmpty
+                  ? l10n.spendingUncategorized
+                  : (catById(e.key)?.name ?? e.key);
+              final pct = totalExpense > 0
+                  ? '${((e.value / totalExpense) * 100).round()}%'
+                  : null;
+              legendRows.add(
+                FinkoDonutLegendRow(
+                  color: colorAt(li, e.key),
+                  title: name,
+                  valueText: _format(context, e.value, mainCurrency),
+                  percentText: pct,
+                ),
+              );
+              li++;
+            }
+
+            final periodLabel = spendingPeriodCardLabel(localeTag, selected);
+
+            return FinkoDonutWithSideLegend(
+              sections: sections,
+              centerTitle: l10n.spendingTotalSpendIn,
+              centerSubtitle: periodLabel,
+              centerTotal: _format(context, totalExpense, mainCurrency),
+              legendRows: legendRows,
+              centerSpaceRadius: kDonutCenterSpaceRadius,
+              sectionsSpace: 0,
+            );
+          },
+          loading: () => const SizedBox(
+            height: 200,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (e, _) => Text('$e'),
+        ),
+        const SizedBox(height: 24),
+        Text(l10n.spendingTopTransactions, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Builder(
+          builder: (context) {
+            final rollup = aggregateSpendingTransactions(
+              selectedTxs,
+              mainCurrency: mainCurrency,
+            );
+            final top = rollup.topOutflows;
+            if (top.isEmpty) {
+              return Text(l10n.emptyNoTransactions);
+            }
+            return Column(
+              children: [
+                for (final t in top)
+                  FinkoTransactionRowCompact(
+                    title: t.memo ?? t.type.wireName,
+                    subtitle: t.transactionDate,
+                    amountText: _tx(context, t),
+                    onTap: () => LedgerTransactionEditorSheet.show(
+                      context,
+                      transaction: t,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _SpendingMiniCard extends ConsumerWidget {
+  const _SpendingMiniCard({
+    required this.descriptor,
+    required this.isSelected,
+    required this.localeTag,
+    required this.onTap,
+  });
+
+  final SpendingPeriodDescriptor descriptor;
+  final bool isSelected;
+  final String localeTag;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flow = ref.watch(spendingPeriodIncomeExpenseProvider(descriptor));
+    return flow.when(
+      data: (tuple) {
+        final maxBar =
+            (tuple.income > tuple.expense ? tuple.income : tuple.expense).clamp(
+              1,
+              1 << 62,
+            );
+        final incF = (tuple.income / maxBar).clamp(0.05, 1.0);
+        final expF = (tuple.expense / maxBar).clamp(0.05, 1.0);
+        return FinkoMiniIncomeExpenseCard(
+          bottomLabel: spendingPeriodCardLabel(localeTag, descriptor),
+          incomeFraction: incF,
+          expenseFraction: expF,
+          isSelected: isSelected,
+          onTap: onTap,
+        );
+      },
+      loading: () => FinkoMiniIncomeExpenseCard(
+        bottomLabel: spendingPeriodCardLabel(localeTag, descriptor),
+        incomeFraction: 0.35,
+        expenseFraction: 0.45,
+        isSelected: isSelected,
+        onTap: onTap,
+      ),
+      error: (_, _) => FinkoMiniIncomeExpenseCard(
+        bottomLabel: spendingPeriodCardLabel(localeTag, descriptor),
+        incomeFraction: 0.05,
+        expenseFraction: 0.05,
+        isSelected: isSelected,
+        onTap: onTap,
+      ),
+    );
   }
 }

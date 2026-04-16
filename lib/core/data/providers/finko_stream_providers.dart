@@ -187,6 +187,26 @@ List<UpcomingTransaction> mergeDashboardUpcoming(
   return out;
 }
 
+/// Ledger rows with `transactionDate` in [**start**, **end**] inclusive ([`docs/data-contract.md`]).
+final transactionsForDateRangeStreamProvider =
+    StreamProvider.family<
+      List<LedgerTransaction>,
+      ({String start, String end})
+    >((ref, range) async* {
+      final uid = ref.watch(authUidProvider);
+      if (uid == null) {
+        yield <LedgerTransaction>[];
+        return;
+      }
+      yield* ref
+          .watch(firestoreDataRepositoryProvider)
+          .watchTransactionsForDateRange(
+            uid,
+            startYyyyMmDd: range.start,
+            endYyyyMmDd: range.end,
+          );
+    });
+
 final categoriesStreamProvider = StreamProvider<List<FinkoCategory>>((
   ref,
 ) async* {

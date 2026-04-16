@@ -24,15 +24,18 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Metric carousel card** | Top-left label, large value, top-right period delta; tappable | Dashboard (Net Worth, Monthly expense) |
 | **Two-card horizontal carousel** | Swipe/carousel hosting two metric cards | Dashboard |
 | **Net worth sparkline / line chart** | ~30 days series inside Net Worth card | Dashboard |
-| **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period | Spending (row of vertical period cards) |
-| **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Spending breakdown |
+| **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period; optional **selected** border + tap | Spending (row of vertical period cards) |
+| **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Legacy / reuse |
+| **Donut + side legend** | Thin ring + **legend on the right** (swatch, name, amount, %); **centered horizontally**; center: title + period subtitle + bold total | Spending breakdown (`FinkoDonutWithSideLegend`) |
 
 ## Accounts & grouping
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account | Dashboard |
-| **Accounts accordion (income/expense)** | Only income and expense sections; **not clickable** | Spending |
+| **Income + fixed + variable accordion** | Three rows (income \| fixed expense \| variable expense), **not clickable** | Spending (`FinkoSpendingIncomeFixedVariableAccordion`) |
+| **Income / expense accordion** | Two rows (income \| expense), **not clickable** | Reusable (`FinkoIncomeExpenseAccordion`) |
+| **Fixed / variable expense accordion** | Two rows (fixed \| variable), **not clickable** | Reusable (`FinkoFixedVariableExpenseAccordion`) |
 | **Account type row** | Icon, label, trailing amount, expand affordance | Accordions |
 | **Account line row** | Single account under a section | Accordions |
 

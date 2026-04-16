@@ -87,7 +87,7 @@ When a **transaction is created/updated**:
 | Screen / area | Primary subscriptions (examples) |
 |-----------------|-----------------------------------|
 | **Dashboard** | `accountsStreamProvider`; `userProfileStreamProvider`; **`monthlyTotalsForMonthStreamProvider(dashboardYearMonthProvider)`** (MTD expense/budget math through profile today); **`netWorthSparklineSeriesProvider`** (30-day series ending profile today); **`recentTransactionsStreamProvider`** (last 5 **≤ today**); **`dashboardUpcomingStripProvider`** ( **`upcomingTransactions`** + **`futureDatedLedgerTransactionsStreamProvider`** + recurring previews); pull-to-refresh invalidates streams + **`materializeDueUpcoming`** + **`reconcileDeferredLedgerForUser`**. Optional `forexRates` if UI shows rate context. |
-| **Spending** | `monthlyTotals` for months in range; derive week/quarter/year in provider. |
+| **Spending** | **`todayYyyyMmDdProvider`** + **`buildSpendingPeriodStrip`** (`lib/core/spending/`); **`spendingMergedMonthlyRollupProvider(period)`** watches **`monthlyTotalsForMonthStreamProvider(yyyy-mm)`** for every month touched by the selected period; **`spendingPeriodIncomeExpenseProvider(period)`** uses merged month totals or **day-map sums** for **week**; **`transactionsForDateRangeStreamProvider((start,end))`** → **`watchTransactionsForDateRange`** for **week** donut / fixed-variable / **top 4** and for **top 4** at all granularities; **`categoriesStreamProvider`** for donut legend + expense filter. |
 | **Transactions** | Paged `get()` on `transactions` (`orderBy transactionDate desc`, cursor `startAfter`); accumulated list + client search/filter in `transactionsListNotifierProvider` (see §9). |
 | **Budgets** | **`monthlyTotals/{yyyy-mm}`** only (budgets embedded in doc). |
 | **Categories / accounts** | Collection snapshots. |
@@ -180,5 +180,6 @@ When a **transaction is created/updated**:
 | 2026-04-14 | Scheduled **forex** allowed; budgets in `monthlyTotals`; `upcomingTransactions` + callable materialization; multi-currency. |
 | 2026-04-16 | **§12** Ledger aggregation (Functions vs client, `aggregateApplied`, `days` map, optional reload fields). |
 | 2026-04-16 | **§5** Dashboard row: named providers + net-worth sparkline source, refresh/materialize. |
+| 2026-04-16 | **§5** Spending row: `spendingMergedMonthlyRollupProvider`, `spendingPeriodIncomeExpenseProvider`, `transactionsForDateRangeStreamProvider`, `watchTransactionsForDateRange`, `categoriesStreamProvider`. |
 | 2026-04-16 | **§5** Recurring row: named providers; **§11** callable `asOfDate` / `timezone` resolution + next-date + `recurring` sync. |
 | 2026-04-16 | **§9** Transactions tab: cursor pagination + accumulated rows; search uses sequential page reads when needed; open question #2 (pagination strategy) superseded for `/transactions`. |

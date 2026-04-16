@@ -122,10 +122,7 @@ void main() {
     await tester.tap(find.text('Nuevo'));
     await tester.pumpAndSettle();
     expect(find.text('Nueva transacción'), findsOneWidget);
-    expect(
-      find.text('Añade una transacción'),
-      findsOneWidget,
-    );
+    expect(find.text('Añade una transacción'), findsOneWidget);
 
     Navigator.of(tester.element(find.text('Nueva transacción'))).pop();
     await tester.pumpAndSettle();

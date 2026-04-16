@@ -33,10 +33,13 @@ void main() {
       expect(expenseMinorMainThroughDate(m, '2026-04-15'), 300);
     });
 
-    test('returns full month expense when totals month differs from through date', () {
-      final m = _totals(yearMonth: '2026-03', expenseMinorMain: 5000);
-      expect(expenseMinorMainThroughDate(m, '2026-04-10'), 5000);
-    });
+    test(
+      'returns full month expense when totals month differs from through date',
+      () {
+        final m = _totals(yearMonth: '2026-03', expenseMinorMain: 5000);
+        expect(expenseMinorMainThroughDate(m, '2026-04-10'), 5000);
+      },
+    );
   });
 
   group('byCategoryMinorMainThroughDate', () {
@@ -45,9 +48,7 @@ void main() {
         yearMonth: '2026-04',
         expenseMinorMain: 1000,
         byCategory: {'c1': 600, 'c2': 400},
-        days: {
-          '10': const MonthlyDayRollup(expenseMinorMain: 500),
-        },
+        days: {'10': const MonthlyDayRollup(expenseMinorMain: 500)},
       );
       // MTD through 2026-04-10 = 500; ratio 0.5
       final out = byCategoryMinorMainThroughDate(m, '2026-04-10');

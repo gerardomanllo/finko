@@ -20,6 +20,13 @@ abstract class FirestoreDataRepository {
     int limit = 20,
   });
 
+  /// Inclusive [`transactionDate`] range, ordered ascending by date ([`docs/data-contract.md`] Spending).
+  Stream<List<LedgerTransaction>> watchTransactionsForDateRange(
+    String uid, {
+    required String startYyyyMmDd,
+    required String endYyyyMmDd,
+  });
+
   /// Ledger rows with [transactionDate] **strictly after** [afterYyyyMmDd], ascending.
   ///
   /// Used for dashboard “próximos” alongside `upcomingTransactions` (user-entered
@@ -135,6 +142,25 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
         .collection(FirestorePaths.transactionsCollection(uid))
         .orderBy('transactionDate', descending: true)
         .limit(limit)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((d) => LedgerTransaction.fromFirestore(d.id, d.data()))
+              .toList(),
+        );
+  }
+
+  @override
+  Stream<List<LedgerTransaction>> watchTransactionsForDateRange(
+    String uid, {
+    required String startYyyyMmDd,
+    required String endYyyyMmDd,
+  }) {
+    return _db
+        .collection(FirestorePaths.transactionsCollection(uid))
+        .where('transactionDate', isGreaterThanOrEqualTo: startYyyyMmDd)
+        .where('transactionDate', isLessThanOrEqualTo: endYyyyMmDd)
+        .orderBy('transactionDate')
         .snapshots()
         .map(
           (snapshot) => snapshot.docs

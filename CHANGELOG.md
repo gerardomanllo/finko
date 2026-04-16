@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Spending (`/spending`):** period **pill + horizontal period cards** (ascending, default right-most) driven by **`todayYyyyMmDdProvider`**; **`monthlyTotals`** merge + **week** day sums for mini bars; **fixed vs variable** accordion using category **`fixed-expenses`**; **thin donut** with **right-side legend** and **top 4 outflows** from **`transactions`** in range (`watchTransactionsForDateRange` / `transactionsForDateRangeStreamProvider`); **`mainCurrency`** from profile. Helpers in `lib/core/spending/`, providers in `lib/features/spending/presentation/spending_providers.dart`.
+
 - **Docs:** [`docs/ledger-aggregations-and-ui-flow.md`](docs/ledger-aggregations-and-ui-flow.md) — canonical **functional** flow from `transactions` to Firestore aggregates and dashboard numbers, with **traceability** to Jest (`functions/test/`) and Dart tests; mermaid charts for CF deltas and UI derivation paths. Linked from [`docs/data-contract.md`](docs/data-contract.md) §12 and [`docs/README.md`](docs/README.md).
 
 - **Tests:** [`test/core/monthly_totals_as_of_date_test.dart`](test/core/monthly_totals_as_of_date_test.dart) for `expenseMinorMainThroughDate` and `byCategoryMinorMainThroughDate` (MTD expense and category ring scaling).
@@ -27,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Login widget tests for core auth affordances and forgot-password interactions (`test/features/auth/login_screen_test.dart`) using hermetic provider overrides.
 
 ### Changed
+
+- **Spending:** period strip lists **only periods that have at least one transaction** and **auto-scrolls to the right** when the period pill changes; **single accordion** (income + fixed + variable); donut + legend **centered horizontally**; donut ring **thinner**; largest-transaction list uses **`amountMinorMain`** with **`amountMinor`** fallback when `currency` matches **`mainCurrency`**.
 
 - **Cloud Functions — ledger aggregate:** Rows with **`transactionDate` after** the user’s calendar today **do not** update **`accounts`** / **`monthlyTotals`** until applied; they set **`aggregateDeferred: true`**. Callable **`reconcileDeferredLedgerForUser`** applies due rows; the **Flutter app** invokes it on lifecycle (once per profile calendar day, SharedPreferences) and on **every** dashboard/recurring pull-to-refresh—**no** scheduled job. See `docs/data-model.md` §4, `lib/core/upcoming/deferred_ledger_reconcile_service.dart`.
 

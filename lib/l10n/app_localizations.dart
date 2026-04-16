@@ -1268,6 +1268,36 @@ abstract class AppLocalizations {
   /// **'Gasto total'**
   String get spendingTotalSpend;
 
+  /// No description provided for @spendingTotalSpendIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto total'**
+  String get spendingTotalSpendIn;
+
+  /// No description provided for @spendingFixedExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos fijos'**
+  String get spendingFixedExpenses;
+
+  /// No description provided for @spendingVariableExpenses.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos variables'**
+  String get spendingVariableExpenses;
+
+  /// No description provided for @spendingUncategorized.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get spendingUncategorized;
+
+  /// No description provided for @spendingStripEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay períodos con transacciones en este rango.'**
+  String get spendingStripEmpty;
+
   /// No description provided for @spendingInPeriod.
   ///
   /// In es, this message translates to:

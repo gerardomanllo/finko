@@ -2,9 +2,11 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const _kLastReconcileDateKeyPrefix = 'finko_last_deferred_ledger_reconcile_yyyy_mm_dd';
+const _kLastReconcileDateKeyPrefix =
+    'finko_last_deferred_ledger_reconcile_yyyy_mm_dd';
 
-typedef DeferredLedgerCallable = Future<void> Function(Map<String, dynamic> payload);
+typedef DeferredLedgerCallable =
+    Future<void> Function(Map<String, dynamic> payload);
 typedef PreferencesLoader = Future<SharedPreferences> Function();
 
 /// Invokes `reconcileDeferredLedgerForUser` — at most once per profile calendar day
@@ -58,7 +60,10 @@ class DeferredLedgerReconcileService {
     try {
       await _callable(<String, dynamic>{'uid': uid});
       final prefs = await _preferencesLoader();
-      await prefs.setString('$_kLastReconcileDateKeyPrefix:$uid', profileTodayYyyyMmDd);
+      await prefs.setString(
+        '$_kLastReconcileDateKeyPrefix:$uid',
+        profileTodayYyyyMmDd,
+      );
     } catch (e, st) {
       debugPrint('force reconcileDeferredLedgerForUser failed: $e\n$st');
     }

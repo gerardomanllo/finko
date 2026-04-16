@@ -236,6 +236,11 @@
   "spendingIncome": "Ingresos",
   "spendingExpense": "Gastos",
   "spendingTotalSpend": "Gasto total",
+  "spendingTotalSpendIn": "Gasto total",
+  "spendingFixedExpenses": "Gastos fijos",
+  "spendingVariableExpenses": "Gastos variables",
+  "spendingUncategorized": "Sin categoría",
+  "spendingStripEmpty": "Aún no hay períodos con transacciones en este rango.",
   "spendingInPeriod": "En {period}",
   "@spendingInPeriod": {
     "placeholders": {

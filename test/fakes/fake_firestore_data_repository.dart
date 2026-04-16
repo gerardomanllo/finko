@@ -55,6 +55,13 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
   }) => _recent;
 
   @override
+  Stream<List<LedgerTransaction>> watchTransactionsForDateRange(
+    String uid, {
+    required String startYyyyMmDd,
+    required String endYyyyMmDd,
+  }) => _recent;
+
+  @override
   Stream<List<LedgerTransaction>> watchLedgerTransactionsAfterDate(
     String uid,
     String afterYyyyMmDd, {

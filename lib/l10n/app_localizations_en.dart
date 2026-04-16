@@ -622,6 +622,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spendingTotalSpend => 'Total spend';
 
   @override
+  String get spendingTotalSpendIn => 'Total spend in';
+
+  @override
+  String get spendingFixedExpenses => 'Fixed expenses';
+
+  @override
+  String get spendingVariableExpenses => 'Variable expenses';
+
+  @override
+  String get spendingUncategorized => 'Uncategorized';
+
+  @override
+  String get spendingStripEmpty =>
+      'No periods with transactions in this range yet.';
+
+  @override
   String spendingInPeriod(String period) {
     return 'In $period';
   }
