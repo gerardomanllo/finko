@@ -39,7 +39,7 @@
 
 ## Data (frontend phase)
 
-- Mock recurring rules with `nextDate`, `isIncome`, `name`, `amount`, `categoryIcon`.
+- Mock recurring rules with `name`, `kind` (`standard` \| `transfer`), `nextTransactionDate`, `direction` (`in` \| `out`), `amountMinor`, `cadence`, `categoryIcon` — see [`data-model.md`](data-model.md) §9.
 
 ## Acceptance
 

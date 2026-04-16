@@ -8,6 +8,10 @@ import '../core/auth/firebase_auth_providers.dart';
 
 /// Auth + onboarding gate (see docs/onboarding.md). Uses [FirebaseAuth] /
 /// [FirebaseFirestore] from [ProviderScope] when [context] is under [FinkoApp].
+///
+/// If reading `users/{uid}` fails (e.g. [FirebaseException] `permission-denied`
+/// before rules are deployed), we treat onboarding as **not** complete so the
+/// user is sent to `/onboarding` instead of crashing.
 Future<String?> appAuthRedirect(
   BuildContext context,
   GoRouterState state,
@@ -24,11 +28,10 @@ Future<String?> appAuthRedirect(
     return '/login';
   }
 
-  final DocumentSnapshot<Map<String, dynamic>> doc = await firestore
-      .collection('users')
-      .doc(user.uid)
-      .get();
-  final bool onboardingDone = doc.data()?['onboardingCompleted'] == true;
+  final bool onboardingDone = await _readOnboardingCompleted(
+    firestore,
+    user.uid,
+  );
 
   if (!onboardingDone) {
     if (location == '/onboarding') return null;
@@ -40,4 +43,26 @@ Future<String?> appAuthRedirect(
   }
 
   return null;
+}
+
+Future<bool> _readOnboardingCompleted(
+  FirebaseFirestore firestore,
+  String uid,
+) async {
+  try {
+    final DocumentSnapshot<Map<String, dynamic>> doc = await firestore
+        .collection('users')
+        .doc(uid)
+        .get();
+    return doc.data()?['onboardingCompleted'] == true;
+  } on FirebaseException catch (e) {
+    // Common before rules deploy: permission-denied. Treat as onboarding incomplete.
+    if (e.code == 'permission-denied' || e.code == 'unavailable') {
+      return false;
+    }
+    rethrow;
+  } catch (_) {
+    // Offline or transient errors: do not crash the router.
+    return false;
+  }
 }

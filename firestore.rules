@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// Deploy: npx -y firebase-tools@latest deploy --only firestore:rules
+// (confirm active project matches finko-environments / intended env.)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      // Owner can read/write profile (incl. onboardingCompleted, locale, …).
+      // Tighten field-level rules later when all writes go through Callables.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

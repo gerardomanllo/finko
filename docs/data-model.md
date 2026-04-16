@@ -238,7 +238,28 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 
 ## 9. `recurring/{ruleId}`
 
-Templates / rules that **create or refresh** `upcomingTransactions` rows (e.g. when a rule is saved). Fields similar to today’s spec: `name`, `amountMinor`, `direction`, `categoryId`, `accountId`, `cadence`, `isIncome`, `active`, `nextTransactionDate` string, etc. **Exact** shape can align with `upcomingTransactions` for duplication minimization—refactor in code, not duplicated here.
+Templates / rules that **create or refresh** `upcomingTransactions` rows (e.g. when a rule is saved). **Locked schema** (aligns with §8 `kind` / accounts / cadence; income vs expense is **`direction` only—no separate `isIncome` flag**):
+
+| Field | Type | Required | Notes |
+|-------|------|----------|--------|
+| `name` | `string` | ✓ | Display label. |
+| `kind` | `string` | ✓ | `standard` \| `transfer` — same meaning as `upcomingTransactions.kind` (§8). |
+| `amountMinor` | `int` | ✓ | **> 0**; smallest unit of `currency`. |
+| `direction` | `string` | ✓ | `in` \| `out`. |
+| `currency` | `string` | ✓ | ISO 4217. |
+| `categoryId` | `string?` | | |
+| `memo` | `string?` | | |
+| `accountId` | `string?` | | **Required** when `kind: standard` — posting account (income deposit or expense withdrawal). |
+| `fromAccountId` | `string?` | | **Required** when `kind: transfer`. |
+| `toAccountId` | `string?` | | **Required** when `kind: transfer`. |
+| `cadence` | `string` | ✓ | `monthly` \| `twiceMonthly` \| `biweekly` (see [`onboarding.md`](onboarding.md) for product copy). |
+| `daysOfMonth` | `array<int>?` | | Days **1–31** for month-based schedules (e.g. `[1, 15]` for twice-monthly); omit when not applicable (e.g. biweekly driven by `nextTransactionDate` only). |
+| `active` | `bool` | ✓ | Default **`true`**. |
+| `nextTransactionDate` | `string` | ✓ | Next effective **`"yyyy-MM-dd"`**. |
+| `createdAt` | `Timestamp` | ✓ | UTC. |
+| `updatedAt` | `Timestamp` | ✓ | UTC. |
+
+**Legacy:** Older docs mentioned `isIncome`; readers may map it to `direction` for one-time migration.
 
 ---
 
@@ -304,3 +325,4 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-14 | §4.1–4.3: idempotency via `eventId` + `_processedAggregateEvents`; hard delete; audit fields; NW vs net cash; upcoming transfer template; §12 expanded; security for `_processedAggregateEvents`. |
 | 2026-04-14 | §4.3: **locked** — scheduled transfers use **one** `upcomingTransactions` template (`kind: transfer`); not two docs per leg. |
 | 2026-04-15 | §3: `locale`, `themePreference`, `onboardingCompleted`; §3.1 `integrations` (WhatsApp/Telegram, server-verified); §5: canonical account `type` enum; §6 `iconKey` + onboarding cross-ref; §11 integration/completion write rules; §12 onboarding/account/opening-balance rows. |
+| 2026-04-15 | §9: **locked** recurring rule schema (`kind`, `cadence`, `daysOfMonth`, `direction` only — dropped standalone `isIncome`). |
