@@ -851,7 +851,11 @@ class _LedgerTransactionEditorSheetState
                       controller: _amountController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
+                        signed: false,
                       ),
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      inputFormatters: [AmountTextInputFormatter()],
                       decoration: InputDecoration(
                         labelText: l10n.transactionEditorFieldAmount,
                         border: const OutlineInputBorder(),
