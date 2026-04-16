@@ -22,9 +22,10 @@ class FinkoSocialAuthButtons extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        OutlinedButton(
+        OutlinedButton.icon(
           onPressed: busy ? null : onGoogle,
-          child: Text(googleLabel),
+          icon: const Icon(Icons.g_mobiledata, size: 24),
+          label: Text(googleLabel),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(

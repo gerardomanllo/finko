@@ -24,6 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _register = false;
   bool _busy = false;
   String? _errorCode;
+  String? _infoCode;
 
   @override
   void dispose() {
@@ -37,6 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() {
       _busy = true;
       _errorCode = null;
+      _infoCode = null;
     });
     final auth = ref.read(authRepositoryProvider);
     try {
@@ -64,6 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() {
       _busy = true;
       _errorCode = null;
+      _infoCode = null;
     });
     final auth = ref.read(authRepositoryProvider);
     try {
@@ -83,10 +86,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() {
       _busy = true;
       _errorCode = null;
+      _infoCode = null;
     });
     final auth = ref.read(authRepositoryProvider);
     try {
       await auth.signInWithApple();
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorCode = e.code);
+    } catch (_) {
+      setState(() => _errorCode = 'unknown');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    setState(() {
+      _errorCode = null;
+      _infoCode = null;
+    });
+    if (email.isEmpty) {
+      setState(() => _errorCode = 'missing-email');
+      return;
+    }
+    if (!email.contains('@')) {
+      setState(() => _errorCode = 'invalid-email');
+      return;
+    }
+    setState(() => _busy = true);
+    final auth = ref.read(authRepositoryProvider);
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        setState(() => _infoCode = 'password-reset-sent');
+      }
     } on FirebaseAuthException catch (e) {
       setState(() => _errorCode = e.code);
     } catch (_) {
@@ -112,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
-                ),
+                ).copyWith(bottom: 16 + MediaQuery.viewInsetsOf(context).bottom),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -140,13 +174,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       toggleLabel: _register
                           ? l10n.loginToggleSignIn
                           : l10n.loginToggleSignUp,
+                      forgotPasswordLabel: l10n.loginForgotPassword,
                       onSubmit: _submitEmailPassword,
+                      onForgotPassword: _forgotPassword,
                       onToggleMode: () => setState(() {
                         _register = !_register;
                         _errorCode = null;
+                        _infoCode = null;
                       }),
                       errorText: _errorCode != null
                           ? _messageForCode(l10n, _errorCode!)
+                          : null,
+                      infoText: _infoCode != null
+                          ? _infoMessageForCode(l10n, _infoCode!)
                           : null,
                       busy: _busy,
                     ),
@@ -157,12 +197,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       googleLabel: l10n.loginGoogle,
                       appleLabel: l10n.loginApple,
                       busy: _busy,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      l10n.loginMessagingNote,
-                      style: theme.textTheme.bodySmall,
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -186,10 +220,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return l10n.loginValidationEmail;
       case 'weak-password':
         return l10n.loginValidationPasswordLength;
+      case 'missing-email':
+        return l10n.loginForgotPasswordMissingEmail;
       case 'unknown':
         return l10n.loginErrorGeneric;
       default:
         return l10n.loginErrorGeneric;
+    }
+  }
+
+  String _infoMessageForCode(AppLocalizations l10n, String code) {
+    switch (code) {
+      case 'password-reset-sent':
+        return l10n.loginForgotPasswordSent;
+      default:
+        return '';
     }
   }
 }

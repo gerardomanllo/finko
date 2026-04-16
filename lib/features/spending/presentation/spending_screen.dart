@@ -114,8 +114,8 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                   theme.colorScheme.primary,
                   theme.colorScheme.secondary,
                   theme.colorScheme.tertiary,
-                  Colors.orange,
-                  Colors.teal,
+                  theme.colorScheme.primaryContainer,
+                  theme.colorScheme.secondaryContainer,
                 ];
                 final sections = <PieChartSectionData>[];
                 var i = 0;

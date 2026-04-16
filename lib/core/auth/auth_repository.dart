@@ -10,14 +10,31 @@ import 'package:crypto/crypto.dart';
 
 import 'firebase_auth_providers.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>(
+final authRepositoryProvider = Provider<AuthActions>(
   (ref) => AuthRepository(
     auth: ref.watch(firebaseAuthProvider),
     googleSignIn: GoogleSignIn(scopes: const <String>['email', 'profile']),
   ),
 );
 
-class AuthRepository {
+abstract class AuthActions {
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
+  Future<UserCredential> signInWithGoogle();
+  Future<UserCredential> signInWithApple();
+  Future<void> sendPasswordResetEmail({required String email});
+  Future<void> signOut();
+}
+
+class AuthRepository implements AuthActions {
   AuthRepository({
     required FirebaseAuth auth,
     required GoogleSignIn googleSignIn,
@@ -27,6 +44,7 @@ class AuthRepository {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
 
+  @override
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -34,6 +52,7 @@ class AuthRepository {
     return _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
+  @override
   Future<UserCredential> createUserWithEmailAndPassword({
     required String email,
     required String password,
@@ -45,6 +64,7 @@ class AuthRepository {
   }
 
   /// Google: web uses Firebase popup; iOS/Android use `google_sign_in` + credential.
+  @override
   Future<UserCredential> signInWithGoogle() async {
     if (kIsWeb) {
       final provider = GoogleAuthProvider();
@@ -64,6 +84,7 @@ class AuthRepository {
   }
 
   /// Apple: web uses Firebase popup; native uses Sign in with Apple + OAuth credential.
+  @override
   Future<UserCredential> signInWithApple() async {
     if (kIsWeb) {
       final provider = OAuthProvider('apple.com');
@@ -87,9 +108,19 @@ class AuthRepository {
     return _auth.signInWithCredential(oauthCredential);
   }
 
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  @override
   Future<void> signOut() async {
     if (!kIsWeb) {
-      await _googleSignIn.signOut();
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {
+        // Local Google session cleanup should not block Firebase sign-out.
+      }
     }
     await _auth.signOut();
   }

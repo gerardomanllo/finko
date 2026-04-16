@@ -98,8 +98,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginApple => 'Continuar con Apple';
 
   @override
-  String get loginMessagingNote =>
-      'WhatsApp y Telegram no son métodos de inicio de sesión. Conéctalos en Ajustes.';
+  String get loginForgotPassword => '¿Olvidaste tu contraseña?';
+
+  @override
+  String get loginForgotPasswordMissingEmail =>
+      'Escribe tu correo arriba para restablecer la contraseña';
+
+  @override
+  String get loginForgotPasswordSent =>
+      'Se envió el correo para restablecer la contraseña. Revisa tu bandeja.';
 
   @override
   String get loginValidationRequired => 'Este campo es obligatorio';

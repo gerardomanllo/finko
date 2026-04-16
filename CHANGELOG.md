@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Login/Auth upgrades: forgot-password end-to-end flow on `/login` (localized CTA + success/error feedback via Firebase Auth `sendPasswordResetEmail`), keyboard-safe login form polish (`AutofillGroup`, submit actions, inset-aware scrolling), and Google provider button icon treatment.
+- Firebase/Auth operator runbook: [`docs/references/firebase-auth-manual-setup.md`](docs/references/firebase-auth-manual-setup.md) covering Google release SHA-1/SHA-256, Apple Services ID + OAuth code flow + callback URL, and password reset template checks.
+- Login widget tests for core auth affordances and forgot-password interactions (`test/features/auth/login_screen_test.dart`) using hermetic provider overrides.
+
+### Fixed
+
+- Post-logout stability: hardened locale subscription error handling during auth transitions and made Google local sign-out cleanup non-blocking so Firebase sign-out/redirect completes reliably.
+
+- Global Material 3 light theme with Finko palette tokens (`#173fba`, `#3e6ff5`, `#f0f4fe`, `#4d5462`, `#6d727f`, `#d2d5da`) wired through `FinkoTheme` and app-level `MaterialApp.router`.
+- Dark-theme refinement pass: semantic income/expense colors, improved progress/list/icon defaults for contrast, and brand-consistent spending chart palette (no hardcoded orange/teal).
 - **Splash** route `/splash` as initial cold-start screen (`kMinSplashDuration` + auth/onboarding gate); see `docs/splash.md`.
 - **App shell** (`StatefulShellRoute`): bottom navigation for Dashboard, Recurring, Spending, and Transactions; **More** opens the drawer (Categories, Accounts, Settings). Shared UI primitives under `lib/widgets/` (paper surfaces, metric carousel + sparkline, cash-flow and income/expense accordions, donut chart, budget month pager, two-week calendar, search bar, login sections) and feature screens aligned with `docs/components-inventory.md`. Dependency: **`fl_chart`**. `monthlyTotalsForMonthStreamProvider` for month-scoped budget views.
 - [`docs/references/README.md`](docs/references/README.md) — **Flutter app stack** table (`go_router`, Riverpod, l10n deps), `lib/` layout guidance, Firebase init vs stub data.

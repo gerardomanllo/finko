@@ -12,7 +12,20 @@
           "package_name": "com.example.finko.dev"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "654834705056-0bkhdp1t879cancr55t3u078hd3o5ff7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.finko.dev",
+            "certificate_hash": "604e2da0241242ee8b56c4b7611dd2770ae36abe"
+          }
+        },
+        {
+          "client_id": "654834705056-iedqngb7qccitppj6dd8p1h06o6nbfui.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDlSzMuro-yjB3q3WFKnsKp0GI7lsnzv1s"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "654834705056-iedqngb7qccitppj6dd8p1h06o6nbfui.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "654834705056-9ukst9cus177f9o33e4up9eolth1206v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.finko.dev"
+              }
+            }
+          ]
         }
       }
     }

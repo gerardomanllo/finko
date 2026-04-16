@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/finko_theme.dart';
+
 /// Two rows: this week (top) and next week (bottom); [markedDays] get a dot;
 /// [incomeDays] also show a green `$` marker.
 class FinkoTwoWeekCalendar extends StatelessWidget {
@@ -120,6 +122,7 @@ class _WeekRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final semantic = theme.extension<FinkoSemanticColors>();
     return Row(
       children: [
         for (final d in days)
@@ -144,7 +147,8 @@ class _WeekRow extends StatelessWidget {
                       Text(
                         r'$',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.green.shade700,
+                          color:
+                              semantic?.income ?? theme.colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

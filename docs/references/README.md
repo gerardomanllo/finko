@@ -5,6 +5,8 @@ Use this folder for **stable pointers** that agents should read when touching a 
 | Topic | Suggested content |
 |-------|-------------------|
 | **Firebase** | Links to console project, `firebase.json` notes, which Hosting site is prod vs dev |
+| **Firebase Auth manual setup** | [`firebase-auth-manual-setup.md`](firebase-auth-manual-setup.md) - provider enablement, Android SHA-1/SHA-256, Apple Services ID + OAuth code flow + callback URL, forgot-password template checklist |
+| **Auth next steps** | [`auth-next-steps.md`](auth-next-steps.md) - rolling checklist of remaining auth tasks and blockers (including Apple login dependency on Apple Developer account) |
 | **Stripe + Firebase (memberships)** | [Invertase “Run Payments with Stripe” extension](https://extensions.dev/extensions/invertase/firestore-stripe-payments) — Firestore sync + optional Auth custom claims; [invertase/stripe-firebase-extensions](https://github.com/invertase/stripe-firebase-extensions) (source, README, POSTINSTALL). [Stripe: Subscriptions](https://docs.stripe.com/subscriptions), [Checkout](https://docs.stripe.com/payments/checkout), [Customer Portal](https://docs.stripe.com/customer-management), [Webhooks (signing)](https://docs.stripe.com/webhooks/signatures). Product doc: [`../membership-and-monetization.md`](../membership-and-monetization.md). |
 | **Design** | Figma or asset URLs (if any) |
 | **APIs** | Third-party docs for providers (Google/Apple sign-in, messaging APIs) |

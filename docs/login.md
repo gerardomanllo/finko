@@ -20,17 +20,25 @@
 ## Navigation
 
 - **In**: From splash when not signed in; deep links TBD.
-- **Out**: On success → main shell (default tab `/dashboard`). Forgot-password flow TBD.
+- **Out**: On success → main shell (default tab `/dashboard`).
+- **Forgot password**: triggered from `/login`; sends a reset email and keeps the user on `/login` with localized feedback.
 
 ## Reuse
 
 - See **`components-inventory.md`**: email/password form, provider auth buttons.
 
-## Data (frontend phase)
+## Data
 
-- Stub `onSubmitted` / `onProviderTap` callbacks; no real Firebase until backend phase.
+- Backed by Firebase Authentication through `AuthRepository`:
+  - Email/password sign in
+  - Email/password account creation
+  - Google provider sign in
+  - Apple provider sign in
+  - Forgot-password reset email (`sendPasswordResetEmail`)
+- Sign-out from authenticated screens returns users to `/login`.
 
 ## Acceptance
 
-- [ ] All listed auth affordances visible (implementations may be stubbed).
-- [ ] Web + mobile: tap targets and overflow handled.
+- [x] All listed auth affordances visible.
+- [x] Web + mobile: tap targets and overflow handled.
+- [x] Forgot-password flow sends reset emails with localized success/error feedback.

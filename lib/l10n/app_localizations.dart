@@ -272,11 +272,23 @@ abstract class AppLocalizations {
   /// **'Continuar con Apple'**
   String get loginApple;
 
-  /// No description provided for @loginMessagingNote.
+  /// No description provided for @loginForgotPassword.
   ///
   /// In es, this message translates to:
-  /// **'WhatsApp y Telegram no son métodos de inicio de sesión. Conéctalos en Ajustes.'**
-  String get loginMessagingNote;
+  /// **'¿Olvidaste tu contraseña?'**
+  String get loginForgotPassword;
+
+  /// No description provided for @loginForgotPasswordMissingEmail.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe tu correo arriba para restablecer la contraseña'**
+  String get loginForgotPasswordMissingEmail;
+
+  /// No description provided for @loginForgotPasswordSent.
+  ///
+  /// In es, this message translates to:
+  /// **'Se envió el correo para restablecer la contraseña. Revisa tu bandeja.'**
+  String get loginForgotPasswordSent;
 
   /// No description provided for @loginValidationRequired.
   ///

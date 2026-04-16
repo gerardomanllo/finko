@@ -13,13 +13,18 @@ class LocaleNotifier extends AsyncNotifier<Locale> {
   Future<Locale> build() async {
     final repo = ref.watch(userLocaleRepositoryProvider);
 
-    final sub = repo.remoteLocaleUpdates.listen((remote) async {
-      if (remote == null) return;
-      final current = state.asData?.value;
-      if (current == remote) return;
-      await repo.cacheLocaleLocally(remote);
-      state = AsyncData(remote);
-    });
+    final sub = repo.remoteLocaleUpdates.listen(
+      (remote) async {
+        if (remote == null) return;
+        final current = state.asData?.value;
+        if (current == remote) return;
+        await repo.cacheLocaleLocally(remote);
+        state = AsyncData(remote);
+      },
+      onError: (_, stackTrace) {
+        // Auth transitions can briefly invalidate user-scoped streams.
+      },
+    );
     ref.onDispose(sub.cancel);
 
     return repo.loadEffectiveLocale();
