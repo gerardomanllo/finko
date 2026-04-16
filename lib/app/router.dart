@@ -15,6 +15,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/dashboard',
     refreshListenable: refresh,
     redirect: appAuthRedirect,
-    routes: buildAppRoutes(),
+    routes: buildAppRoutes(rootNavigatorKey: rootNavigatorKey),
   );
 });

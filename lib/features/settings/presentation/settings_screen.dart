@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/auth_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/language_locale_dropdown.dart';
+import '../../../widgets/layout/finko_settings_section.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,12 +18,10 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Text(
-            l10n.settingsLanguageSection,
-            style: Theme.of(context).textTheme.titleMedium,
+          FinkoSettingsSection(
+            title: l10n.settingsLanguageSection,
+            child: const LanguageLocaleDropdown(),
           ),
-          const SizedBox(height: 12),
-          const LanguageLocaleDropdown(),
           const SizedBox(height: 32),
           FilledButton.tonal(
             onPressed: () async {

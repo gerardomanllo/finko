@@ -51,5 +51,112 @@
         "type": "String"
       }
     }
-  }
+  },
+  "navDashboard": "Panel",
+  "navRecurring": "Recurrente",
+  "navSpending": "Gastos",
+  "navTransactions": "Movimientos",
+  "navMore": "Más",
+  "drawerCategories": "Categorías",
+  "drawerAccounts": "Cuentas",
+  "drawerUserPlaceholderName": "Tú",
+  "drawerUserPlaceholderEmail": " ",
+  "drawerUserPlaceholderInitial": "F",
+  "recurringTitle": "Recurrente",
+  "spendingTitle": "Gastos",
+  "transactionsTitle": "Movimientos",
+  "budgetsTitle": "Presupuestos",
+  "categoriesTitle": "Categorías",
+  "accountsTitle": "Cuentas",
+  "metricNetWorth": "Patrimonio neto",
+  "metricMonthlyExpense": "Gasto del mes",
+  "metricDeltaStubUp": "+2,1 %",
+  "metricDeltaStubDown": "-1,0 %",
+  "accountTypeChecking": "Cuenta corriente",
+  "accountTypeCreditCard": "Tarjetas de crédito",
+  "accountTypeSavings": "Ahorros",
+  "accountTypeInvestment": "Inversiones",
+  "netCashLabel": "Efectivo neto",
+  "loansMortgageSectionTitle": "Préstamos e hipoteca",
+  "dashboardAccountsHeading": "Cuentas",
+  "dashboardUpcomingHeading": "Próximos",
+  "dashboardRecentHeading": "Movimientos recientes",
+  "seeMore": "Ver más",
+  "leftForSpending": "Disponible para gastar",
+  "thisMonthsBudget": "Presupuesto del mes",
+  "upcomingToday": "Hoy",
+  "upcomingTomorrow": "Mañana",
+  "upcomingInDays": "{count} días",
+  "@upcomingInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emptyNoAccounts": "Aún no hay cuentas.",
+  "emptyNoTransactions": "Aún no hay movimientos.",
+  "emptyNoUpcoming": "No hay próximos movimientos.",
+  "emptyNoMonthlyTotals": "Aún no hay totales del mes — añade un movimiento.",
+  "spendingPeriodWeek": "Semana",
+  "spendingPeriodMonth": "Mes",
+  "spendingPeriodQuarter": "Trimestre",
+  "spendingPeriodYear": "Año",
+  "spendingIncome": "Ingresos",
+  "spendingExpense": "Gastos",
+  "spendingTotalSpend": "Gasto total",
+  "spendingInPeriod": "En {period}",
+  "@spendingInPeriod": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "spendingTopTransactions": "Principales movimientos",
+  "transactionsSearchHint": "Buscar movimientos",
+  "budgetsThisMonth": "Este mes",
+  "budgetsPaceSlashDay": "/día",
+  "budgetsDaysRemainingInMonth": "{count, plural, =0{0 días restantes} one{1 día restante} other{{count} días restantes}}",
+  "@budgetsDaysRemainingInMonth": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "budgetsSpendingPace": "{paceWithDayUnit} · {daysPhrase}",
+  "@budgetsSpendingPace": {
+    "placeholders": {
+      "paceWithDayUnit": {
+        "type": "String"
+      },
+      "daysPhrase": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsSpendingTitle": "Gasto",
+  "budgetsLeftToSpend": "disponible para gastar",
+  "budgetsSpent": "Gastado",
+  "budgetsBudgeted": "Presupuestado",
+  "budgetsBillsUtilities": "Facturas y servicios",
+  "budgetsEarnings": "Ingresos",
+  "budgetsProjectedSavings": "Ahorro previsto",
+  "budgetsOfTarget": "De {amount} objetivo",
+  "@budgetsOfTarget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsCategoryBudgets": "Presupuestos por categoría",
+  "recurringThisWeek": "Esta semana",
+  "recurringNextWeek": "Próxima semana",
+  "recurringComingUp": "Próximamente",
+  "recurringDueSoon": "Pronto",
+  "recurringComingLater": "Más adelante",
+  "categoriesEmpty": "Aún no hay categorías en los datos del mes.",
+  "accountsListSubtitle": "Toca una cuenta cuando existan detalles."
 }

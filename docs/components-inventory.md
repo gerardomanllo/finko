@@ -75,3 +75,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 ## Extraction rule
 
 If you copy the same **row layout** or **card header pattern** more than once, stop and add a widget here first, then replace both call sites.
+
+## Implementation (Flutter)
+
+Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files grouped by area: `surfaces/`, `layout/`, `metrics/`, `accounts/`, `transactions/`, `budgets/`, `charts/`, `calendar/`, `auth/`). The tabbed **app shell** (bottom nav + drawer from **More**) is `lib/features/shell/presentation/app_shell.dart`, wired in `lib/app/app_routes.dart`.

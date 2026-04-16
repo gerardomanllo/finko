@@ -14,6 +14,7 @@ import 'fake_user_locale_repository.dart';
 
 void main() {
   testWidgets('app loads with Spanish default locale', (tester) async {
+    final GlobalKey<NavigatorState> rootKey = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -22,7 +23,11 @@ void main() {
             FakeUserLocaleRepository(),
           ),
           goRouterProvider.overrideWithValue(
-            GoRouter(initialLocation: '/dashboard', routes: buildAppRoutes()),
+            GoRouter(
+              navigatorKey: rootKey,
+              initialLocation: '/dashboard',
+              routes: buildAppRoutes(rootNavigatorKey: rootKey),
+            ),
           ),
         ],
         child: const FinkoApp(),
@@ -30,11 +35,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Panel'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Panel')),
+      findsOneWidget,
+    );
     expect(find.text('[DEV]'), findsOneWidget);
   });
 
   testWidgets('English locale shows Dashboard title', (tester) async {
+    final GlobalKey<NavigatorState> rootKey = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -43,7 +52,11 @@ void main() {
             FakeUserLocaleRepository(initial: const Locale('en')),
           ),
           goRouterProvider.overrideWithValue(
-            GoRouter(initialLocation: '/dashboard', routes: buildAppRoutes()),
+            GoRouter(
+              navigatorKey: rootKey,
+              initialLocation: '/dashboard',
+              routes: buildAppRoutes(rootNavigatorKey: rootKey),
+            ),
           ),
         ],
         child: const FinkoApp(),
@@ -51,6 +64,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Dashboard'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Dashboard'),
+      ),
+      findsOneWidget,
+    );
   });
 }

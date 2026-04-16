@@ -325,6 +325,420 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Sesión: {email}'**
   String dashboardSignedInAs(String email);
+
+  /// No description provided for @navDashboard.
+  ///
+  /// In es, this message translates to:
+  /// **'Panel'**
+  String get navDashboard;
+
+  /// No description provided for @navRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrente'**
+  String get navRecurring;
+
+  /// No description provided for @navSpending.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get navSpending;
+
+  /// No description provided for @navTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get navTransactions;
+
+  /// No description provided for @navMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Más'**
+  String get navMore;
+
+  /// No description provided for @drawerCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get drawerCategories;
+
+  /// No description provided for @drawerAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get drawerAccounts;
+
+  /// No description provided for @drawerUserPlaceholderName.
+  ///
+  /// In es, this message translates to:
+  /// **'Tú'**
+  String get drawerUserPlaceholderName;
+
+  /// No description provided for @drawerUserPlaceholderEmail.
+  ///
+  /// In es, this message translates to:
+  /// **' '**
+  String get drawerUserPlaceholderEmail;
+
+  /// No description provided for @drawerUserPlaceholderInitial.
+  ///
+  /// In es, this message translates to:
+  /// **'F'**
+  String get drawerUserPlaceholderInitial;
+
+  /// No description provided for @recurringTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrente'**
+  String get recurringTitle;
+
+  /// No description provided for @spendingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get spendingTitle;
+
+  /// No description provided for @transactionsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos'**
+  String get transactionsTitle;
+
+  /// No description provided for @budgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get budgetsTitle;
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get categoriesTitle;
+
+  /// No description provided for @accountsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get accountsTitle;
+
+  /// No description provided for @metricNetWorth.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio neto'**
+  String get metricNetWorth;
+
+  /// No description provided for @metricMonthlyExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto del mes'**
+  String get metricMonthlyExpense;
+
+  /// No description provided for @metricDeltaStubUp.
+  ///
+  /// In es, this message translates to:
+  /// **'+2,1 %'**
+  String get metricDeltaStubUp;
+
+  /// No description provided for @metricDeltaStubDown.
+  ///
+  /// In es, this message translates to:
+  /// **'-1,0 %'**
+  String get metricDeltaStubDown;
+
+  /// No description provided for @accountTypeChecking.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta corriente'**
+  String get accountTypeChecking;
+
+  /// No description provided for @accountTypeCreditCard.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarjetas de crédito'**
+  String get accountTypeCreditCard;
+
+  /// No description provided for @accountTypeSavings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorros'**
+  String get accountTypeSavings;
+
+  /// No description provided for @accountTypeInvestment.
+  ///
+  /// In es, this message translates to:
+  /// **'Inversiones'**
+  String get accountTypeInvestment;
+
+  /// No description provided for @netCashLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo neto'**
+  String get netCashLabel;
+
+  /// No description provided for @loansMortgageSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Préstamos e hipoteca'**
+  String get loansMortgageSectionTitle;
+
+  /// No description provided for @dashboardAccountsHeading.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get dashboardAccountsHeading;
+
+  /// No description provided for @dashboardUpcomingHeading.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximos'**
+  String get dashboardUpcomingHeading;
+
+  /// No description provided for @dashboardRecentHeading.
+  ///
+  /// In es, this message translates to:
+  /// **'Movimientos recientes'**
+  String get dashboardRecentHeading;
+
+  /// No description provided for @seeMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más'**
+  String get seeMore;
+
+  /// No description provided for @leftForSpending.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible para gastar'**
+  String get leftForSpending;
+
+  /// No description provided for @thisMonthsBudget.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto del mes'**
+  String get thisMonthsBudget;
+
+  /// No description provided for @upcomingToday.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get upcomingToday;
+
+  /// No description provided for @upcomingTomorrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mañana'**
+  String get upcomingTomorrow;
+
+  /// No description provided for @upcomingInDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} días'**
+  String upcomingInDays(int count);
+
+  /// No description provided for @emptyNoAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay cuentas.'**
+  String get emptyNoAccounts;
+
+  /// No description provided for @emptyNoTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay movimientos.'**
+  String get emptyNoTransactions;
+
+  /// No description provided for @emptyNoUpcoming.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay próximos movimientos.'**
+  String get emptyNoUpcoming;
+
+  /// No description provided for @emptyNoMonthlyTotals.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay totales del mes — añade un movimiento.'**
+  String get emptyNoMonthlyTotals;
+
+  /// No description provided for @spendingPeriodWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana'**
+  String get spendingPeriodWeek;
+
+  /// No description provided for @spendingPeriodMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Mes'**
+  String get spendingPeriodMonth;
+
+  /// No description provided for @spendingPeriodQuarter.
+  ///
+  /// In es, this message translates to:
+  /// **'Trimestre'**
+  String get spendingPeriodQuarter;
+
+  /// No description provided for @spendingPeriodYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Año'**
+  String get spendingPeriodYear;
+
+  /// No description provided for @spendingIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get spendingIncome;
+
+  /// No description provided for @spendingExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get spendingExpense;
+
+  /// No description provided for @spendingTotalSpend.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto total'**
+  String get spendingTotalSpend;
+
+  /// No description provided for @spendingInPeriod.
+  ///
+  /// In es, this message translates to:
+  /// **'En {period}'**
+  String spendingInPeriod(String period);
+
+  /// No description provided for @spendingTopTransactions.
+  ///
+  /// In es, this message translates to:
+  /// **'Principales movimientos'**
+  String get spendingTopTransactions;
+
+  /// No description provided for @transactionsSearchHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar movimientos'**
+  String get transactionsSearchHint;
+
+  /// No description provided for @budgetsThisMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get budgetsThisMonth;
+
+  /// No description provided for @budgetsPaceSlashDay.
+  ///
+  /// In es, this message translates to:
+  /// **'/día'**
+  String get budgetsPaceSlashDay;
+
+  /// No description provided for @budgetsDaysRemainingInMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =0{0 días restantes} one{1 día restante} other{{count} días restantes}}'**
+  String budgetsDaysRemainingInMonth(int count);
+
+  /// No description provided for @budgetsSpendingPace.
+  ///
+  /// In es, this message translates to:
+  /// **'{paceWithDayUnit} · {daysPhrase}'**
+  String budgetsSpendingPace(String paceWithDayUnit, String daysPhrase);
+
+  /// No description provided for @budgetsSpendingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get budgetsSpendingTitle;
+
+  /// No description provided for @budgetsLeftToSpend.
+  ///
+  /// In es, this message translates to:
+  /// **'disponible para gastar'**
+  String get budgetsLeftToSpend;
+
+  /// No description provided for @budgetsSpent.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastado'**
+  String get budgetsSpent;
+
+  /// No description provided for @budgetsBudgeted.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestado'**
+  String get budgetsBudgeted;
+
+  /// No description provided for @budgetsBillsUtilities.
+  ///
+  /// In es, this message translates to:
+  /// **'Facturas y servicios'**
+  String get budgetsBillsUtilities;
+
+  /// No description provided for @budgetsEarnings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get budgetsEarnings;
+
+  /// No description provided for @budgetsProjectedSavings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro previsto'**
+  String get budgetsProjectedSavings;
+
+  /// No description provided for @budgetsOfTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'De {amount} objetivo'**
+  String budgetsOfTarget(String amount);
+
+  /// No description provided for @budgetsCategoryBudgets.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos por categoría'**
+  String get budgetsCategoryBudgets;
+
+  /// No description provided for @recurringThisWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta semana'**
+  String get recurringThisWeek;
+
+  /// No description provided for @recurringNextWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'Próxima semana'**
+  String get recurringNextWeek;
+
+  /// No description provided for @recurringComingUp.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get recurringComingUp;
+
+  /// No description provided for @recurringDueSoon.
+  ///
+  /// In es, this message translates to:
+  /// **'Pronto'**
+  String get recurringDueSoon;
+
+  /// No description provided for @recurringComingLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Más adelante'**
+  String get recurringComingLater;
+
+  /// No description provided for @categoriesEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay categorías en los datos del mes.'**
+  String get categoriesEmpty;
+
+  /// No description provided for @accountsListSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca una cuenta cuando existan detalles.'**
+  String get accountsListSubtitle;
 }
 
 class _AppLocalizationsDelegate

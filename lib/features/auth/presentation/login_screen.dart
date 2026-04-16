@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/auth/finko_email_password_form.dart';
+import '../../../widgets/auth/finko_social_auth_buttons.dart';
 import '../../../widgets/finko_logo.dart';
 
 /// Email/password + Google + Apple ([`docs/login.md`]). WhatsApp/Telegram are not
@@ -111,112 +113,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   horizontal: 24,
                   vertical: 16,
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Center(child: FinkoLogo()),
-                      const SizedBox(height: 20),
-                      Text(
-                        l10n.loginTitle,
-                        style: theme.textTheme.headlineSmall,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: InputDecoration(
-                          labelText: l10n.loginEmailLabel,
-                        ),
-                        validator: (v) {
-                          final s = v?.trim() ?? '';
-                          if (s.isEmpty) return l10n.loginValidationRequired;
-                          if (!s.contains('@')) {
-                            return l10n.loginValidationEmail;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        autofillHints: const [AutofillHints.password],
-                        decoration: InputDecoration(
-                          labelText: l10n.loginPasswordLabel,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return l10n.loginValidationRequired;
-                          }
-                          if (v.length < 6) {
-                            return l10n.loginValidationPasswordLength;
-                          }
-                          return null;
-                        },
-                      ),
-                      if (_errorCode != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _messageForCode(l10n, _errorCode!),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      FilledButton(
-                        onPressed: _busy ? null : _submitEmailPassword,
-                        child: _busy
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                _register
-                                    ? l10n.loginCreateAccount
-                                    : l10n.loginSignIn,
-                              ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: _busy
-                            ? null
-                            : () => setState(() {
-                                _register = !_register;
-                                _errorCode = null;
-                              }),
-                        child: Text(
-                          _register
-                              ? l10n.loginToggleSignIn
-                              : l10n.loginToggleSignUp,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      OutlinedButton(
-                        onPressed: _busy ? null : _google,
-                        child: Text(l10n.loginGoogle),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton.icon(
-                        onPressed: _busy ? null : _apple,
-                        icon: const Icon(Icons.apple, size: 22),
-                        label: Text(l10n.loginApple),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.loginMessagingNote,
-                        style: theme.textTheme.bodySmall,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(child: FinkoLogo()),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.loginTitle,
+                      style: theme.textTheme.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    FinkoEmailPasswordForm(
+                      formKey: _formKey,
+                      emailController: _emailController,
+                      passwordController: _passwordController,
+                      emailLabel: l10n.loginEmailLabel,
+                      passwordLabel: l10n.loginPasswordLabel,
+                      validationRequired: l10n.loginValidationRequired,
+                      validationEmail: l10n.loginValidationEmail,
+                      validationPasswordLength:
+                          l10n.loginValidationPasswordLength,
+                      primaryLabel: _register
+                          ? l10n.loginCreateAccount
+                          : l10n.loginSignIn,
+                      toggleLabel: _register
+                          ? l10n.loginToggleSignIn
+                          : l10n.loginToggleSignUp,
+                      onSubmit: _submitEmailPassword,
+                      onToggleMode: () => setState(() {
+                        _register = !_register;
+                        _errorCode = null;
+                      }),
+                      errorText: _errorCode != null
+                          ? _messageForCode(l10n, _errorCode!)
+                          : null,
+                      busy: _busy,
+                    ),
+                    const SizedBox(height: 24),
+                    FinkoSocialAuthButtons(
+                      onGoogle: _google,
+                      onApple: _apple,
+                      googleLabel: l10n.loginGoogle,
+                      appleLabel: l10n.loginApple,
+                      busy: _busy,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.loginMessagingNote,
+                      style: theme.textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             ),

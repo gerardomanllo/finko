@@ -126,4 +126,229 @@ class AppLocalizationsEn extends AppLocalizations {
   String dashboardSignedInAs(String email) {
     return 'Signed in as $email';
   }
+
+  @override
+  String get navDashboard => 'Dashboard';
+
+  @override
+  String get navRecurring => 'Recurring';
+
+  @override
+  String get navSpending => 'Spending';
+
+  @override
+  String get navTransactions => 'Transactions';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String get drawerCategories => 'Categories';
+
+  @override
+  String get drawerAccounts => 'Accounts';
+
+  @override
+  String get drawerUserPlaceholderName => 'You';
+
+  @override
+  String get drawerUserPlaceholderEmail => ' ';
+
+  @override
+  String get drawerUserPlaceholderInitial => 'F';
+
+  @override
+  String get recurringTitle => 'Recurring';
+
+  @override
+  String get spendingTitle => 'Spending';
+
+  @override
+  String get transactionsTitle => 'Transactions';
+
+  @override
+  String get budgetsTitle => 'Budgets';
+
+  @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get accountsTitle => 'Accounts';
+
+  @override
+  String get metricNetWorth => 'Net Worth';
+
+  @override
+  String get metricMonthlyExpense => 'Monthly expense';
+
+  @override
+  String get metricDeltaStubUp => '+2.1%';
+
+  @override
+  String get metricDeltaStubDown => '-1.0%';
+
+  @override
+  String get accountTypeChecking => 'Checking';
+
+  @override
+  String get accountTypeCreditCard => 'Credit cards';
+
+  @override
+  String get accountTypeSavings => 'Savings';
+
+  @override
+  String get accountTypeInvestment => 'Investments';
+
+  @override
+  String get netCashLabel => 'Net cash';
+
+  @override
+  String get loansMortgageSectionTitle => 'Loans & mortgage';
+
+  @override
+  String get dashboardAccountsHeading => 'Accounts';
+
+  @override
+  String get dashboardUpcomingHeading => 'Upcoming';
+
+  @override
+  String get dashboardRecentHeading => 'Recent transactions';
+
+  @override
+  String get seeMore => 'See more';
+
+  @override
+  String get leftForSpending => 'Left for spending';
+
+  @override
+  String get thisMonthsBudget => 'This month’s budget';
+
+  @override
+  String get upcomingToday => 'Today';
+
+  @override
+  String get upcomingTomorrow => 'Tomorrow';
+
+  @override
+  String upcomingInDays(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get emptyNoAccounts => 'No accounts yet.';
+
+  @override
+  String get emptyNoTransactions => 'No transactions yet.';
+
+  @override
+  String get emptyNoUpcoming => 'Nothing upcoming.';
+
+  @override
+  String get emptyNoMonthlyTotals =>
+      'No monthly totals yet — add a transaction.';
+
+  @override
+  String get spendingPeriodWeek => 'Week';
+
+  @override
+  String get spendingPeriodMonth => 'Month';
+
+  @override
+  String get spendingPeriodQuarter => 'Quarter';
+
+  @override
+  String get spendingPeriodYear => 'Year';
+
+  @override
+  String get spendingIncome => 'Income';
+
+  @override
+  String get spendingExpense => 'Expense';
+
+  @override
+  String get spendingTotalSpend => 'Total spend';
+
+  @override
+  String spendingInPeriod(String period) {
+    return 'In $period';
+  }
+
+  @override
+  String get spendingTopTransactions => 'Top transactions';
+
+  @override
+  String get transactionsSearchHint => 'Search transactions';
+
+  @override
+  String get budgetsThisMonth => 'This month';
+
+  @override
+  String get budgetsPaceSlashDay => '/day';
+
+  @override
+  String budgetsDaysRemainingInMonth(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: '0 days left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetsSpendingPace(String paceWithDayUnit, String daysPhrase) {
+    return '$paceWithDayUnit · $daysPhrase';
+  }
+
+  @override
+  String get budgetsSpendingTitle => 'Spending';
+
+  @override
+  String get budgetsLeftToSpend => 'left to spend';
+
+  @override
+  String get budgetsSpent => 'Spent';
+
+  @override
+  String get budgetsBudgeted => 'Budgeted';
+
+  @override
+  String get budgetsBillsUtilities => 'Bills & Utilities';
+
+  @override
+  String get budgetsEarnings => 'Earnings';
+
+  @override
+  String get budgetsProjectedSavings => 'Projected savings';
+
+  @override
+  String budgetsOfTarget(String amount) {
+    return 'Of $amount target';
+  }
+
+  @override
+  String get budgetsCategoryBudgets => 'Category budgets';
+
+  @override
+  String get recurringThisWeek => 'This week';
+
+  @override
+  String get recurringNextWeek => 'Next week';
+
+  @override
+  String get recurringComingUp => 'Coming up';
+
+  @override
+  String get recurringDueSoon => 'Due soon';
+
+  @override
+  String get recurringComingLater => 'Coming later';
+
+  @override
+  String get categoriesEmpty => 'No categories in monthly data yet.';
+
+  @override
+  String get accountsListSubtitle => 'Tap an account when detail routes exist.';
 }

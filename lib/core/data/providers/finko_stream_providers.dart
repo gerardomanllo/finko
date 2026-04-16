@@ -40,6 +40,19 @@ final currentMonthTotalsStreamProvider = StreamProvider<MonthlyTotals?>((
   yield* ref.watch(firestoreDataRepositoryProvider).watchMonthlyTotals(uid, ym);
 });
 
+/// Monthly totals for an arbitrary `yyyy-MM` (e.g. budgets month pager).
+final monthlyTotalsForMonthStreamProvider =
+    StreamProvider.family<MonthlyTotals?, String>((ref, yyyyMm) async* {
+      final uid = ref.watch(authUidProvider);
+      if (uid == null) {
+        yield null;
+        return;
+      }
+      yield* ref
+          .watch(firestoreDataRepositoryProvider)
+          .watchMonthlyTotals(uid, yyyyMm);
+    });
+
 final recentTransactionsStreamProvider =
     StreamProvider<List<LedgerTransaction>>((ref) async* {
       final uid = ref.watch(authUidProvider);
