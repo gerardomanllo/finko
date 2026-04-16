@@ -12,7 +12,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final AuthRouterRefresh refresh = ref.watch(authRouterRefreshProvider);
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/dashboard',
+    initialLocation: '/splash',
     refreshListenable: refresh,
     redirect: appAuthRedirect,
     routes: buildAppRoutes(rootNavigatorKey: rootNavigatorKey),

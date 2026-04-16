@@ -10,6 +10,7 @@ import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/recurring/presentation/recurring_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/shell/presentation/app_shell.dart';
+import '../features/splash/presentation/splash_screen.dart';
 import '../features/spending/presentation/spending_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 
@@ -17,6 +18,11 @@ List<RouteBase> buildAppRoutes({
   required GlobalKey<NavigatorState> rootNavigatorKey,
 }) {
   return <RouteBase>[
+    GoRoute(
+      path: '/splash',
+      builder: (BuildContext context, GoRouterState state) =>
+          const SplashScreen(),
+    ),
     GoRoute(
       path: '/login',
       builder: (BuildContext context, GoRouterState state) =>

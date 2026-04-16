@@ -6,6 +6,22 @@ import 'package:go_router/go_router.dart';
 
 import '../core/auth/firebase_auth_providers.dart';
 
+/// Resolves the first screen after bootstrap: `/login`, `/onboarding`, or
+/// `/dashboard`. Shared by [appAuthRedirect] and the splash screen.
+Future<String> resolvePostSplashLocation({
+  required FirebaseAuth auth,
+  required FirebaseFirestore firestore,
+}) async {
+  final User? user = auth.currentUser;
+  if (user == null) return '/login';
+  final bool onboardingDone = await _readOnboardingCompleted(
+    firestore,
+    user.uid,
+  );
+  if (!onboardingDone) return '/onboarding';
+  return '/dashboard';
+}
+
 /// Auth + onboarding gate (see docs/onboarding.md). Uses [FirebaseAuth] /
 /// [FirebaseFirestore] from [ProviderScope] when [context] is under [FinkoApp].
 ///
@@ -17,31 +33,29 @@ Future<String?> appAuthRedirect(
   GoRouterState state,
 ) async {
   final container = ProviderScope.containerOf(context, listen: false);
+  final String location = state.matchedLocation;
+
+  if (location == '/splash') return null;
+
   final FirebaseAuth auth = container.read(firebaseAuthProvider);
   final FirebaseFirestore firestore = container.read(firestoreProvider);
 
-  final User? user = auth.currentUser;
-  final String location = state.matchedLocation;
+  final String target = await resolvePostSplashLocation(
+    auth: auth,
+    firestore: firestore,
+  );
 
-  if (user == null) {
+  if (target == '/login') {
     if (location == '/login') return null;
     return '/login';
   }
-
-  final bool onboardingDone = await _readOnboardingCompleted(
-    firestore,
-    user.uid,
-  );
-
-  if (!onboardingDone) {
+  if (target == '/onboarding') {
     if (location == '/onboarding') return null;
     return '/onboarding';
   }
-
   if (location == '/login' || location == '/onboarding') {
     return '/dashboard';
   }
-
   return null;
 }
 

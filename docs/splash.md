@@ -15,7 +15,7 @@
 
 ## Navigation
 
-- **Out**: To `/login` (unauthenticated) or main shell (authenticated) — wire when auth exists; for frontend-only, pick one stub destination.
+- **Out**: To `/login` (unauthenticated), `/onboarding` (signed in, onboarding incomplete), or `/dashboard` (signed in, onboarding complete) via `resolvePostSplashLocation` in `lib/app/auth_redirect.dart`.
 
 ## Reuse
 
@@ -27,5 +27,5 @@
 
 ## Acceptance
 
-- [ ] Displays on cold start.
-- [ ] Does not block forever (stub navigation acceptable).
+- [x] Displays on cold start.
+- [x] Does not block forever (stub navigation acceptable).
