@@ -1,0 +1,55 @@
+{
+  "@@locale": "es",
+  "appTitle": "Finko",
+  "dashboardTitle": "Panel",
+  "dashboardHeadline": "Resumen de tu dinero",
+  "openSettings": "Ajustes",
+  "openOnboarding": "Incorporación",
+  "settingsTitle": "Ajustes",
+  "settingsLanguageSection": "Idioma",
+  "settingsLanguageLabel": "Idioma de la app",
+  "localeSpanish": "Español",
+  "localeEnglish": "Inglés",
+  "onboardingStep1Title": "Perfil y preferencias",
+  "onboardingDisplayNameLabel": "Nombre para mostrar",
+  "onboardingTimezoneLabel": "Zona horaria",
+  "onboardingThemeLabel": "Tema",
+  "onboardingLocaleLabel": "Idioma",
+  "onboardingNext": "Siguiente",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+  "themeSystem": "Sistema",
+  "environmentBanner": "[{env}]",
+  "@environmentBanner": {
+    "placeholders": {
+      "env": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTitle": "Iniciar sesión",
+  "loginEmailLabel": "Correo electrónico",
+  "loginPasswordLabel": "Contraseña",
+  "loginSignIn": "Entrar",
+  "loginCreateAccount": "Crear cuenta",
+  "loginToggleSignUp": "¿No tienes cuenta? Crear cuenta",
+  "loginToggleSignIn": "¿Ya tienes cuenta? Entrar",
+  "loginGoogle": "Continuar con Google",
+  "loginApple": "Continuar con Apple",
+  "loginMessagingNote": "WhatsApp y Telegram no son métodos de inicio de sesión. Conéctalos en Ajustes.",
+  "loginValidationRequired": "Este campo es obligatorio",
+  "loginValidationEmail": "Introduce un correo válido",
+  "loginValidationPasswordLength": "Mínimo 6 caracteres",
+  "loginErrorInvalidCredential": "Correo o contraseña incorrectos",
+  "loginErrorEmailInUse": "Este correo ya está registrado",
+  "loginErrorGeneric": "No se pudo completar el inicio de sesión",
+  "settingsSignOut": "Cerrar sesión",
+  "dashboardSignedInAs": "Sesión: {email}",
+  "@dashboardSignedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
+}

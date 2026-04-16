@@ -1,0 +1,14 @@
+---
+description: Flutter widgets — composition, reuse, file layout for Finko
+globs: "**/*.dart"
+alwaysApply: false
+---
+
+# Finko — Flutter implementation
+
+- **Architecture**: Align folder and state patterns with `finko-flutter-architecture.mdc` (features, Riverpod).
+- **Reuse first**: Check `docs/components-inventory.md` before adding a new visual pattern. Prefer parameters (e.g. `onTap`, `sections`) over copy-paste `Column` trees.
+- **Split by responsibility**: Screen file wires data + navigation; presentational widgets live under `lib/widgets/` or `lib/features/<feature>/` per architecture rule.
+- **Lists**: Shared row widgets for transactions, categories, and account lines — differ only via data/callbacks.
+- **Charts**: Isolate chart widgets (net worth, donut, mini income/expense) for testability and theme updates.
+- **No drive-by refactors**: Touch only files needed for the task; do not rename unrelated public APIs in the same change.

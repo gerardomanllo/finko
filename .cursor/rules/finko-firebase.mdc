@@ -1,0 +1,13 @@
+---
+description: Firebase CLI, projects, SDK usage for Finko
+alwaysApply: true
+---
+
+# Finko — Firebase
+
+- **CLI**: Prefer **`npx -y firebase-tools@latest`** for Firebase CLI commands so the version stays current (align with team Firebase skill).
+- **Project context**: Confirm the **active Firebase project** matches the intended **environment** (`finko-environments.mdc`) before deploys or rule changes.
+- **Initialization**: Use official FlutterFire / platform setup for `firebase_core` and feature packages; keep generated config files flavor-scoped.
+- **Services** (as adopted): Auth, Firestore (or chosen DB), Storage, Hosting — enable only what the feature needs; avoid unused SDK weight.
+- **Security**: Treat **Security Rules** and **App Check** as required for production data paths; do not ship wide-open rules for real user data.
+- **Skills**: When behavior is non-trivial, consult the project’s Firebase-related Cursor skills (Firestore, Auth, Hosting) for implementation details.

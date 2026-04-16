@@ -1,0 +1,13 @@
+---
+description: Theme, colors, typography — Material 3, light/dark
+globs: "**/*.dart"
+alwaysApply: false
+---
+
+# Finko — UI & theme
+
+- **Design system**: Single **`ThemeData`** (and `darkTheme`) sourced from a small set of files under `lib/core/theme/` or similar — no scattered `Color(0x...)` in feature code unless one-off with TODO.
+- **Material**: Prefer **Material 3** (`useMaterial3: true`) unless product mandates otherwise; align components with M3 roles (e.g. `ColorScheme`, `TextTheme`).
+- **Density**: Use consistent padding (e.g. multiples of 4 or 8); match **paper** / card surfaces across screens per `docs/components-inventory.md`.
+- **Accessibility**: Respect `MediaQuery.textScalerOf`; ensure contrast in light and dark; icon buttons need tooltips or labels where meaning isn’t obvious.
+- **Responsiveness**: Web and tablet: avoid fixed widths; use `LayoutBuilder` / breakpoints where layouts split (e.g. budgets two-column row).

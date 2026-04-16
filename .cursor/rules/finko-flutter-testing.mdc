@@ -1,0 +1,14 @@
+---
+description: Flutter unit and widget tests — structure, goldens
+globs: "**/test/**/*.dart"
+alwaysApply: false
+---
+
+# Finko — Flutter testing
+
+- **Placement**: Tests under `test/` mirroring `lib/` structure: `test/features/...`, `test/core/...`.
+- **Unit tests**: Pure Dart — notifiers, mappers, formatting, money math — no `WidgetTester` unless testing widgets.
+- **Widget tests**: Use `testWidgets`; **pump** the smallest subtree possible; mock repositories via Riverpod **overrides** (`finko-riverpod-testing.mdc`).
+- **Finders**: Prefer `find.byKey` for stability when keys are part of the public test surface; avoid fragile text finds for dynamic copy.
+- **Goldens** (if used): Commit baseline PNGs; name files clearly; run `flutter test --update-goldens` only when UI intentionally changes.
+- **Coverage**: Aim for meaningful coverage on domain/notifiers; 100% line coverage is not required if brittle.

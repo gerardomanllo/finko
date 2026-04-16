@@ -1,0 +1,55 @@
+{
+  "@@locale": "en",
+  "appTitle": "Finko",
+  "dashboardTitle": "Dashboard",
+  "dashboardHeadline": "Your money at a glance",
+  "openSettings": "Settings",
+  "openOnboarding": "Onboarding",
+  "settingsTitle": "Settings",
+  "settingsLanguageSection": "Language",
+  "settingsLanguageLabel": "App language",
+  "localeSpanish": "Spanish",
+  "localeEnglish": "English",
+  "onboardingStep1Title": "Profile & preferences",
+  "onboardingDisplayNameLabel": "Display name",
+  "onboardingTimezoneLabel": "Time zone",
+  "onboardingThemeLabel": "Theme",
+  "onboardingLocaleLabel": "Language",
+  "onboardingNext": "Next",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "environmentBanner": "[{env}]",
+  "@environmentBanner": {
+    "placeholders": {
+      "env": {
+        "type": "String"
+      }
+    }
+  },
+  "loginTitle": "Sign in",
+  "loginEmailLabel": "Email",
+  "loginPasswordLabel": "Password",
+  "loginSignIn": "Sign in",
+  "loginCreateAccount": "Create account",
+  "loginToggleSignUp": "Need an account? Create one",
+  "loginToggleSignIn": "Already have an account? Sign in",
+  "loginGoogle": "Continue with Google",
+  "loginApple": "Continue with Apple",
+  "loginMessagingNote": "WhatsApp and Telegram are not sign-in methods. Connect them in Settings.",
+  "loginValidationRequired": "This field is required",
+  "loginValidationEmail": "Enter a valid email",
+  "loginValidationPasswordLength": "At least 6 characters",
+  "loginErrorInvalidCredential": "Incorrect email or password",
+  "loginErrorEmailInUse": "This email is already registered",
+  "loginErrorGeneric": "Sign-in could not be completed",
+  "settingsSignOut": "Sign out",
+  "dashboardSignedInAs": "Signed in as {email}",
+  "@dashboardSignedInAs": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
+}

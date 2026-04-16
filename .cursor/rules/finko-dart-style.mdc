@@ -1,0 +1,15 @@
+---
+description: Dart / Flutter style — lints, format, naming
+globs: "**/*.dart"
+alwaysApply: false
+---
+
+# Finko — Dart & style
+
+- **Formatter**: Run **`dart format`** on changed files; CI enforces formatting (`finko-ci-github.mdc`).
+- **Linter**: Follow **`analysis_options.yaml`**; use `flutter_lints` / recommended set; fix or explicitly ignore with a comment only when justified.
+- **Naming**: `lowerCamelCase` for members, `UpperCamelCase` for types, `snake_case.dart` for files. Private members with leading `_`.
+- **Imports**: Order: `dart:` → `package:` → relative; avoid unused imports.
+- **Types**: Prefer explicit public API types; use `final` by default; avoid `dynamic` unless JSON boundary with validation.
+- **Docs**: `///` on public APIs that are not self-explanatory; avoid noise on trivial getters.
+- **Async**: Prefer `async`/`await` over long `.then()` chains for readability.

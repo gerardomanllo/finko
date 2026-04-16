@@ -1,0 +1,14 @@
+---
+description: Riverpod in tests — ProviderScope, overrides, async
+globs: "**/test/**/*.dart"
+alwaysApply: false
+---
+
+# Finko — Riverpod testing
+
+- **Scope**: Wrap widget tests with **`ProviderScope`** (or test-specific helper that builds it). Never call `ProviderScope`’s container from production `main()` in tests without isolation.
+- **Overrides**: Use **`overrides:`** to inject fakes: `myRepositoryProvider.overrideWithValue(FakeRepository())` or `overrideWith((ref) => ...)` for notifiers.
+- **Reading in tests**: After pump, **`ref.read`** is not available from widgets — use **`Tester` + `ProviderScope.containerOf(context)`** or test notifiers directly in unit tests via **`ProviderContainer`** with overrides.
+- **ProviderContainer** (unit): `final container = ProviderContainer(overrides: [...]); addTearDown(container.dispose);`
+- **Async**: `await tester.pump()` / `pumpAndSettle()` after state changes from async providers; avoid arbitrary long `Future.delayed` in tests.
+- **Dispose**: Always dispose containers in unit tests to catch leaks and satisfy lint rules.

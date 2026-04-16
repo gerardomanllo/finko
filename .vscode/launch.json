@@ -1,0 +1,65 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Finko Dev (iOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "flutterMode": "debug",
+      "toolArgs": [
+        "--flavor",
+        "dev"
+      ]
+    },
+    {
+      "name": "Finko Prod (iOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "flutterMode": "release",
+      "toolArgs": [
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "Finko Dev (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "flutterMode": "debug",
+      "toolArgs": [
+        "--flavor",
+        "dev"
+      ]
+    },
+    {
+      "name": "Finko Prod (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "flutterMode": "release",
+      "toolArgs": [
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "Finko Dev (Web)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "deviceId": "chrome",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "Finko Prod (Web)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "deviceId": "chrome",
+      "flutterMode": "release"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "654834705056",
+    "project_id": "finkoappmx-dev",
+    "storage_bucket": "finkoappmx-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654834705056:android:3c08c5d9934d85255adfc5",
+        "android_client_info": {
+          "package_name": "com.example.finko.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlSzMuro-yjB3q3WFKnsKp0GI7lsnzv1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

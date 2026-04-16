@@ -1,0 +1,14 @@
+---
+description: Flutter app structure — features, Riverpod, routing, layers
+alwaysApply: true
+---
+
+# Finko — Flutter architecture
+
+- **State management**: Use **Riverpod** (`flutter_riverpod` + `riverpod` / codegen if adopted) for app-wide and feature state. Avoid mixing multiple global patterns unless migrating behind a boundary.
+- **Layout**: Organize by **feature** under `lib/features/<feature>/` with `data/`, `domain/` (optional), `presentation/` or flat `widgets/` + `screens/` as the feature grows. Shared code lives in `lib/core/` and `lib/widgets/`. A greenfield tree may keep only entrypoints and generated Firebase options at `lib/` roots; **establish `lib/features/`, `lib/core/`, and `lib/widgets/` with the first substantive shell or screen** and keep new code there.
+- **Routing**: Use **`go_router`** for centralized, declarative routes. **Canonical dashboard path**: `/dashboard`. Shell (bottom nav + drawer) wraps tab routes per `docs/shell-navigation.md`.
+- **Dependencies**: Once the app **shell**, **tab navigation**, or **Riverpod** wiring exists, `pubspec.yaml` must include **`flutter_riverpod`**, **`go_router`**, and (for localized UI) **`flutter_localizations`** + **`intl`** per `docs/language-and-localization.md`. Early stubs may omit these until that milestone; do not ship real navigation or l10n without them.
+- **UI vs logic**: Widgets are **dumb/presentational** where possible; providers and notifiers own **side effects** (navigation after auth, repository calls).
+- **Repositories**: Abstract Firebase/API behind interfaces in `data/` for testability; UI depends on providers, not SDKs directly.
+- **Async**: Use `AsyncValue` patterns for loading/error/data; avoid silent `catch` blocks.

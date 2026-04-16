@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "34402393511",
+    "firebase_url": "https://finkoappmx-default-rtdb.firebaseio.com",
+    "project_id": "finkoappmx",
+    "storage_bucket": "finkoappmx.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:34402393511:android:7c517e8c85de2d2864aa82",
+        "android_client_info": {
+          "package_name": "com.example.finko"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "34402393511-9aptvql5ad06uo1vapmtut38gcl734ql.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjacGjy6-uR_znqtc1_f0yZMDuYq5VmJ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "34402393511-9aptvql5ad06uo1vapmtut38gcl734ql.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

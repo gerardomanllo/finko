@@ -1,0 +1,12 @@
+---
+description: Finko UI source of truth — docs, DRY, agent workflow
+alwaysApply: true
+---
+
+# Finko — product UI rules
+
+- **Source of truth**: Screen behavior and layout live under `docs/`. Read the matching screen `*.md` (and `docs/components-inventory.md`) before implementing or changing a route.
+- **DRY**: If a pattern exists on two screens, extract a shared widget under `lib/` and record it in `docs/components-inventory.md` (one line is enough).
+- **Scope**: Stub data until backend tasks land; when integrating Firebase or DB, follow `finko-firebase.mdc` and `finko-database.mdc`.
+- **Navigation**: Match routes in `docs/shell-navigation.md` and each screen doc; primary home route is **`/dashboard`** (no `/home`); **More** opens the drawer (no fake “more page”).
+- **Terminology**: Use the same names as the docs (**Net cash**, **Left for spending**, etc.) in UI copy unless intentionally localized.

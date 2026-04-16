@@ -1,0 +1,109 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
+
+import 'firebase_auth_providers.dart';
+
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(
+    auth: ref.watch(firebaseAuthProvider),
+    googleSignIn: GoogleSignIn(scopes: const <String>['email', 'profile']),
+  ),
+);
+
+class AuthRepository {
+  AuthRepository({
+    required FirebaseAuth auth,
+    required GoogleSignIn googleSignIn,
+  }) : _auth = auth,
+       _googleSignIn = googleSignIn;
+
+  final FirebaseAuth _auth;
+  final GoogleSignIn _googleSignIn;
+
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) {
+    return _auth.signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) {
+    return _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Google: web uses Firebase popup; iOS/Android use `google_sign_in` + credential.
+  Future<UserCredential> signInWithGoogle() async {
+    if (kIsWeb) {
+      final provider = GoogleAuthProvider();
+      return _auth.signInWithPopup(provider);
+    }
+
+    final account = await _googleSignIn.signIn();
+    if (account == null) {
+      throw AuthCancelledException();
+    }
+    final ga = await account.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: ga.accessToken,
+      idToken: ga.idToken,
+    );
+    return _auth.signInWithCredential(credential);
+  }
+
+  /// Apple: web uses Firebase popup; native uses Sign in with Apple + OAuth credential.
+  Future<UserCredential> signInWithApple() async {
+    if (kIsWeb) {
+      final provider = OAuthProvider('apple.com');
+      return _auth.signInWithPopup(provider);
+    }
+
+    final rawNonce = _generateNonce();
+    final nonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: nonce,
+    );
+
+    final oauthCredential = OAuthProvider(
+      'apple.com',
+    ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
+    return _auth.signInWithCredential(oauthCredential);
+  }
+
+  Future<void> signOut() async {
+    if (!kIsWeb) {
+      await _googleSignIn.signOut();
+    }
+    await _auth.signOut();
+  }
+}
+
+String _generateNonce([int length = 32]) {
+  const charset =
+      '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+  final random = Random.secure();
+  return List.generate(
+    length,
+    (_) => charset[random.nextInt(charset.length)],
+  ).join();
+}
+
+/// User closed the Google account picker or cancelled the flow.
+class AuthCancelledException implements Exception {}

@@ -1,0 +1,17 @@
+---
+description: GitHub Actions CI — Flutter analyze, test, format
+alwaysApply: true
+---
+
+# Finko — CI (GitHub)
+
+- **Triggers**: Run CI on **pull requests** and **pushes** to the default branch (adjust if using a different branching model).
+- **Jobs** (minimum):
+  1. `flutter pub get`
+  2. `dart format --output=none --set-exit-if-changed .` (or `flutter format` per SDK)
+  3. `flutter analyze` (must pass with **no** errors; treat infos/warnings per `analysis_options.yaml` policy)
+  4. `flutter test` (unit + widget tests)
+- **Caching**: Cache Pub and Flutter SDK where possible to keep runs fast.
+- **Concurrency**: Cancel in-progress runs on new commits to the same PR when practical.
+- **Artifacts**: Upload golden failure diffs or test logs on failure for widget/golden tests if added later.
+- **Branch protection**: Require passing CI before merge when the repo uses GitHub protections.

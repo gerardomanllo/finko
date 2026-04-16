@@ -1,0 +1,15 @@
+---
+description: Firestore (or Firebase DB) — paths, IDs, rules mindset
+alwaysApply: true
+---
+
+# Finko — database conventions
+
+- **Primary store** (planned): **Cloud Firestore** unless the repo explicitly adopts Firebase Data Connect or another product.
+- **User scoping**: Prefer **`users/{uid}/...`** (or `users/{uid}/collections/...`) for user-owned documents. Avoid a flat global namespace for PII or financial rows.
+- **IDs**: Use **Firestore auto-IDs** for high-cardinality documents (transactions). Use **deterministic IDs** only when upserts or idempotency require them (document the reason).
+- **Naming**: **`collection` names**: `lowerCamelCase` or **`kebab-case`** — pick one and stay consistent across the codebase. **Field names**: `lowerCamelCase` in new documents.
+- **Types**: Store **amounts** as **positive** minor-unit `int` plus a **`direction`** (in/out) per `docs/data-model.md`; never mix floats for money in new code.
+- **Timestamps**: Use **`Timestamp`** fields for server-truth times; name with suffixes like `createdAt`, `updatedAt`.
+- **Indexes**: Add composite indexes when queries require them; commit `firestore.indexes.json` when using the Firebase CLI.
+- **Rules**: Mirror access in **security rules** to match client assumptions; test rule changes against dev data.

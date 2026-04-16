@@ -1,0 +1,12 @@
+---
+description: Dev vs prod environments — Firebase, flavors, secrets
+alwaysApply: true
+---
+
+# Finko — environments
+
+- **Two logical environments**: **development** and **production**. Never point a prod build at dev Firebase resources (or vice versa).
+- **Flutter**: Use **flavors** (`dev` / `prod`) or equivalent `--dart-define` flags for API keys, Firebase options, and app IDs. Document chosen flag names in `docs/references/README.md` when they exist.
+- **Firebase**: Prefer **separate Firebase projects** (or distinct apps within a project only if clearly isolated) for dev vs prod. Check `GoogleService-Info.plist` / `google-services.json` / web config match the active flavor before release.
+- **Secrets**: No API keys or tokens in source control. Use CI secrets, `--dart-define-from-file`, or local untracked env files listed in `.gitignore`.
+- **Naming**: Use explicit suffixes in bundle IDs / package names for dev builds when platform stores require it (e.g. `.dev`).

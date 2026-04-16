@@ -1,0 +1,13 @@
+---
+description: docs/, CHANGELOG, references — agent-friendly docs hygiene
+alwaysApply: true
+---
+
+# Finko — project documentation
+
+- **Screen specs**: Product UI lives in **`docs/*.md`** per screen; **`docs/components-inventory.md`** lists shared widgets. Update these when behavior or navigation changes.
+- **Data**: **`docs/data-model.md`** (Firestore shape) and **`docs/data-contract.md`** (streams, providers, widget rules)—keep aligned when backend or access patterns change.
+- **Changelog**: Record notable changes in root **`CHANGELOG.md`** ([Keep a Changelog](https://keepachangelog.com/) style). Link PRs when helpful.
+- **References**: Stable external links and env notes go in **`docs/references/`** — keep **`docs/references/README.md`** as the index.
+- **Agents**: Prefer **short, current** docs over duplicating long specs in rules; rules point to `docs/` for UI truth (`finko-product-spec.mdc`).
+- **ADR** (optional): For major decisions (state library, router), add brief `docs/adr/` entries if the team uses them.
