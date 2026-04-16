@@ -14,3 +14,8 @@ final firestoreProvider = Provider<FirebaseFirestore>(
 final authStateProvider = StreamProvider<User?>(
   (ref) => ref.watch(firebaseAuthProvider).authStateChanges(),
 );
+
+/// Signed-in user id for gating Firestore streams; null when signed out.
+final authUidProvider = Provider<String?>((ref) {
+  return ref.watch(authStateProvider).valueOrNull?.uid;
+});

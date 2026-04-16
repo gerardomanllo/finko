@@ -1,0 +1,21 @@
+{
+  "name": "finko-functions",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "lint": "eslint --ext .ts src/",
+    "test": "npm run build && node -e \"const { foreignMinorToMainMinor, convertMinorBetweenUsdMxnEur } = require('./lib/forex.js'); const assert = require('assert'); const r = { USD: 0.05, EUR: 0.048 }; assert.strictEqual(foreignMinorToMainMinor(10000,'USD','MXN',r), 200000); const eur = convertMinorBetweenUsdMxnEur(10000,'USD','EUR',r); assert.strictEqual(eur, 9600); assert.strictEqual(convertMinorBetweenUsdMxnEur(eur,'EUR','USD',r), 10000); console.log('forex ok');\""
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

@@ -7,3 +7,5 @@ export 'firestore_map_utils.dart';
 export 'firestore_paths.dart';
 export 'json/json_converters.dart';
 export 'models/models.dart';
+export 'providers/finko_stream_providers.dart';
+export 'repositories/firestore_data_repository.dart';

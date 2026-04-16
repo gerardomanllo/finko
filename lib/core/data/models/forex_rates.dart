@@ -1,8 +1,11 @@
 import '../firestore_map_utils.dart';
 
-/// `forexRates/{yyyy-mm-dd}` — global daily quotes (e.g. currency → rate into main).
+/// `forexRates/{yyyy-mm-dd}` — global daily quotes into **MXN** (main).
 ///
-/// Store shape is product-defined; [rates] + [extra] preserve unknown keys from Functions.
+/// Functions store only **USD** and **EUR** vs MXN (`rates.USD` / `rates.EUR`:
+/// quote per 1 MXN). Cross-rates use MXN as hub.
+///
+/// [rates] + [extra] preserve unknown keys from older docs.
 /// Not codegen: unknown top-level keys are merged into [extra].
 class ForexRatesDoc {
   const ForexRatesDoc({

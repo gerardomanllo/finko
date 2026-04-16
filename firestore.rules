@@ -1,18 +1,52 @@
 rules_version = '2';
 
-// Deploy: npx -y firebase-tools@latest deploy --only firestore:rules
+// Deploy: npx -y firebase-tools@latest deploy --only firestore:rules,firestore:indexes
 // (confirm active project matches finko-environments / intended env.)
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /users/{userId} {
-      // Owner can read/write profile (incl. onboardingCompleted, locale, …).
-      // Tighten field-level rules later when all writes go through Callables.
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function signedIn(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
 
-      match /{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Global FX cache — written only by Cloud Functions (Admin SDK).
+    match /forexRates/{date} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      // Profile document only (not subcollections).
+      allow read, write: if signedIn(userId);
+
+      match /monthlyTotals/{monthId} {
+        allow read: if signedIn(userId);
+        allow write: if false;
+      }
+
+      match /_processedAggregateEvents/{eventId} {
+        allow read, write: if false;
+      }
+
+      match /transactions/{txId} {
+        allow read, write: if signedIn(userId);
+      }
+
+      match /accounts/{accountId} {
+        allow read, write: if signedIn(userId);
+      }
+
+      match /categories/{categoryId} {
+        allow read, write: if signedIn(userId);
+      }
+
+      match /upcomingTransactions/{id} {
+        allow read, write: if signedIn(userId);
+      }
+
+      match /recurring/{ruleId} {
+        allow read, write: if signedIn(userId);
       }
     }
   }

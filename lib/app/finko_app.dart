@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../core/locale/locale_notifier.dart';
 import '../core/locale/locale_support.dart';
+import 'materialize_listener.dart';
 import 'router.dart';
 
 class FinkoApp extends ConsumerWidget {
@@ -22,6 +23,9 @@ class FinkoApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: router,
+      builder: (context, child) => MaterializeDueUpcomingListener(
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }
