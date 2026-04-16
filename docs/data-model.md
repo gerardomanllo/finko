@@ -311,6 +311,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 ## 11. Security rules (intent)
 
 - `users/{uid}/**`: `request.auth.uid == uid`.
+- **`users/{uid}` profile document:** **Create** must not include **`onboardingCompleted`** or **`integrations`** (there is no **`resource`** on create, so rules must not use **`request.resource.data.diff(resource.data)`** for that path). **Update** rejects **changes** to **`onboardingCompleted`** and **`integrations`** (diff against **`resource.data`**).
 - **`onboardingCompleted`**, **`integrations.*.verifiedAt`**, and any **verified channel identifiers** — prefer **Callable / Admin-only writes** or field-level rules so clients **cannot** forge completion or verification.
 - **`forexRates`**: read for authenticated users (or public read if rates are non-sensitive); **write** only from **admin SDK** / scheduled Function.
 - **Aggregate docs** (`monthlyTotals`, `accounts.balance*`) — **client direct writes discouraged**; Functions as source of truth for denormalized fields.
@@ -358,5 +359,6 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-16 | §4: **`aggregateDeferred`** for future-dated ledger rows; aggregates skip until posting date ≤ user today + reconcile callable; §4.1a table updated. |
 | 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
 | 2026-04-16 | §4 / §11: **`firestore.rules`** block client create/update on **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, **`fxRateDateUsed`**; reload fields documented as Functions/ops-only. |
+| 2026-04-16 | §11: **`users/{uid}`** profile — **create** vs **update** rules (`firestore.rules`): create forbids **`onboardingCompleted`** / **`integrations`** keys; update uses **`diff`** so creates are not denied by a null **`resource`**. |
 | 2026-04-16 | §7 `budgets`: note **legacy flat** category→amount maps vs canonical `{ targetMinorMain, kind }`; onboarding writes canonical rows. |
 | 2026-04-16 | §8–9: `cadence` includes **`weekly`** + optional **`weekday`**; **`daysOfMonth`** / **`weekday`** on `upcomingTransactions`; materializer advances **`recurring.nextTransactionDate`** when **`recurringRuleId`** links; onboarding maps UI biweekly (two DOM) → **`twiceMonthly`**. |

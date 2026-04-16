@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Budgets (`/budgets`):** **Earnings** compact card uses **X** = sum of month budget targets on **income** Firestore categories (`incomeCategoryBudgetTargetMinor`) vs **Y** = **`incomeMinorMain`**; small tiles use **smaller type** with **amount above** “left to pay” / “to earn” captions. **Gastos por categoría** list shows **expense** budget rows only. Docs: **`docs/budgets.md`**, **`docs/components-inventory.md`**.
+
 - **Spending:** period strip lists **only periods that have at least one transaction** and **auto-scrolls to the right** when the period pill changes; **single accordion** (income + fixed + variable); donut + legend **centered horizontally**; donut ring **thinner**; largest-transaction list uses **`amountMinorMain`** with **`amountMinor`** fallback when `currency` matches **`mainCurrency`**.
 
 - **Cloud Functions — ledger aggregate:** Rows with **`transactionDate` after** the user’s calendar today **do not** update **`accounts`** / **`monthlyTotals`** until applied; they set **`aggregateDeferred: true`**. Callable **`reconcileDeferredLedgerForUser`** applies due rows; the **Flutter app** invokes it on lifecycle (once per profile calendar day, SharedPreferences) and on **every** dashboard/recurring pull-to-refresh—**no** scheduled job. See `docs/data-model.md` §4, `lib/core/upcoming/deferred_ledger_reconcile_service.dart`.
@@ -46,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Firestore rules:** `users/{uid}/transactions` create/update may not add or change server-owned keys (`aggregateApplied`, `aggregateDeferred`, `reload`, `aggregateReload`, `amountMinorMain`, `fxRateDateUsed`); aligns with [`docs/data-model.md`](docs/data-model.md) §11. **Flutter CI** uses **Node 24** for Functions Jest to match [`functions/package.json`](functions/package.json) `engines`.
+
+- **Firestore rules — `users/{uid}` profile:** split **create** and **update** so **create** does not call `diff(resource.data)` (no existing document / **`resource`**); **create** rejects payloads that include **`onboardingCompleted`** or **`integrations`**; **update** still rejects **changes** to those keys (server / Callable ownership). See [`docs/data-model.md`](docs/data-model.md) §11.
 
 - **Ledger delete/update:** Monetary reversal runs only when `snapshotBalancesIncludedThisRow` (`functions/src/aggregateLedger.ts`) — skip if **`aggregateDeferred`** (pending future) **or** explicit **`aggregateApplied: false`** (aggregate never applied; any date). Fixes **`accounts`** drifting when **`monthlyTotals`/NW** did not get the matching +1. See `docs/data-model.md` §4.1a.
 

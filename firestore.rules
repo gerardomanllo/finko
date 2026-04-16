@@ -41,7 +41,13 @@ service cloud.firestore {
     match /users/{userId} {
       // Profile document only (not subcollections).
       allow read: if signedIn(userId);
-      allow create, update: if signedIn(userId)
+      // Create: `resource` is not defined — do not call `diff(resource.data)`.
+      allow create: if signedIn(userId)
+        && !request.resource.data.keys().hasAny([
+          'onboardingCompleted',
+          'integrations'
+        ]);
+      allow update: if signedIn(userId)
         && !request.resource.data.diff(resource.data).changedKeys().hasAny([
           'onboardingCompleted',
           'integrations'
