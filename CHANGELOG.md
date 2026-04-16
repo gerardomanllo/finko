@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Firestore rules:** `users/{uid}/transactions` create/update may not add or change server-owned keys (`aggregateApplied`, `aggregateDeferred`, `reload`, `aggregateReload`, `amountMinorMain`, `fxRateDateUsed`); aligns with [`docs/data-model.md`](docs/data-model.md) §11. **Flutter CI** uses **Node 24** for Functions Jest to match [`functions/package.json`](functions/package.json) `engines`.
+
 - **Ledger delete/update:** Monetary reversal runs only when `snapshotBalancesIncludedThisRow` (`functions/src/aggregateLedger.ts`) — skip if **`aggregateDeferred`** (pending future) **or** explicit **`aggregateApplied: false`** (aggregate never applied; any date). Fixes **`accounts`** drifting when **`monthlyTotals`/NW** did not get the matching +1. See `docs/data-model.md` §4.1a.
 
 - Ledger aggregation: `onLedgerTransactionWritten` now runs a one-shot catch-up when money fields are unchanged but `aggregateApplied` is still missing (so toggling a reload flag re-applies totals instead of netting zero), coerces `amountMinor` from Firestore into a finite int, writes `aggregateApplied` on the transaction after a successful aggregate, and `commitOnboarding` now persists `profile.mainCurrency` (defaulting to MXN when absent).

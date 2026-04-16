@@ -162,8 +162,8 @@ When a **transaction is created/updated**:
 
 - After writing a **transaction**, watch **`accounts`** and **`monthlyTotals`** streams; totals update after Functions finish (usually one or two snapshot ticks).
 - **`monthlyTotals/{yyyy-mm}`** is a **single document**; **`days`** is a **map** on that document (not a subcollection).
-- **`aggregateApplied`** on a transaction is **server-owned**; the app may read it for diagnostics but **must not** set it to `true` in production (enforce in rules per [`data-model.md` §11](data-model.md)).
-- Optional **`reload`** / **`aggregateReload`** fields are only for **re-firing** the aggregate when money fields are unchanged (e.g. ops / debugging). Product UI should not depend on them unless we add a first-class “repair” flow.
+- **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, and **`fxRateDateUsed`** on a transaction are **server-owned**; the app may read them for diagnostics. **`firestore.rules`** rejects client **create/update** that adds or changes these keys (Admin SDK / Functions bypass rules). Catch-up when aggregates never ran still works on **allowed** client edits (e.g. memo) that do not touch those keys.
+- Optional **`reload`** / **`aggregateReload`** toggles remain **ops / Functions-only** (not client-writable); use callables / materialization flows for normal product behavior.
 
 **Pull-to-refresh / materialization** (app): dashboard/recurring refresh runs **`materializeDueUpcoming`** and **`reconcileDeferredLedgerForUser`** (always); lifecycle also runs deferred reconcile **once per profile calendar day** (SharedPreferences flag). These complement aggregates but do not replace the transaction trigger above.
 
@@ -179,6 +179,7 @@ When a **transaction is created/updated**:
 | 2026-04-14 | Initial contract: streams, Riverpod, widget rules, no batch jobs, screen→subscription map. |
 | 2026-04-14 | Scheduled **forex** allowed; budgets in `monthlyTotals`; `upcomingTransactions` + callable materialization; multi-currency. |
 | 2026-04-16 | **§12** Ledger aggregation (Functions vs client, `aggregateApplied`, `days` map, optional reload fields). |
+| 2026-04-16 | **§12** Client expectations: **`firestore.rules`** enforce server-only transaction aggregate/audit keys; reload fields ops/Functions-only. |
 | 2026-04-16 | **§5** Dashboard row: named providers + net-worth sparkline source, refresh/materialize. |
 | 2026-04-16 | **§5** Spending row: `spendingMergedMonthlyRollupProvider`, `spendingPeriodIncomeExpenseProvider`, `transactionsForDateRangeStreamProvider`, `watchTransactionsForDateRange`, `categoriesStreamProvider`. |
 | 2026-04-16 | **§5** Recurring row: named providers; **§11** callable `asOfDate` / `timezone` resolution + next-date + `recurring` sync. |

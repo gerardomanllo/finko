@@ -10,6 +10,28 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    // `users/{uid}/transactions` — server-owned aggregate / audit fields (Functions / Admin SDK only).
+    function forbiddenClientTransactionKeys() {
+      return [
+        'aggregateApplied',
+        'aggregateDeferred',
+        'reload',
+        'aggregateReload',
+        'amountMinorMain',
+        'fxRateDateUsed'
+      ];
+    }
+
+    function clientTransactionCreateAllowed() {
+      return !forbiddenClientTransactionKeys().hasAny(request.resource.data.keys());
+    }
+
+    function clientTransactionUpdateAllowed() {
+      return !forbiddenClientTransactionKeys().hasAny(
+        request.resource.data.diff(resource.data).affectedKeys()
+      );
+    }
+
     // Global FX cache — written only by Cloud Functions (Admin SDK).
     match /forexRates/{date} {
       allow read: if request.auth != null;
@@ -44,7 +66,10 @@ service cloud.firestore {
       }
 
       match /transactions/{txId} {
-        allow read, write: if signedIn(userId);
+        allow read: if signedIn(userId);
+        allow create: if signedIn(userId) && clientTransactionCreateAllowed();
+        allow update: if signedIn(userId) && clientTransactionUpdateAllowed();
+        allow delete: if signedIn(userId);
       }
 
       match /accounts/{accountId} {
