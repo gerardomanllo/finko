@@ -196,6 +196,8 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `includeInNetCash` | `bool` | **Net cash** (liquid) rollup—e.g. checking, credit cards when true. |
 | `sortOrder` | `int` | |
 | `createdAt` / `updatedAt` | `Timestamp` | UTC. |
+| `iconKey` | `string` | UI key into the fixed Material map (default **`account_balance`** if omitted in older rows). |
+| `colorArgb` | `int?` | Optional UI tint (ARGB); onboarding writes a palette value. |
 
 **Net worth** sums **all** accounts (§4.2). **Net cash** sums only accounts with **`includeInNetCash`** true.
 
@@ -313,7 +315,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 ## 11. Security rules (intent)
 
 - `users/{uid}/**`: `request.auth.uid == uid`.
-- **`users/{uid}` profile document:** **Create** must not include **`onboardingCompleted`** or **`integrations`** (there is no **`resource`** on create, so rules must not use **`request.resource.data.diff(resource.data)`** for that path). **Update** rejects **changes** to **`onboardingCompleted`** and **`integrations`** (diff against **`resource.data`**).
+- **`users/{uid}` profile document:** **Create** must not include **`onboardingCompleted`** or **`integrations`** (there is no **`resource`** on create, so rules must not use **`request.resource.data.diff(resource.data)`** for that path). **Update** rejects any **addition, removal, or in-place change** to **`onboardingCompleted`** and **`integrations`** via **`request.resource.data.diff(resource.data).affectedKeys()`** (use **`affectedKeys`**, not **`changedKeys`**: the latter only lists keys present in **both** before and after with unequal values, so a client could **add** a missing server-only field and bypass a **`changedKeys`** check).
 - **`onboardingCompleted`**, **`integrations.*.verifiedAt`**, and any **verified channel identifiers** — prefer **Callable / Admin-only writes** or field-level rules so clients **cannot** forge completion or verification.
 - **`forexRates`**: read for authenticated users (or public read if rates are non-sensitive); **write** only from **admin SDK** / scheduled Function.
 - **Aggregate docs** (`monthlyTotals`, `accounts.balance*`) — **client direct writes discouraged**; Functions as source of truth for denormalized fields.
@@ -361,6 +363,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-16 | §4: **`aggregateDeferred`** for future-dated ledger rows; aggregates skip until posting date ≤ user today + reconcile callable; §4.1a table updated. |
 | 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
 | 2026-04-16 | §4 / §11: **`firestore.rules`** block client create/update on **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, **`fxRateDateUsed`**; reload fields documented as Functions/ops-only. |
-| 2026-04-16 | §11: **`users/{uid}`** profile — **create** vs **update** rules (`firestore.rules`): create forbids **`onboardingCompleted`** / **`integrations`** keys; update uses **`diff`** so creates are not denied by a null **`resource`**. |
+| 2026-04-16 | §11: **`users/{uid}`** profile rules (`firestore.rules`): **create** forbids **`onboardingCompleted`** / **`integrations`** (no **`diff`** on create); **update** uses **`diff(...).affectedKeys()`** so adds/removals/changes to those keys are blocked—**`changedKeys()`** would miss first-time **adds** when the prior doc omitted the field. |
 | 2026-04-16 | **Budgets** canonical on **`users/{uid}.budgets`** (`{ targetMinorMain, kind }`; legacy flat int on profile); removed from **`monthlyTotals`** (stale month `budgets` ignored); **`commitOnboarding`** + app read profile for targets vs month aggregates. |
 | 2026-04-16 | §8–9: `cadence` includes **`weekly`** + optional **`weekday`**; **`daysOfMonth`** / **`weekday`** on `upcomingTransactions`; materializer advances **`recurring.nextTransactionDate`** when **`recurringRuleId`** links; onboarding maps UI biweekly (two DOM) → **`twiceMonthly`**. |
+| 2026-04-16 | §5 **accounts**: documented **`iconKey`** and **`colorArgb`** (written by onboarding; client metadata updates via `updateAccountMetadata` must not change balances). |

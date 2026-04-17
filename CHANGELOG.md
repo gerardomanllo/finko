@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Categories (`/categories`) & Accounts (`/accounts`):** paper lists with **icons**; categories grouped income/expense; accounts grouped by type (dashboard order). Row tap opens a **summary bottom sheet** (this month + recent transactions; accounts show **net** in main currency from ledger). **Edit** opens the same **slide-up editors** as onboarding (categories; accounts use **metadata-only** mode—no starting balance). Firestore: `updateCategory`, `updateAccountMetadata`; `FinkoAccount` includes **`iconKey`** / **`colorArgb`**.
+
 - **Dashboard — net cash:** **info** icon on the net cash row in the accounts accordion opens a localized dialog explaining how net cash is calculated (`FinkoCashFlowAccountsAccordion`).
 
 - **Spending (`/spending`):** period **pill + horizontal period cards** (ascending, default right-most) driven by **`todayYyyyMmDdProvider`**; **`monthlyTotals`** merge + **week** day sums for mini bars; **fixed vs variable** accordion using category **`fixed-expenses`**; **thin donut** with **right-side legend** and **top 4 outflows** from **`transactions`** in range (`watchTransactionsForDateRange` / `transactionsForDateRangeStreamProvider`); **`mainCurrency`** from profile. Helpers in `lib/core/spending/`, providers in `lib/features/spending/presentation/spending_providers.dart`.
@@ -61,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Firestore rules:** `users/{uid}/transactions` create/update may not add or change server-owned keys (`aggregateApplied`, `aggregateDeferred`, `reload`, `aggregateReload`, `amountMinorMain`, `fxRateDateUsed`); aligns with [`docs/data-model.md`](docs/data-model.md) §11. **Flutter CI** uses **Node 24** for Functions Jest to match [`functions/package.json`](functions/package.json) `engines`.
 
-- **Firestore rules — `users/{uid}` profile:** split **create** and **update** so **create** does not call `diff(resource.data)` (no existing document / **`resource`**); **create** rejects payloads that include **`onboardingCompleted`** or **`integrations`**; **update** still rejects **changes** to those keys (server / Callable ownership). See [`docs/data-model.md`](docs/data-model.md) §11.
+- **Firestore rules — `users/{uid}` profile:** split **create** and **update** so **create** does not call `diff(resource.data)` (no existing document / **`resource`**); **create** rejects payloads that include **`onboardingCompleted`** or **`integrations`**; **update** rejects any **addition, removal, or change** to those keys via **`diff(...).affectedKeys()`** (not **`changedKeys()`**, which misses first-time **adds**). See [`docs/data-model.md`](docs/data-model.md) §11.
 
 - **Ledger delete/update:** Monetary reversal runs only when `snapshotBalancesIncludedThisRow` (`functions/src/aggregateLedger.ts`) — skip if **`aggregateDeferred`** (pending future) **or** explicit **`aggregateApplied: false`** (aggregate never applied; any date). Fixes **`accounts`** drifting when **`monthlyTotals`/NW** did not get the matching +1. See `docs/data-model.md` §4.1a.
 

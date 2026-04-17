@@ -48,7 +48,7 @@ service cloud.firestore {
           'integrations'
         ]);
       allow update: if signedIn(userId)
-        && !request.resource.data.diff(resource.data).changedKeys().hasAny([
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'onboardingCompleted',
           'integrations'
         ]);
