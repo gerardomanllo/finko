@@ -22,7 +22,8 @@ class FinkoSavingsProjectionCard extends StatelessWidget {
     final p = projectedFraction.clamp(0.0, 1.0);
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
+      color: theme.colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),

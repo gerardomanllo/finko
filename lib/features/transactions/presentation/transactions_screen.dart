@@ -6,6 +6,7 @@ import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_search_filter_bar.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
@@ -188,77 +189,80 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         ],
                       ),
                     )
-                  : RefreshIndicator(
-                      onRefresh: () => notifier.refresh(),
-                      child: Builder(
-                        builder: (context) {
-                          if (filtered.isEmpty) {
-                            final emptyMessage =
-                                listState.debouncedSearchQuery.isNotEmpty
-                                ? l10n.transactionsSearchNoMatches
-                                : l10n.emptyNoTransactions;
-                            return ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              controller: _scroll,
-                              children: [
-                                SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.35,
-                                  child: Center(child: Text(emptyMessage)),
-                                ),
-                              ],
-                            );
-                          }
-                          return ListView.builder(
-                            controller: _scroll,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount:
-                                filtered.length +
-                                (listState.loadingMore ? 1 : 0),
-                            itemBuilder: (context, i) {
-                              if (i >= filtered.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
-                              final t = filtered[i];
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                mainAxisSize: MainAxisSize.min,
+                  : FinkoPaperCard(
+                      padding: EdgeInsets.zero,
+                      child: RefreshIndicator(
+                        onRefresh: () => notifier.refresh(),
+                        child: Builder(
+                          builder: (context) {
+                            if (filtered.isEmpty) {
+                              final emptyMessage =
+                                  listState.debouncedSearchQuery.isNotEmpty
+                                  ? l10n.transactionsSearchNoMatches
+                                  : l10n.emptyNoTransactions;
+                              return ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                controller: _scroll,
                                 children: [
-                                  if (i > 0) const Divider(height: 1),
-                                  FinkoTransactionRowCompact(
-                                    title: t.memo ?? t.type.wireName,
-                                    subtitle: t.transactionDate,
-                                    amountText: _amount(
-                                      context,
-                                      t,
-                                      minor:
-                                          t.amountMinorMain != null &&
-                                              t.currency != mainCurrency
-                                          ? t.amountMinorMain!
-                                          : t.amountMinor,
-                                      currency: mainCurrency,
-                                    ),
-                                    secondaryAmountText: _secondaryAmount(
-                                      context,
-                                      t,
-                                      mainCurrency,
-                                    ),
-                                    onTap: () =>
-                                        LedgerTransactionEditorSheet.show(
-                                          context,
-                                          transaction: t,
-                                        ),
+                                  SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.35,
+                                    child: Center(child: Text(emptyMessage)),
                                   ),
                                 ],
                               );
-                            },
-                          );
-                        },
+                            }
+                            return ListView.builder(
+                              controller: _scroll,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount:
+                                  filtered.length +
+                                  (listState.loadingMore ? 1 : 0),
+                              itemBuilder: (context, i) {
+                                if (i >= filtered.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+                                final t = filtered[i];
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (i > 0) const Divider(height: 1),
+                                    FinkoTransactionRowCompact(
+                                      title: t.memo ?? t.type.wireName,
+                                      subtitle: t.transactionDate,
+                                      amountText: _amount(
+                                        context,
+                                        t,
+                                        minor:
+                                            t.amountMinorMain != null &&
+                                                t.currency != mainCurrency
+                                            ? t.amountMinorMain!
+                                            : t.amountMinor,
+                                        currency: mainCurrency,
+                                      ),
+                                      secondaryAmountText: _secondaryAmount(
+                                        context,
+                                        t,
+                                        mainCurrency,
+                                      ),
+                                      onTap: () =>
+                                          LedgerTransactionEditorSheet.show(
+                                            context,
+                                            transaction: t,
+                                          ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
             ),

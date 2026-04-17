@@ -48,7 +48,7 @@ void main() {
   });
 
   group('MonthlyTotals', () {
-    test('parses nested budgets and days', () {
+    test('parses days and ignores legacy month-level budgets field', () {
       final data = {
         'yearMonth': '2026-04',
         'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 4, 1)),
@@ -68,25 +68,10 @@ void main() {
       };
       final m = MonthlyTotals.fromFirestore(data);
       expect(m.incomeMinorMain, 5000);
-      expect(m.budgets['cat1']?.targetMinorMain, 400);
       expect(m.days['15']?.netWorthEodMinorMain, 10000);
       final out = m.toFirestore();
       expect(out['yearMonth'], '2026-04');
-    });
-
-    test('parses legacy flat numeric budgets (onboarding shorthand)', () {
-      final data = {
-        'yearMonth': '2026-04',
-        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 4, 1)),
-        'incomeMinorMain': 0,
-        'expenseMinorMain': 1000,
-        'byCategoryMinorMain': <String, int>{},
-        'budgets': {'cat1': 50_000},
-        'days': <String, dynamic>{},
-      };
-      final m = MonthlyTotals.fromFirestore(data);
-      expect(m.budgets['cat1']?.targetMinorMain, 50_000);
-      expect(m.budgets['cat1']?.kind, BudgetKind.expense);
+      expect(out.containsKey('budgets'), isFalse);
     });
   });
 
@@ -148,6 +133,25 @@ void main() {
       final p = UserProfile.fromFirestore('uid1', data);
       expect(p.integrations.whatsapp?.phoneE164, '+525512345678');
       expect(p.mainCurrency, 'MXN');
+    });
+
+    test('parses canonical budgets map', () {
+      final p = UserProfile.fromFirestore('uid1', {
+        'displayName': 'Bob',
+        'budgets': {
+          'cat1': {'targetMinorMain': 400, 'kind': 'expense'},
+        },
+      });
+      expect(p.budgets['cat1']?.targetMinorMain, 400);
+      expect(p.budgets['cat1']?.kind, BudgetKind.expense);
+    });
+
+    test('parses legacy flat numeric budgets on profile', () {
+      final p = UserProfile.fromFirestore('uid1', {
+        'budgets': {'cat1': 50_000},
+      });
+      expect(p.budgets['cat1']?.targetMinorMain, 50_000);
+      expect(p.budgets['cat1']?.kind, BudgetKind.expense);
     });
   });
 }

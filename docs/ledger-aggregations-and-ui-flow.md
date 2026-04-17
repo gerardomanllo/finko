@@ -88,6 +88,7 @@ flowchart TB
   subgraph streams["Firestore snapshots via Riverpod"]
     PA["accountsStreamProvider"]
     PM["monthlyTotalsForMonthStreamProvider dashboardYearMonth"]
+    PP["userProfileStreamProvider users uid budgets map"]
     PT["todayYyyyMmDdProvider profile calendar"]
     PS["netWorthSparklineSeriesProvider reads monthlyTotals days netWorthEodMinorMain"]
     PR["recentTransactionsStreamProvider raw tx docs"]
@@ -112,10 +113,10 @@ flowchart TB
   end
 
   subgraph budget["Budget teaser"]
-    BT["_totalExpenseBudgetMinor: sum budget targets kind expense"]
+    BT["totalExpenseBudgetMinor on profile budgets map monthly_budget_rollup.dart"]
     SP["spent equals expenseMinorMainThroughDate"]
     LF["left equals budgetTotal minus spent clamped"]
-    RG["_topCategoryRings: byCategoryMinorMainThroughDate then sort"]
+    RG["_topCategoryRings: month totals plus profile budgets byCategoryMinorMainThroughDate"]
   end
 
   subgraph recent["Recent transactions"]
@@ -128,6 +129,9 @@ flowchart TB
   PM --> EX1
   PM --> BT
   PM --> SP
+  PM --> RG
+  PP --> BT
+  PP --> RG
   PT --> EX1
   PT --> RG
   PS --> NW1
@@ -214,5 +218,6 @@ If **`transactionDate`** is **after** profile **today**, aggregates above are **
 
 | Date | Change |
 |------|--------|
+| 2026-04-16 | Budget teaser: **BT** uses **`totalExpenseBudgetMinor`** on **`userProfileStreamProvider.budgets`**; **PP** stream + **RG** edges; **`commitOnboarding`** writes budgets on profile only. |
 | 2026-04-16 | Functional flowcharts (CF + dashboard), traceability tables, Jest/Dart test mapping, propagation rules; Dart tests for MTD helpers. |
 | 2026-04-16 | Initial doc: CF math, gates, transfers, deferred reconcile, Flutter providers and MTD/sparkline client derivations. |

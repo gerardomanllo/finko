@@ -19,6 +19,7 @@ import '../../../widgets/accounts/finko_spending_income_fixed_variable_accordion
 import '../../../widgets/charts/finko_donut_with_side_legend.dart';
 import '../../../widgets/layout/pill_toggle_group.dart';
 import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
+import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
@@ -27,6 +28,10 @@ import 'spending_providers.dart';
 /// Outer radius minus [kDonutCenterSpaceRadius] → **very thin** ring (fl_chart).
 const double kDonutSectionOuterRadius = 10;
 const double kDonutCenterSpaceRadius = 75;
+
+/// Vertical gap between spending **paper** sections so [scaffoldBackgroundColor]
+/// (cloud) stays visible between cards.
+const double kSpendingSectionCloudGap = 12;
 
 class SpendingScreen extends ConsumerStatefulWidget {
   const SpendingScreen({super.key});
@@ -180,26 +185,33 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      height: 148,
-                      child: ListView.separated(
-                        controller: _stripScrollController,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 10),
-                        itemBuilder: (context, i) {
-                          final d = filtered[i];
-                          return _SpendingMiniCard(
-                            descriptor: d,
-                            isSelected: i == selectedIdx,
-                            localeTag: localeTag,
-                            onTap: () =>
-                                setState(() => _selectedPeriodKey = d.key),
-                          );
-                        },
+                    FinkoPaperCard(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: SizedBox(
+                        height: 148,
+                        child: ListView.separated(
+                          controller: _stripScrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(width: 10),
+                          itemBuilder: (context, i) {
+                            final d = filtered[i];
+                            return _SpendingMiniCard(
+                              descriptor: d,
+                              isSelected: i == selectedIdx,
+                              localeTag: localeTag,
+                              onTap: () =>
+                                  setState(() => _selectedPeriodKey = d.key),
+                            );
+                          },
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: kSpendingSectionCloudGap),
                     _SpendingPeriodDetailColumn(
                       granularity: _granularity,
                       selected: selected,
@@ -299,14 +311,26 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('$e'),
+              loading: () => FinkoPaperCard(
+                padding: const EdgeInsets.all(16),
+                child: const LinearProgressIndicator(),
+              ),
+              error: (e, _) => FinkoPaperCard(
+                padding: const EdgeInsets.all(16),
+                child: Text('$e'),
+              ),
             );
           },
-          loading: () => const LinearProgressIndicator(),
-          error: (e, _) => Text('$e'),
+          loading: () => FinkoPaperCard(
+            padding: const EdgeInsets.all(16),
+            child: const LinearProgressIndicator(),
+          ),
+          error: (e, _) => FinkoPaperCard(
+            padding: const EdgeInsets.all(16),
+            child: Text('$e'),
+          ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: kSpendingSectionCloudGap),
         mergedAsync.when(
           data: (merged) {
             final useTxDonut = granularity == SpendingGranularity.week;
@@ -398,25 +422,32 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
 
             final periodLabel = spendingPeriodCardLabel(localeTag, selected);
 
-            return FinkoDonutWithSideLegend(
-              sections: sections,
-              centerTitle: l10n.spendingTotalSpendIn,
-              centerSubtitle: periodLabel,
-              centerTotal: _format(context, totalExpense, mainCurrency),
-              legendRows: legendRows,
-              centerSpaceRadius: kDonutCenterSpaceRadius,
-              sectionsSpace: 0,
+            return FinkoPaperCard(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: FinkoDonutWithSideLegend(
+                sections: sections,
+                centerTitle: l10n.spendingTotalSpendIn,
+                centerSubtitle: periodLabel,
+                centerTotal: _format(context, totalExpense, mainCurrency),
+                legendRows: legendRows,
+                centerSpaceRadius: kDonutCenterSpaceRadius,
+                sectionsSpace: 0,
+              ),
             );
           },
-          loading: () => const SizedBox(
-            height: 200,
-            child: Center(child: CircularProgressIndicator()),
+          loading: () => FinkoPaperCard(
+            padding: const EdgeInsets.all(24),
+            child: const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            ),
           ),
-          error: (e, _) => Text('$e'),
+          error: (e, _) => FinkoPaperCard(
+            padding: const EdgeInsets.all(16),
+            child: Text('$e'),
+          ),
         ),
-        const SizedBox(height: 24),
-        Text(l10n.spendingTopTransactions, style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
+        const SizedBox(height: kSpendingSectionCloudGap),
         Builder(
           builder: (context) {
             final rollup = aggregateSpendingTransactions(
@@ -425,21 +456,40 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
             );
             final top = rollup.topOutflows;
             if (top.isEmpty) {
-              return Text(l10n.emptyNoTransactions);
+              return FinkoPaperCard(
+                title: l10n.spendingTopTransactions,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
+                child: Text(
+                  l10n.emptyNoTransactions,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              );
             }
-            return Column(
-              children: [
-                for (final t in top)
-                  FinkoTransactionRowCompact(
-                    title: t.memo ?? t.type.wireName,
-                    subtitle: t.transactionDate,
-                    amountText: _tx(context, t),
-                    onTap: () => LedgerTransactionEditorSheet.show(
-                      context,
-                      transaction: t,
+            return FinkoPaperCard(
+              title: l10n.spendingTopTransactions,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < top.length; i++) ...[
+                    if (i > 0) const Divider(height: 1),
+                    FinkoTransactionRowCompact(
+                      title: top[i].memo ?? top[i].type.wireName,
+                      subtitle: top[i].transactionDate,
+                      amountText: _tx(context, top[i]),
+                      onTap: () => LedgerTransactionEditorSheet.show(
+                        context,
+                        transaction: top[i],
+                      ),
                     ),
-                  ),
-              ],
+                  ],
+                ],
+              ),
             );
           },
         ),

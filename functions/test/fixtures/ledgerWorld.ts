@@ -24,7 +24,6 @@ export function emptyMonthBody(yearMonth: string): Record<string, unknown> {
     incomeMinorMain: 0,
     expenseMinorMain: 0,
     byCategoryMinorMain: {} as Record<string, number>,
-    budgets: {},
     days: {} as Record<string, Record<string, unknown>>,
   };
 }

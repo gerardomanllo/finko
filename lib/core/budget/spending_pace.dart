@@ -6,8 +6,8 @@
 /// [viewedMonth] should be `DateTime(year, month, 1)`.
 ///
 /// Spending pace ([`docs/budgets.md`]) uses this count with **left to spend** =
-/// total expense budget minus `expenseMinorMain` on [`MonthlyTotals`], same as
-/// the card’s “Left for spending” figure.
+/// total expense budget (profile **`budgets`** map) minus **`MonthlyTotals`**
+/// `expenseMinorMain`, same as the card’s “Left for spending” figure.
 int calendarDaysRemainingInViewedMonth(DateTime viewedMonth, DateTime today) {
   final first = DateTime(viewedMonth.year, viewedMonth.month, 1);
   final lastDay = DateTime(viewedMonth.year, viewedMonth.month + 1, 0).day;

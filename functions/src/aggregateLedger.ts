@@ -97,7 +97,6 @@ function defaultMonthly(yearMonth: string) {
     incomeMinorMain: 0,
     expenseMinorMain: 0,
     byCategoryMinorMain: {} as Record<string, number>,
-    budgets: {},
     days: {} as Record<string, Record<string, unknown>>,
     updatedAt: FieldValue.serverTimestamp(),
   };

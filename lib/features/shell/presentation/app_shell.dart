@@ -52,12 +52,26 @@ class _AppShellState extends State<AppShell> {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                UserAccountsDrawerHeader(
-                  accountName: Text(l10n.drawerUserPlaceholderName),
-                  accountEmail: Text(l10n.drawerUserPlaceholderEmail),
-                  currentAccountPicture: CircleAvatar(
-                    child: Text(l10n.drawerUserPlaceholderInitial),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final theme = Theme.of(context);
+                    return Theme(
+                      data: theme.copyWith(
+                        primaryTextTheme: theme.textTheme,
+                      ),
+                      child: UserAccountsDrawerHeader(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                        ),
+                        arrowColor: theme.colorScheme.onSurface,
+                        accountName: Text(l10n.drawerUserPlaceholderName),
+                        accountEmail: Text(l10n.drawerUserPlaceholderEmail),
+                        currentAccountPicture: CircleAvatar(
+                          child: Text(l10n.drawerUserPlaceholderInitial),
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.category_outlined),

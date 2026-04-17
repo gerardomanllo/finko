@@ -47,7 +47,8 @@
 
 ## UI — breakdown (paper)
 
-- **Layout**: **Donut on the left**, **category labels on the right**; the **donut + legend row** is **centered horizontally** on the screen (narrow `Row` inside `Center`).
+- Below the pills, **separate white surfaces** (paper card or existing `Card` accordion) are stacked with a **vertical gutter** (~12px) so the **cloud scaffold** shows between sections: **period strip** (mini bars) → **income / fixed / variable accordion** → **donut + legend** (inside paper) → **top transactions** (paper with section title).
+- **Layout**: **Donut on the left**, **category labels on the right**; the **donut + legend row** is **centered horizontally** inside its paper card (narrow `Row` inside `Center`).
 - **Donut**:
   - **Very thin ring** (~1 px stroke: high `centerSpaceRadius` vs section outer radius in fl_chart).
   - **Only the ring borders colored**; **white center**.
@@ -81,6 +82,7 @@
 
 ## Revision log
 
+- **2026-04-16**: **Separate paper cards** under the pills with **cloud gutters** between strip, accordion, donut block, and top transactions (no single merged white panel).
 - **2026-04-16**: **One accordion** (income + fixed + variable); **auto-scroll strip** to the right on pill change; donut + legend **centered horizontally**.
 - **2026-04-16**: Strip shows **only periods with ≥1 transaction**; donut ring **thinner**; top outflows use **`amountMinorMain`** with **`amountMinor`** fallback when currency matches **`mainCurrency`**.
 - **2026-04-16**: **Implemented** Flutter wiring: `monthlyTotals` merge + optional **`transactions`** range stream; **`fixed-expenses`** split; **`FinkoDonutWithSideLegend`** + **`FinkoSpendingIncomeFixedVariableAccordion`**; strip counts (12 / 8).

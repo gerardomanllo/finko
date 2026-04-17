@@ -113,6 +113,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       locale,
       mainCurrency,
       onboardingCompleted: true,
+      budgets: budgetsEmbedded,
       updatedAt: FieldValue.serverTimestamp(),
       createdAt: FieldValue.serverTimestamp(),
     },
@@ -235,7 +236,6 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
     monthlyTotalsRef,
     {
       yearMonth: monthId,
-      budgets: budgetsEmbedded,
       updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true }

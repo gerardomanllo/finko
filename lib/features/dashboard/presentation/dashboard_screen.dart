@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/budget/monthly_budget_rollup.dart';
 import '../../../core/app_environment.dart';
 import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_account.dart';
@@ -18,6 +19,7 @@ import '../../../core/upcoming/deferred_ledger_reconcile_provider.dart';
 import '../../../core/upcoming/materialize_upcoming_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
+import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/budgets/finko_monthly_budget_teaser.dart';
 import '../../../widgets/metrics/finko_metric_carousel_card.dart';
 import '../../../widgets/metrics/finko_net_worth_sparkline.dart';
@@ -89,19 +91,9 @@ class DashboardScreen extends ConsumerWidget {
     return l10n.upcomingInDays(d);
   }
 
-  static int _totalExpenseBudgetMinor(MonthlyTotals? m) {
-    if (m == null) return 0;
-    var sum = 0;
-    for (final e in m.budgets.values) {
-      if (e.kind == BudgetKind.expense) {
-        sum += e.targetMinorMain;
-      }
-    }
-    return sum;
-  }
-
   static List<({String label, double ringProgress})> _topCategoryRings(
     MonthlyTotals? m,
+    Map<String, MonthlyBudgetEntry> budgets,
     String throughYyyyMmDd,
   ) {
     if (m == null) return [];
@@ -113,7 +105,7 @@ class DashboardScreen extends ConsumerWidget {
     final maxSpend = top.first.value;
     final out = <({String label, double ringProgress})>[];
     for (final e in top) {
-      final budget = m.budgets[e.key];
+      final budget = budgets[e.key];
       final spent = e.value;
       double ring;
       if (budget != null && budget.targetMinorMain > 0) {
@@ -293,30 +285,36 @@ class DashboardScreen extends ConsumerWidget {
                 if (list.isEmpty) {
                   return Text(l10n.emptyNoUpcoming);
                 }
-                return SizedBox(
-                  height: 168,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: list.length.clamp(0, 20),
-                    separatorBuilder: (BuildContext context, int index) =>
-                        const SizedBox(width: 10),
-                    itemBuilder: (context, i) {
-                      final u = list[i];
-                      return FinkoUpcomingTransactionCard(
-                        title: u.memo ?? u.kind.wireName,
-                        amountText: _upcomingAmount(context, u, mainCurrency),
-                        secondaryAmountText: _upcomingSecondaryAmount(
-                          context,
-                          u,
-                          mainCurrency,
-                        ),
-                        footerText: _daysUntilLabel(
-                          l10n,
-                          u.transactionDate,
-                          todayKey,
-                        ),
-                      );
-                    },
+                return FinkoPaperCard(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 10,
+                  ),
+                  child: SizedBox(
+                    height: 168,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: list.length.clamp(0, 20),
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const SizedBox(width: 10),
+                      itemBuilder: (context, i) {
+                        final u = list[i];
+                        return FinkoUpcomingTransactionCard(
+                          title: u.memo ?? u.kind.wireName,
+                          amountText: _upcomingAmount(context, u, mainCurrency),
+                          secondaryAmountText: _upcomingSecondaryAmount(
+                            context,
+                            u,
+                            mainCurrency,
+                          ),
+                          footerText: _daysUntilLabel(
+                            l10n,
+                            u.transactionDate,
+                            todayKey,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 );
               },
@@ -366,7 +364,9 @@ class DashboardScreen extends ConsumerWidget {
                 if (m == null) {
                   return Text(l10n.emptyNoMonthlyTotals);
                 }
-                final budgetTotal = _totalExpenseBudgetMinor(m);
+                final budgets = userProfileAsync.valueOrNull?.budgets ??
+                    const <String, MonthlyBudgetEntry>{};
+                final budgetTotal = totalExpenseBudgetMinor(budgets);
                 final spent = expenseMinorMainThroughDate(m, todayKey);
                 final left = (budgetTotal - spent).clamp(0, 1 << 62);
                 final progress = budgetTotal > 0
@@ -381,7 +381,7 @@ class DashboardScreen extends ConsumerWidget {
                     mainCurrency,
                   ),
                   progress: progress,
-                  categoryRings: _topCategoryRings(m, todayKey),
+                  categoryRings: _topCategoryRings(m, budgets, todayKey),
                   onTap: () => context.push('/budgets'),
                 );
               },

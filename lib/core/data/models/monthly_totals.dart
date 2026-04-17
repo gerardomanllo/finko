@@ -15,7 +15,6 @@ class MonthlyTotals {
     required this.incomeMinorMain,
     required this.expenseMinorMain,
     required this.byCategoryMinorMain,
-    required this.budgets,
     required this.days,
   });
 
@@ -27,9 +26,6 @@ class MonthlyTotals {
   final int incomeMinorMain;
   final int expenseMinorMain;
   final Map<String, int> byCategoryMinorMain;
-
-  @JsonKey(fromJson: _budgetsFromJson, toJson: _budgetsToJson)
-  final Map<String, MonthlyBudgetEntry> budgets;
 
   @JsonKey(fromJson: _daysFromJson, toJson: _daysToJson)
   final Map<String, MonthlyDayRollup> days;
@@ -48,7 +44,10 @@ class MonthlyTotals {
   }
 }
 
-Map<String, MonthlyBudgetEntry> _budgetsFromJson(Object? json) {
+/// Parses `users/{uid}.budgets` or legacy `monthlyTotals.*.budgets`.
+///
+/// **Legacy:** flat `categoryId` → minor int coerces to expense targets.
+Map<String, MonthlyBudgetEntry> budgetMapFromFirestoreJson(Object? json) {
   if (json is! Map) return {};
   final out = <String, MonthlyBudgetEntry>{};
   for (final e in json.entries) {
@@ -58,7 +57,6 @@ Map<String, MonthlyBudgetEntry> _budgetsFromJson(Object? json) {
     if (v is Map) {
       out[k] = MonthlyBudgetEntry.fromJson(Map<String, dynamic>.from(v));
     } else if (v is num) {
-      // Legacy onboarding wrote categoryId -> minor amount only.
       out[k] = MonthlyBudgetEntry(
         targetMinorMain: v.toInt(),
         kind: BudgetKind.expense,
@@ -68,7 +66,9 @@ Map<String, MonthlyBudgetEntry> _budgetsFromJson(Object? json) {
   return out;
 }
 
-Map<String, dynamic> _budgetsToJson(Map<String, MonthlyBudgetEntry> value) {
+Map<String, dynamic> budgetMapToFirestoreJson(
+  Map<String, MonthlyBudgetEntry> value,
+) {
   return {for (final e in value.entries) e.key: e.value.toJson()};
 }
 
@@ -88,7 +88,8 @@ Map<String, dynamic> _daysToJson(Map<String, MonthlyDayRollup> value) {
   return {for (final e in value.entries) e.key: e.value.toJson()};
 }
 
-/// `budgets.{categoryId}` value: `{ targetMinorMain, kind }`.
+/// One category row under `users/{uid}.budgets.{categoryId}`:
+/// `{ targetMinorMain, kind }`.
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
 class MonthlyBudgetEntry {
   const MonthlyBudgetEntry({required this.targetMinorMain, required this.kind});

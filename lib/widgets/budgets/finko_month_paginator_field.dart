@@ -25,9 +25,7 @@ class FinkoMonthPaginatorField extends StatelessWidget {
         ? thisMonthLabel
         : DateFormat.yMMMM(locale).format(month);
     return Material(
-      color: Theme.of(
-        context,
-      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

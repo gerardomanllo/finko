@@ -63,7 +63,7 @@
 - **Per category**, monthly **target** in minor units (**main currency**).
 - **Income category** → **expected income** for the month.
 - **Expense category** → **expected expenses** for the month.
-- **Maps to:** `monthlyTotals/{yyyy-mm}.budgets` ([`data-model.md`](data-model.md) §7).
+- **Maps to:** `users/{uid}.budgets` ([`data-model.md`](data-model.md) §3).
 
 ### 6 — Projected savings
 
@@ -83,7 +83,7 @@
 ### 8 — Commit (loading)
 
 - Full-screen **loading** while **`commitOnboarding`** (Callable) runs: validate payload, **idempotent** by **`requestId`** (UUID) stored under e.g. `users/{uid}/_onboardingCommits/{requestId}` or server-side dedupe table — **safe to retry** on network failure without duplicate accounts/categories/rules.
-- Writes: profile fields, accounts, categories, adjustment txs for starting balances, recurring/upcoming, `monthlyTotals` budgets for current month, optional integrations after OTP (or defer integration writes to a follow-up Callable if user already verified in-step).
+- Writes: profile fields (**`displayName`**, **`timezone`**, **`themePreference`**, **`locale`**, **`mainCurrency`** from the first onboarding account’s ISO code, **`budgets`** from step 5), accounts, categories, adjustment txs for starting balances, recurring/upcoming, `monthlyTotals/{yyyy-mm}` shell for the current month (aggregates from ledger CF), optional integrations after OTP (or defer integration writes to a follow-up Callable if user already verified in-step).
 - Set **`onboardingCompleted: true`** only on successful commit (server-side).
 
 ### 9 — Completion
@@ -131,3 +131,9 @@
 - [`data-contract.md`](data-contract.md) — streams after onboarding.
 - [`settings.md`](settings.md) — messaging parity.
 - [`login.md`](login.md) — auth entry.
+
+## Revision log
+
+| Date | Change |
+|------|--------|
+| 2026-04-16 | **§8 / §5:** Commit payload includes **`profile.mainCurrency`** (first account ISO code); **`budgets`** on **`users/{uid}`**; app invalidates core Firestore stream providers when entering **completion** before **`/dashboard`**. |

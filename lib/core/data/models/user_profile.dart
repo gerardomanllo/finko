@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../json/json_converters.dart';
 import 'finko_enums.dart';
+import 'monthly_totals.dart';
 
 part 'user_profile.g.dart';
 
@@ -25,6 +26,7 @@ class UserProfile {
     this.updatedAt,
     this.ledgerVersion,
     this.integrations = const UserIntegrations(),
+    this.budgets = const {},
   });
 
   @JsonKey(includeToJson: false)
@@ -60,6 +62,13 @@ class UserProfile {
 
   @JsonKey(fromJson: _userIntegrationsFromJson)
   final UserIntegrations integrations;
+
+  /// Per-category targets in main currency (same for every month).
+  @JsonKey(
+    fromJson: budgetMapFromFirestoreJson,
+    toJson: budgetMapToFirestoreJson,
+  )
+  final Map<String, MonthlyBudgetEntry> budgets;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);

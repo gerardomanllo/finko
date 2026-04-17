@@ -332,7 +332,36 @@
       }
     }
   },
-  "budgetsCategoryBudgets": "Category budgets",
+  "budgetsCategoryBudgets": "Spending by category",
+  "budgetsBillsLeftLabel": "Left for bills & utilities",
+  "budgetsIncomeLeftLabel": "Left to earn",
+  "budgetsIncomeEarned": "Earned",
+  "budgetsCategorySubtitleAvailable": "Available · {amount}",
+  "@budgetsCategorySubtitleAvailable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsCompactBillsCaption": "Left to pay",
+  "budgetsCompactEarningsCaption": "To earn",
+  "budgetsCompactAmountPaid": "{amount} paid",
+  "@budgetsCompactAmountPaid": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsCompactAmountEarned": "{amount} earned",
+  "@budgetsCompactAmountEarned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "recurringThisWeek": "This week",
   "recurringNextWeek": "Next week",
   "recurringComingUp": "Coming up",

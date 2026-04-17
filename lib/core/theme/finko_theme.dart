@@ -17,6 +17,12 @@ abstract final class FinkoColors {
 }
 
 abstract final class FinkoTheme {
+  /// Light mode: all Material **surface** roles resolve to white so widgets pick up
+  /// a white background by default. Use **containers** (e.g. [ColorScheme.primaryContainer]),
+  /// **semantic** colors, or explicit [Color] / [BoxDecoration] when a non-white surface
+  /// is intentional.
+  static const Color _lightSurface = Colors.white;
+
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
       brightness: Brightness.light,
@@ -24,9 +30,18 @@ abstract final class FinkoTheme {
       primary: FinkoColors.primary,
       secondary: FinkoColors.primaryLight,
       tertiary: FinkoColors.gray,
-      surface: Colors.white,
+      surface: _lightSurface,
       onSurface: FinkoColors.grayDark,
       error: const Color(0xFFBA1A1A),
+    ).copyWith(
+      surface: _lightSurface,
+      surfaceDim: _lightSurface,
+      surfaceBright: _lightSurface,
+      surfaceContainerLowest: _lightSurface,
+      surfaceContainerLow: _lightSurface,
+      surfaceContainer: _lightSurface,
+      surfaceContainerHigh: _lightSurface,
+      surfaceContainerHighest: _lightSurface,
     );
 
     return ThemeData(
@@ -41,10 +56,11 @@ abstract final class FinkoTheme {
         centerTitle: false,
         elevation: 0,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
       ),
       dividerColor: FinkoColors.grayLight,
       textTheme: const TextTheme(
@@ -102,6 +118,36 @@ abstract final class FinkoTheme {
         iconColor: scheme.onSurfaceVariant,
         textColor: scheme.onSurface,
       ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: _lightSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: _lightSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: _lightSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      menuTheme: const MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(_lightSurface),
+          surfaceTintColor: WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: _lightSurface,
+        side: const BorderSide(color: FinkoColors.grayLight),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: _lightSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      timePickerTheme: const TimePickerThemeData(
+        backgroundColor: _lightSurface,
+      ),
     );
   }
 
@@ -129,10 +175,11 @@ abstract final class FinkoTheme {
         centerTitle: false,
         elevation: 0,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: FinkoColors.navy800,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
       ),
       dividerColor: FinkoColors.navy700,
       textTheme: const TextTheme(

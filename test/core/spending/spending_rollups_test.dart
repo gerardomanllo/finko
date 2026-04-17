@@ -11,7 +11,6 @@ void main() {
         incomeMinorMain: 100,
         expenseMinorMain: 40,
         byCategoryMinorMain: {'c1': -40},
-        budgets: const {},
         days: const {},
       );
       final b = MonthlyTotals(
@@ -19,7 +18,6 @@ void main() {
         incomeMinorMain: 50,
         expenseMinorMain: 60,
         byCategoryMinorMain: {'c1': -20, 'fixed-expenses': -10},
-        budgets: const {},
         days: const {},
       );
       final m = mergeMonthlyTotals([a, b]);

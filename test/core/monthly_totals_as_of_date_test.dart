@@ -13,7 +13,6 @@ MonthlyTotals _totals({
     incomeMinorMain: 0,
     expenseMinorMain: expenseMinorMain,
     byCategoryMinorMain: byCategory,
-    budgets: const {},
     days: days,
   );
 }

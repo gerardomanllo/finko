@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/auth/auth_repository.dart';
 import '../../../core/data/models/user_profile.dart' show kDefaultMainCurrency;
+import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/locale/locale_notifier.dart';
 import '../../../core/locale/locale_support.dart';
@@ -208,6 +209,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (prev != OnboardingStep.completion &&
           next == OnboardingStep.completion &&
           mounted) {
+        final ymDevice = ref.read(currentYearMonthProvider);
+        final ymDash = ref.read(dashboardYearMonthProvider);
+        ref.invalidate(userProfileStreamProvider);
+        ref.invalidate(accountsStreamProvider);
+        ref.invalidate(categoriesStreamProvider);
+        ref.invalidate(recurringRulesStreamProvider);
+        ref.invalidate(upcomingTransactionsStreamProvider);
+        ref.invalidate(currentMonthTotalsStreamProvider);
+        ref.invalidate(monthlyTotalsForMonthStreamProvider(ymDevice));
+        if (ymDash != ymDevice) {
+          ref.invalidate(monthlyTotalsForMonthStreamProvider(ymDash));
+        }
         context.go('/dashboard');
       }
     });

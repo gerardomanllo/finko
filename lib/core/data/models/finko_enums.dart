@@ -188,7 +188,7 @@ enum RecurringCadence {
   };
 }
 
-/// Budget row embedded under [MonthlyTotals.budgets].
+/// Budget row under **`users/{uid}.budgets.{categoryId}`** on the profile doc.
 enum BudgetKind {
   income,
   expense;

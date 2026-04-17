@@ -843,7 +843,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get budgetsCategoryBudgets => 'Category budgets';
+  String get budgetsCategoryBudgets => 'Spending by category';
+
+  @override
+  String get budgetsBillsLeftLabel => 'Left for bills & utilities';
+
+  @override
+  String get budgetsIncomeLeftLabel => 'Left to earn';
+
+  @override
+  String get budgetsIncomeEarned => 'Earned';
+
+  @override
+  String budgetsCategorySubtitleAvailable(String amount) {
+    return 'Available · $amount';
+  }
+
+  @override
+  String get budgetsCompactBillsCaption => 'Left to pay';
+
+  @override
+  String get budgetsCompactEarningsCaption => 'To earn';
+
+  @override
+  String budgetsCompactAmountPaid(String amount) {
+    return '$amount paid';
+  }
+
+  @override
+  String budgetsCompactAmountEarned(String amount) {
+    return '$amount earned';
+  }
 
   @override
   String get recurringThisWeek => 'This week';

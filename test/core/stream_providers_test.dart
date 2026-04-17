@@ -35,7 +35,6 @@ void main() {
         incomeMinorMain: 0,
         expenseMinorMain: 0,
         byCategoryMinorMain: const {},
-        budgets: const {},
         days: const {'29': MonthlyDayRollup(netWorthEodMinorMain: 1000)},
       );
       final april = MonthlyTotals(
@@ -43,7 +42,6 @@ void main() {
         incomeMinorMain: 0,
         expenseMinorMain: 0,
         byCategoryMinorMain: const {},
-        budgets: const {},
         days: const {'02': MonthlyDayRollup(netWorthEodMinorMain: 1300)},
       );
       final container = ProviderContainer(

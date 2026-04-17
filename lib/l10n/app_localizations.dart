@@ -1637,7 +1637,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetsBillsUtilities.
   ///
   /// In es, this message translates to:
-  /// **'Facturas y servicios'**
+  /// **'Gastos fijos'**
   String get budgetsBillsUtilities;
 
   /// No description provided for @budgetsEarnings.
@@ -1663,6 +1663,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Presupuestos por categoría'**
   String get budgetsCategoryBudgets;
+
+  /// No description provided for @budgetsBillsLeftLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible para gastos fijos'**
+  String get budgetsBillsLeftLabel;
+
+  /// No description provided for @budgetsIncomeLeftLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ganar'**
+  String get budgetsIncomeLeftLabel;
+
+  /// No description provided for @budgetsIncomeEarned.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresado'**
+  String get budgetsIncomeEarned;
+
+  /// No description provided for @budgetsCategorySubtitleAvailable.
+  ///
+  /// In es, this message translates to:
+  /// **'Disponible · {amount}'**
+  String budgetsCategorySubtitleAvailable(String amount);
+
+  /// No description provided for @budgetsCompactBillsCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Por pagar'**
+  String get budgetsCompactBillsCaption;
+
+  /// No description provided for @budgetsCompactEarningsCaption.
+  ///
+  /// In es, this message translates to:
+  /// **'Por ganar'**
+  String get budgetsCompactEarningsCaption;
+
+  /// No description provided for @budgetsCompactAmountPaid.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} pagado'**
+  String budgetsCompactAmountPaid(String amount);
+
+  /// No description provided for @budgetsCompactAmountEarned.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} ingresado'**
+  String budgetsCompactAmountEarned(String amount);
 
   /// No description provided for @recurringThisWeek.
   ///

@@ -14,7 +14,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding) | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
+| **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding); `InkWell` only when `onTap` is set (scrollable lists use plain padding) | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
 | **Pill toggle group** | Single-select pills (segmented control style) | Spending (`week` / `month` / `quarter` / `year`) |
 
 ## Metrics & charts
@@ -26,13 +26,13 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Net worth sparkline / line chart** | ~30 days series inside Net Worth card | Dashboard |
 | **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period; optional **selected** border + tap | Spending (row of vertical period cards) |
 | **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Legacy / reuse |
-| **Donut + side legend** | Thin ring + **legend on the right** (swatch, name, amount, %); **centered horizontally**; center: title + period subtitle + bold total | Spending breakdown (`FinkoDonutWithSideLegend`) |
+| **Donut + side legend** | Thin ring + **legend on the right** (swatch, name, amount, %); **centered horizontally**; center: title + period subtitle + bold total. On **Spending**, each block (strip, accordion, donut, top list) is its **own** paper/`Card` with **cloud** vertical gutters | Spending breakdown (`FinkoDonutWithSideLegend`) |
 
 ## Accounts & grouping
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account | Dashboard |
+| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account. Wrapped in **paper card** on cloud scaffold | Dashboard |
 | **Income + fixed + variable accordion** | Three rows (income \| fixed expense \| variable expense), **not clickable** | Spending (`FinkoSpendingIncomeFixedVariableAccordion`) |
 | **Income / expense accordion** | Two rows (income \| expense), **not clickable** | Reusable (`FinkoIncomeExpenseAccordion`) |
 | **Fixed / variable expense accordion** | Two rows (fixed \| variable), **not clickable** | Reusable (`FinkoFixedVariableExpenseAccordion`) |
@@ -56,7 +56,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Month paginator field** | Left calendar icon; center **“This month”** (or equivalent); right **prev/next** month — **no date picker popover** | Budgets |
-| **Budget progress block** | Labels for spent / left / budgeted + progress bar patterns | Budgets, Dashboard monthly budget |
+| **Budget progress block** | Labels for spent / left / budgeted + progress bar patterns | Budgets (main spending card), Dashboard monthly budget |
+| **Budget compact summary card** | Icon + title + **amount** (compact bold) + **caption** under amount + thin pill progress + **one** footer line (paid / earned); light surface, small elevation | Budgets (Bills & Utilities + Earnings row) (`FinkoBudgetCompactSummaryCard`) |
 | **Category avatar with ring progress** | Circle avatar, white fill, **border as progress** | Dashboard monthly budget (top 6), category budget rows |
 | **Savings projection card** | Two columns: text block + simple column chart (Y from `$0` to short target) | Budgets |
 
@@ -86,3 +87,8 @@ If you copy the same **row layout** or **card header pattern** more than once, s
 ## Implementation (Flutter)
 
 Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files grouped by area: `surfaces/`, `layout/`, `metrics/`, `accounts/`, `transactions/`, `budgets/`, `charts/`, `calendar/`, `auth/`). The tabbed **app shell** (bottom nav with center plus action + drawer from top-left settings cog) is `lib/features/shell/presentation/app_shell.dart`, wired in `lib/app/app_routes.dart`.
+
+## Revision log
+
+- **2026-04-16** — Light scaffold stays **cloud**; accordions/charts/lists that sit on the scaffold use **paper** (`FinkoPaperCard` / existing cards) for white panels. `FinkoPaperCard` applies **InkWell** only when `onTap` is non-null so embedded scroll views behave.
+- **2026-04-16** — **Spending** (`/spending`): **stacked paper sections** (strip, accordion, donut in paper, top tx in paper) with **fixed vertical gap** so **cloud** shows between widgets.

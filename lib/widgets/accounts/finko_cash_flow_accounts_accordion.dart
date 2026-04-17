@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/data/models/finko_account.dart';
 import '../../core/data/models/finko_enums.dart';
+import '../surfaces/finko_paper_card.dart';
 
 /// Cash-flow ordered accordion: checking, credit, net cash (aggregate), savings, investments.
 class FinkoCashFlowAccountsAccordion extends StatelessWidget {
@@ -30,46 +31,49 @@ class FinkoCashFlowAccountsAccordion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ExpandableTypeSection(
-          title: accountTypeLabel(FinkoAccountType.checking),
-          accounts: _ofType(FinkoAccountType.checking),
-          mainCurrencyCode: mainCurrencyCode,
-          formatMoney: formatMoney,
-          formatMoneyWithCode: formatMoneyWithCode,
-          icon: Icons.account_balance,
-        ),
-        _ExpandableTypeSection(
-          title: accountTypeLabel(FinkoAccountType.creditCard),
-          accounts: _ofType(FinkoAccountType.creditCard),
-          mainCurrencyCode: mainCurrencyCode,
-          formatMoney: formatMoney,
-          formatMoneyWithCode: formatMoneyWithCode,
-          icon: Icons.credit_card,
-        ),
-        _NetCashRow(
-          amountText: formatMoney(netCashMinorMain, mainCurrencyCode),
-          title: netCashTitle,
-        ),
-        const SizedBox(height: 8),
-        _ExpandableTypeSection(
-          title: accountTypeLabel(FinkoAccountType.savings),
-          accounts: _ofType(FinkoAccountType.savings),
-          mainCurrencyCode: mainCurrencyCode,
-          formatMoney: formatMoney,
-          formatMoneyWithCode: formatMoneyWithCode,
-          icon: Icons.savings_outlined,
-        ),
-        _ExpandableTypeSection(
-          title: accountTypeLabel(FinkoAccountType.investment),
-          accounts: _ofType(FinkoAccountType.investment),
-          mainCurrencyCode: mainCurrencyCode,
-          formatMoney: formatMoney,
-          formatMoneyWithCode: formatMoneyWithCode,
-          icon: Icons.trending_up,
-        ),
-      ],
+    return FinkoPaperCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        children: [
+          _ExpandableTypeSection(
+            title: accountTypeLabel(FinkoAccountType.checking),
+            accounts: _ofType(FinkoAccountType.checking),
+            mainCurrencyCode: mainCurrencyCode,
+            formatMoney: formatMoney,
+            formatMoneyWithCode: formatMoneyWithCode,
+            icon: Icons.account_balance,
+          ),
+          _ExpandableTypeSection(
+            title: accountTypeLabel(FinkoAccountType.creditCard),
+            accounts: _ofType(FinkoAccountType.creditCard),
+            mainCurrencyCode: mainCurrencyCode,
+            formatMoney: formatMoney,
+            formatMoneyWithCode: formatMoneyWithCode,
+            icon: Icons.credit_card,
+          ),
+          _NetCashRow(
+            amountText: formatMoney(netCashMinorMain, mainCurrencyCode),
+            title: netCashTitle,
+          ),
+          const SizedBox(height: 8),
+          _ExpandableTypeSection(
+            title: accountTypeLabel(FinkoAccountType.savings),
+            accounts: _ofType(FinkoAccountType.savings),
+            mainCurrencyCode: mainCurrencyCode,
+            formatMoney: formatMoney,
+            formatMoneyWithCode: formatMoneyWithCode,
+            icon: Icons.savings_outlined,
+          ),
+          _ExpandableTypeSection(
+            title: accountTypeLabel(FinkoAccountType.investment),
+            accounts: _ofType(FinkoAccountType.investment),
+            mainCurrencyCode: mainCurrencyCode,
+            formatMoney: formatMoney,
+            formatMoneyWithCode: formatMoneyWithCode,
+            icon: Icons.trending_up,
+          ),
+        ],
+      ),
     );
   }
 }

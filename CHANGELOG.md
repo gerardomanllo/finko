@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Onboarding commit:** `toCommitPayload` now sends **`profile.mainCurrency`** (from the first account’s ISO code, uppercased). On **`OnboardingStep.completion`**, the app **invalidates** profile, accounts, categories, recurring, upcoming, and relevant **`monthlyTotals`** stream providers before **`/dashboard`** so post-commit data (including **`budgets`**) is not stale.
+
+- **Firestore — budgets:** Category targets are canonical on **`users/{uid}.budgets`** (same map for every month), not on **`monthlyTotals/{yyyy-mm}`**. **`commitOnboarding`** merges budgets into the profile doc; ledger **`defaultMonthly`** no longer seeds **`budgets`**. Flutter: **`UserProfile.budgets`**, dashboard + `/budgets` read **`userProfileStreamProvider`** for targets vs **`monthlyTotals`** actuals. Docs: **`docs/data-model.md`**, **`docs/data-contract.md`**, **`docs/budgets.md`**, **`docs/onboarding.md`**, **`docs/ledger-aggregations-and-ui-flow.md`**.
+
 - **Budgets (`/budgets`):** **Earnings** compact card uses **X** = sum of month budget targets on **income** Firestore categories (`incomeCategoryBudgetTargetMinor`) vs **Y** = **`incomeMinorMain`**; small tiles use **smaller type** with **amount above** “left to pay” / “to earn” captions. **Gastos por categoría** list shows **expense** budget rows only. Docs: **`docs/budgets.md`**, **`docs/components-inventory.md`**.
 
 - **Spending:** period strip lists **only periods that have at least one transaction** and **auto-scrolls to the right** when the period pill changes; **single accordion** (income + fixed + variable); donut + legend **centered horizontally**; donut ring **thinner**; largest-transaction list uses **`amountMinorMain`** with **`amountMinor`** fallback when `currency` matches **`mainCurrency`**.

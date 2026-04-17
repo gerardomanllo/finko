@@ -32,9 +32,8 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
       width: 96,
       child: Card(
         elevation: 0,
-        color: theme.colorScheme.surfaceContainerHighest.withValues(
-          alpha: 0.75,
-        ),
+        color: theme.colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: isSelected

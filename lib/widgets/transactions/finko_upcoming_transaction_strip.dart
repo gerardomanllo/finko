@@ -25,7 +25,8 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
       width: 132,
       child: Card(
         elevation: 0,
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+        color: theme.colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Padding(
           padding: const EdgeInsets.all(12),

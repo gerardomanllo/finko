@@ -29,7 +29,7 @@ users/{uid}                              # profile + mainCurrency
 users/{uid}/transactions/{txId}
 users/{uid}/accounts/{accountId}
 users/{uid}/categories/{categoryId}
-users/{uid}/monthlyTotals/{yyyy-mm}      # aggregates + embedded budgets + days
+users/{uid}/monthlyTotals/{yyyy-mm}      # aggregates + days (no per-month budgets)
 users/{uid}/upcomingTransactions/{id}    # scheduled posts; materialized into transactions
 users/{uid}/recurring/{ruleId}           # rules that spawn / link upcoming rows
 users/{uid}/_processedAggregateEvents/{eventId}  # idempotency for CF aggregate runs (see §4.1)
@@ -53,6 +53,7 @@ forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not 
 | `createdAt` | `Timestamp` | UTC. |
 | `updatedAt` | `Timestamp` | UTC. |
 | `ledgerVersion` | `int` | Optional cache busting. |
+| `budgets` | `map<string, object>` | **Recurring monthly targets** (same every month): `categoryId` → `{ "targetMinorMain": int, "kind": "income"|"expense" }`. **Legacy:** flat `categoryId` → minor int coerces to `{ targetMinorMain, kind: expense }` in clients; **`commitOnboarding`** writes canonical rows. |
 
 ### 3.1 Integrations (messaging / OTP-linked channels)
 
@@ -213,9 +214,9 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 
 ---
 
-## 7. `monthlyTotals/{yyyy-mm}` (denormalized + budgets)
+## 7. `monthlyTotals/{yyyy-mm}` (denormalized aggregates)
 
-**Purpose:** One document per calendar month: **cashflow aggregates in main currency**, **embedded budgets**, and **`days`** for drill-down / charts.
+**Purpose:** One document per calendar month: **cashflow aggregates in main currency** and **`days`** for drill-down / charts. **Budget targets** live on **`users/{uid}.budgets`** (not duplicated per month).
 
 | Field | Type | Notes |
 |-------|------|--------|
@@ -224,8 +225,9 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `incomeMinorMain` | `int` | Month total, **main currency** (minor units). |
 | `expenseMinorMain` | `int` | Month total outflows, **main currency**. |
 | `byCategoryMinorMain` | `map<string, int>` | `categoryId` → net for month in **main currency**. |
-| `budgets` | `map<string, object>` | **Budget** = total budgeted to a category for this month (income or expense). **Canonical value:** `{ "targetMinorMain": int, "kind": "income"|"expense" }` keyed by `categoryId`. **Legacy:** some docs store **`categoryId` → minor int** only; clients coerce to structured rows; **`commitOnboarding`** writes canonical shape. |
 | `days` | `map<string, object>` | Key **`"01"`…`"31"`**. Values: cashflow + optional **`netWorthEodMinorMain`** (see backend-strategy). |
+
+**Legacy:** Older month docs may still contain a **`budgets`** field (ignored by current clients). Prefer **`users/{uid}.budgets`** only going forward.
 
 **Multi-currency:** Functions convert each transaction’s `amountMinor` × **FX rate for `transactionDate`** (see §10) into **main currency** before incrementing these fields.
 
@@ -328,7 +330,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | Transfers | **Two** transactions + `transferGroupId` + `linkedTransactionId`. |
 | Dates | `transactionDate` **`yyyy-MM-dd`**; `loadedAt` UTC `Timestamp`; display in user locale. |
 | Multi-currency | **Yes**; `mainCurrency` default **MXN**; per-account and per-tx `currency`; aggregates in main currency via **daily** `forexRates` + [Frankfurter](https://frankfurter.dev/). **Missing day:** use **previous calendar day with a stored rate** (walk backward)—implements **previous business day** for typical weekend/holiday gaps. |
-| Budgets | Embedded under **`monthlyTotals.{yyyy-mm}.budgets`** (per category, month-scoped). |
+| Budgets | **`users/{uid}.budgets`** — same targets every month; UI compares to each month’s aggregates. |
 | Upcoming | **`upcomingTransactions`** collection; **materialize** to real `transactions` when due; advance or remove upcoming rows (prefer **Callable** on app open / daily). |
 | Transaction delete | **Hard delete**; Functions **reverse** aggregates on delete. |
 | Aggregate idempotency | **`_processedAggregateEvents/{eventId}`** + Cloud Function **`event.id`** (§4.1); **catch-up** when meta-only update and not yet applied (§4.1a). |
@@ -360,5 +362,5 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | 2026-04-16 | §4: optional `aggregateApplied`, `reload` / `aggregateReload`; **§4.1a** ledger aggregate trigger (catch-up when meta-only update + not applied), numeric coercion, `days` map clarification. |
 | 2026-04-16 | §4 / §11: **`firestore.rules`** block client create/update on **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, **`fxRateDateUsed`**; reload fields documented as Functions/ops-only. |
 | 2026-04-16 | §11: **`users/{uid}`** profile — **create** vs **update** rules (`firestore.rules`): create forbids **`onboardingCompleted`** / **`integrations`** keys; update uses **`diff`** so creates are not denied by a null **`resource`**. |
-| 2026-04-16 | §7 `budgets`: note **legacy flat** category→amount maps vs canonical `{ targetMinorMain, kind }`; onboarding writes canonical rows. |
+| 2026-04-16 | **Budgets** canonical on **`users/{uid}.budgets`** (`{ targetMinorMain, kind }`; legacy flat int on profile); removed from **`monthlyTotals`** (stale month `budgets` ignored); **`commitOnboarding`** + app read profile for targets vs month aggregates. |
 | 2026-04-16 | §8–9: `cadence` includes **`weekly`** + optional **`weekday`**; **`daysOfMonth`** / **`weekday`** on `upcomingTransactions`; materializer advances **`recurring.nextTransactionDate`** when **`recurringRuleId`** links; onboarding maps UI biweekly (two DOM) → **`twiceMonthly`**. |

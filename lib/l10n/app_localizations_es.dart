@@ -839,7 +839,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsBudgeted => 'Presupuestado';
 
   @override
-  String get budgetsBillsUtilities => 'Facturas y servicios';
+  String get budgetsBillsUtilities => 'Gastos fijos';
 
   @override
   String get budgetsEarnings => 'Ingresos';
@@ -854,6 +854,36 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetsCategoryBudgets => 'Presupuestos por categoría';
+
+  @override
+  String get budgetsBillsLeftLabel => 'Disponible para gastos fijos';
+
+  @override
+  String get budgetsIncomeLeftLabel => 'Por ganar';
+
+  @override
+  String get budgetsIncomeEarned => 'Ingresado';
+
+  @override
+  String budgetsCategorySubtitleAvailable(String amount) {
+    return 'Disponible · $amount';
+  }
+
+  @override
+  String get budgetsCompactBillsCaption => 'Por pagar';
+
+  @override
+  String get budgetsCompactEarningsCaption => 'Por ganar';
+
+  @override
+  String budgetsCompactAmountPaid(String amount) {
+    return '$amount pagado';
+  }
+
+  @override
+  String budgetsCompactAmountEarned(String amount) {
+    return '$amount ingresado';
+  }
 
   @override
   String get recurringThisWeek => 'Esta semana';

@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import '../../../core/data/models/user_profile.dart' show kDefaultMainCurrency;
+
 enum OnboardingStep {
   profile,
   accounts,
@@ -230,6 +232,14 @@ class OnboardingDraft {
     return total;
   }
 
+  /// First account’s ISO currency, uppercased — matches what users set during
+  /// onboarding; **`commitOnboarding`** persists this as `users/{uid}.mainCurrency`.
+  String get profileMainCurrencyForCommit {
+    if (accounts.isEmpty) return kDefaultMainCurrency;
+    final code = accounts.first.currency.trim().toUpperCase();
+    return code.isEmpty ? kDefaultMainCurrency : code;
+  }
+
   int _sumBudgetsByKind(OnboardingCategoryKind kind) {
     var total = 0;
     for (final category in categories) {
@@ -274,6 +284,7 @@ class OnboardingDraft {
       'timezone': timezone,
       'themePreference': themePreference,
       'locale': locale,
+      'mainCurrency': profileMainCurrencyForCommit,
     },
     'accounts': accounts.map((a) => a.toJson()).toList(),
     'categories': categories.map((c) => c.toJson()).toList(),

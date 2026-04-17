@@ -29,6 +29,9 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
   integrations: json['integrations'] == null
       ? const UserIntegrations()
       : _userIntegrationsFromJson(json['integrations']),
+  budgets: json['budgets'] == null
+      ? const {}
+      : budgetMapFromFirestoreJson(json['budgets']),
 );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -48,6 +51,7 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       ),
       'ledgerVersion': ?instance.ledgerVersion,
       'integrations': instance.integrations.toJson(),
+      'budgets': budgetMapToFirestoreJson(instance.budgets),
     };
 
 const _$ThemePreferenceEnumMap = {

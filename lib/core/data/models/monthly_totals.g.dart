@@ -17,7 +17,6 @@ MonthlyTotals _$MonthlyTotalsFromJson(Map<String, dynamic> json) =>
       byCategoryMinorMain: Map<String, int>.from(
         json['byCategoryMinorMain'] as Map,
       ),
-      budgets: _budgetsFromJson(json['budgets']),
       days: _daysFromJson(json['days']),
     );
 
@@ -30,7 +29,6 @@ Map<String, dynamic> _$MonthlyTotalsToJson(MonthlyTotals instance) =>
       'incomeMinorMain': instance.incomeMinorMain,
       'expenseMinorMain': instance.expenseMinorMain,
       'byCategoryMinorMain': instance.byCategoryMinorMain,
-      'budgets': _budgetsToJson(instance.budgets),
       'days': _daysToJson(instance.days),
     };
 
