@@ -406,7 +406,7 @@ class DashboardScreen extends ConsumerWidget {
       t.amountMinorMain ?? t.amountMinor,
       t.amountMinorMain != null ? mainCurrency : t.currency,
     );
-    return '$sign $amt';
+    return '$sign$amt';
   }
 
   static String? _ledgerSecondaryAmount(
@@ -432,7 +432,7 @@ class DashboardScreen extends ConsumerWidget {
       u.amountMinorMain ?? u.amountMinor,
       u.amountMinorMain != null ? mainCurrency : u.currency,
     );
-    return '$sign $amt';
+    return '$sign$amt';
   }
 
   static String? _upcomingSecondaryAmount(

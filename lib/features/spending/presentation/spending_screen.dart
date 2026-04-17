@@ -251,7 +251,7 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
 
   static String _tx(BuildContext context, LedgerTransaction t) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    return '− ${formatMinorUnits(t.amountMinor, t.currency, locale)}';
+    return '−${formatMinorUnits(t.amountMinor, t.currency, locale)}';
   }
 
   @override

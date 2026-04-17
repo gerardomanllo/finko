@@ -118,7 +118,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }) {
     final loc = Localizations.localeOf(context).toLanguageTag();
     final sign = t.direction == MoneyDirection.in_ ? '+' : '−';
-    return '$sign ${formatMinorUnits(minor, currency, loc)}';
+    return '$sign${formatMinorUnits(minor, currency, loc)}';
   }
 
   String? _secondaryAmount(
@@ -156,12 +156,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         ),
         title: Text(l10n.transactionsTitle),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            FinkoSearchFilterBar(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: FinkoSearchFilterBar(
               controller: _search,
               hintText: l10n.transactionsSearchHint,
               onChanged: (v) => ref
@@ -171,12 +171,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               filterTooltip: _filterTooltip(l10n, listState),
               belowSearch: _historyBelowRow(context, l10n, listState),
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: listState.loadingInitial && listState.items.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : listState.error != null && listState.items.isEmpty
-                  ? Center(
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: listState.loadingInitial && listState.items.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : listState.error != null && listState.items.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -188,52 +191,67 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                           ),
                         ],
                       ),
-                    )
-                  : FinkoPaperCard(
-                      padding: EdgeInsets.zero,
-                      child: RefreshIndicator(
-                        onRefresh: () => notifier.refresh(),
-                        child: Builder(
-                          builder: (context) {
-                            if (filtered.isEmpty) {
-                              final emptyMessage =
-                                  listState.debouncedSearchQuery.isNotEmpty
-                                  ? l10n.transactionsSearchNoMatches
-                                  : l10n.emptyNoTransactions;
-                              return ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                controller: _scroll,
-                                children: [
-                                  SizedBox(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.35,
-                                    child: Center(child: Text(emptyMessage)),
-                                  ),
-                                ],
-                              );
-                            }
-                            return ListView.builder(
-                              controller: _scroll,
+                    ),
+                  )
+                : FinkoPaperCard(
+                    padding: EdgeInsets.zero,
+                    child: RefreshIndicator(
+                      onRefresh: () => notifier.refresh(),
+                      child: Builder(
+                        builder: (context) {
+                          if (filtered.isEmpty) {
+                            final emptyMessage =
+                                listState.debouncedSearchQuery.isNotEmpty
+                                ? l10n.transactionsSearchNoMatches
+                                : l10n.emptyNoTransactions;
+                            return ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount:
-                                  filtered.length +
-                                  (listState.loadingMore ? 1 : 0),
-                              itemBuilder: (context, i) {
-                                if (i >= filtered.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
+                              controller: _scroll,
+                              children: [
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.35,
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                      ),
+                                      child: Text(
+                                        emptyMessage,
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
-                                  );
-                                }
-                                final t = filtered[i];
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (i > 0) const Divider(height: 1),
-                                    FinkoTransactionRowCompact(
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                          return ListView.builder(
+                            controller: _scroll,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount:
+                                filtered.length +
+                                (listState.loadingMore ? 1 : 0),
+                            itemBuilder: (context, i) {
+                              if (i >= filtered.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                              final t = filtered[i];
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (i > 0) const Divider(height: 1),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: FinkoTransactionRowCompact(
                                       title: t.memo ?? t.type.wireName,
                                       subtitle: t.transactionDate,
                                       amountText: _amount(
@@ -257,17 +275,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                             transaction: t,
                                           ),
                                     ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
-            ),
-          ],
-        ),
+                  ),
+          ),
+        ],
       ),
     );
   }

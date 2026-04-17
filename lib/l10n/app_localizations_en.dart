@@ -556,6 +556,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get netCashLabel => 'Net cash';
 
   @override
+  String get dashboardNetCashInfoTooltip => 'How net cash is calculated';
+
+  @override
+  String get dashboardNetCashInfoTitle => 'Net cash';
+
+  @override
+  String get dashboardNetCashInfoBody =>
+      'Net cash is the sum of balances for accounts that count toward liquid cash flow.\n\nAn account is included when “Include in net cash” is turned on for that account. If that was never set, checking and credit card accounts are included by default; savings, investments, loans, and mortgages are not.\n\nFor each included account, Finko uses the balance in your main currency when available; otherwise it uses the balance in that account’s currency.';
+
+  @override
   String get loansMortgageSectionTitle => 'Loans & mortgage';
 
   @override

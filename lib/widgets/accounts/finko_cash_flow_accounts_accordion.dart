@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/data/models/finko_account.dart';
 import '../../core/data/models/finko_enums.dart';
+import '../../l10n/app_localizations.dart';
 import '../surfaces/finko_paper_card.dart';
 
 /// Cash-flow ordered accordion: checking, credit, net cash (aggregate), savings, investments.
@@ -84,9 +85,29 @@ class _NetCashRow extends StatelessWidget {
   final String amountText;
   final String title;
 
+  void _showNetCashInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.dashboardNetCashInfoTitle),
+        content: SingleChildScrollView(
+          child: Text(l10n.dashboardNetCashInfoBody),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.onboardingGotIt),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -95,6 +116,19 @@ class _NetCashRow extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(child: Text(title, style: theme.textTheme.titleSmall)),
           Text(amountText, style: theme.textTheme.titleSmall),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              size: 22,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            tooltip: l10n.dashboardNetCashInfoTooltip,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => _showNetCashInfo(context),
+          ),
         ],
       ),
     );

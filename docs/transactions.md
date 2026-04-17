@@ -18,7 +18,7 @@
 
 ## UI — transaction list
 
-- **Full-width paper list**.
+- **Full-width paper list** (card spans the scaffold horizontally; search/filter stays inset with **16** gutters). Row text uses **16** horizontal inset; **dividers** span the full card width.
 - **All transactions** sorted **descending by date** (newest at top).
 - Each row: match app list pattern (icon, title, amount, date line as per theme).
 
@@ -48,5 +48,6 @@
 | 2026-04-16 | Ledger editor: **no type field** — income/expense saves as **standard** (editing **adjustment** preserves type). **Transfer** is a third option next to income/expense: **from/to account**, two **`transferLeg`** rows in one batch. |
 | 2026-04-16 | Ledger editor: **category is required** (income/expense must match direction); inline validation highlights missing fields. |
 | 2026-04-16 | Implemented paginated ledger list, filter ring, debounced search + background history scan, pull-to-refresh; shell **New** opens **ledger editor** slide-up (no `/transactions/new` route). |
+| 2026-04-16 | List **paper** is **full width** under the app bar; only the search/filter block uses horizontal padding. |
 | 2026-04-16 | Filter control: **bottom sheet** with explicit type options (replaces tap-to-cycle). |
 | 2026-04-16 | **Create/edit** via shared [`LedgerTransactionEditorSheet`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart) slide-up (row tap = edit). |

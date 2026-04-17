@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Dashboard — net cash:** **info** icon on the net cash row in the accounts accordion opens a localized dialog explaining how net cash is calculated (`FinkoCashFlowAccountsAccordion`).
+
 - **Spending (`/spending`):** period **pill + horizontal period cards** (ascending, default right-most) driven by **`todayYyyyMmDdProvider`**; **`monthlyTotals`** merge + **week** day sums for mini bars; **fixed vs variable** accordion using category **`fixed-expenses`**; **thin donut** with **right-side legend** and **top 4 outflows** from **`transactions`** in range (`watchTransactionsForDateRange` / `transactionsForDateRangeStreamProvider`); **`mainCurrency`** from profile. Helpers in `lib/core/spending/`, providers in `lib/features/spending/presentation/spending_providers.dart`.
 
 - **Docs:** [`docs/ledger-aggregations-and-ui-flow.md`](docs/ledger-aggregations-and-ui-flow.md) — canonical **functional** flow from `transactions` to Firestore aggregates and dashboard numbers, with **traceability** to Jest (`functions/test/`) and Dart tests; mermaid charts for CF deltas and UI derivation paths. Linked from [`docs/data-contract.md`](docs/data-contract.md) §12 and [`docs/README.md`](docs/README.md).
@@ -30,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Transactions (`/transactions`):** ledger **paper list** is **full width** (removed body-wide horizontal padding); **search + filter** row keeps **16** gutters; each transaction row uses **16** horizontal inset so content does not touch screen edges.
+
+- **Money display:** amounts from **`formatMinorUnits`** / **`formatMinorUnitsWithCode`** now include a **`$`** prefix (e.g. `$1,234.56`, `$1,234.56 MXN` for secondary-currency rows).
+
 - **Onboarding commit:** `toCommitPayload` now sends **`profile.mainCurrency`** (from the first account’s ISO code, uppercased). On **`OnboardingStep.completion`**, the app **invalidates** profile, accounts, categories, recurring, upcoming, and relevant **`monthlyTotals`** stream providers before **`/dashboard`** so post-commit data (including **`budgets`**) is not stale.
 
 - **Firestore — budgets:** Category targets are canonical on **`users/{uid}.budgets`** (same map for every month), not on **`monthlyTotals/{yyyy-mm}`**. **`commitOnboarding`** merges budgets into the profile doc; ledger **`defaultMonthly`** no longer seeds **`budgets`**. Flutter: **`UserProfile.budgets`**, dashboard + `/budgets` read **`userProfileStreamProvider`** for targets vs **`monthlyTotals`** actuals. Docs: **`docs/data-model.md`**, **`docs/data-contract.md`**, **`docs/budgets.md`**, **`docs/onboarding.md`**, **`docs/ledger-aggregations-and-ui-flow.md`**.
@@ -50,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documented ledger aggregate **catch-up**, **`aggregateApplied`**, optional **`reload`** fields, and embedded **`days`** maps in [`docs/data-model.md`](docs/data-model.md) §4.1a, [`docs/data-contract.md`](docs/data-contract.md) §12, [`docs/backend-strategy.md`](docs/backend-strategy.md) §4.2, and [`docs/README.md`](docs/README.md) backend index.
 
 ### Fixed
+
+- **`FinkoPaperCard`:** when `title` is null, render **`Padding` → `child` only** (no wrapping `Column(mainAxisSize: min)`), so scrollables such as the **Transactions** `ListView` inside `RefreshIndicator` receive a bounded height and no longer throw **Vertical viewport was given unbounded height**.
 
 - **Firestore rules:** `users/{uid}/transactions` create/update may not add or change server-owned keys (`aggregateApplied`, `aggregateDeferred`, `reload`, `aggregateReload`, `amountMinorMain`, `fxRateDateUsed`); aligns with [`docs/data-model.md`](docs/data-model.md) §11. **Flutter CI** uses **Node 24** for Functions Jest to match [`functions/package.json`](functions/package.json) `engines`.
 

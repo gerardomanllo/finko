@@ -20,25 +20,27 @@ class FinkoPaperCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final padded = Padding(
-      padding: padding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (title != null) ...[
-            Text(
-              title!,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+    // Avoid wrapping only [child] in Column(mainAxisSize: min): that passes an
+    // unbounded max height to scrollables (e.g. ListView under RefreshIndicator).
+    final Widget padded = title == null
+        ? Padding(padding: padding, child: child)
+        : Padding(
+            padding: padding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title!,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                child,
+              ],
             ),
-            const SizedBox(height: 8),
-          ],
-          child,
-        ],
-      ),
-    );
+          );
     final body = onTap != null
         ? InkWell(
             onTap: onTap,

@@ -14,7 +14,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding); `InkWell` only when `onTap` is set (scrollable lists use plain padding) | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
+| **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding); `InkWell` only when `onTap` is set (scrollable lists use plain padding). Without `title`, child is not wrapped in a min-height `Column` so **`ListView`** + **`RefreshIndicator`** get bounded height | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
 | **Pill toggle group** | Single-select pills (segmented control style) | Spending (`week` / `month` / `quarter` / `year`) |
 
 ## Metrics & charts
@@ -32,7 +32,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account. Wrapped in **paper card** on cloud scaffold | Dashboard |
+| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable, **info** icon → calculation dialog); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account. Wrapped in **paper card** on cloud scaffold | Dashboard |
 | **Income + fixed + variable accordion** | Three rows (income \| fixed expense \| variable expense), **not clickable** | Spending (`FinkoSpendingIncomeFixedVariableAccordion`) |
 | **Income / expense accordion** | Two rows (income \| expense), **not clickable** | Reusable (`FinkoIncomeExpenseAccordion`) |
 | **Fixed / variable expense accordion** | Two rows (fixed \| variable), **not clickable** | Reusable (`FinkoFixedVariableExpenseAccordion`) |
@@ -90,5 +90,6 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-04-16** — **`FinkoPaperCard`:** with **`title == null`**, skip the internal title+`Column` wrapper so **`ListView` / `RefreshIndicator`** children get bounded vertical constraints (fixes `/transactions` viewport layout error). Titled cards unchanged.
 - **2026-04-16** — Light scaffold stays **cloud**; accordions/charts/lists that sit on the scaffold use **paper** (`FinkoPaperCard` / existing cards) for white panels. `FinkoPaperCard` applies **InkWell** only when `onTap` is non-null so embedded scroll views behave.
 - **2026-04-16** — **Spending** (`/spending`): **stacked paper sections** (strip, accordion, donut in paper, top tx in paper) with **fixed vertical gap** so **cloud** shows between widgets.

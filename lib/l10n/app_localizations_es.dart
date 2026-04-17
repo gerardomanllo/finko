@@ -561,6 +561,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get netCashLabel => 'Efectivo neto';
 
   @override
+  String get dashboardNetCashInfoTooltip => 'Cómo se calcula el efectivo neto';
+
+  @override
+  String get dashboardNetCashInfoTitle => 'Efectivo neto';
+
+  @override
+  String get dashboardNetCashInfoBody =>
+      'El efectivo neto es la suma de los saldos de las cuentas que cuentan como flujo de efectivo líquido.\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.';
+
+  @override
   String get loansMortgageSectionTitle => 'Préstamos e hipoteca';
 
   @override

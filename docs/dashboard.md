@@ -38,7 +38,7 @@ Horizontal carousel with **exactly two** cards (order as designed):
 - **One row per account type**, ordered for **cash-flow-heavy first**:
   1. Checking
   2. Credit cards
-  3. **Net cash** — **aggregate only**, **not clickable**, not an expandable “account”
+  3. **Net cash** — **aggregate only**, **not clickable**, not an expandable “account”; trailing **info** icon opens a short explanation of how net cash is calculated (localized).
 - Small **spacer**
   1. Savings
   2. Investments
@@ -102,7 +102,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 ## Acceptance
 
 - Date format matches short weekday + month + day style.
-- Net cash is aggregate and non-clickable.
+- Net cash is aggregate and non-clickable; info icon explains the calculation.
 - Upcoming sorted ascending; only future dates.
 - Recent capped at 5 with see more.
 
@@ -112,5 +112,6 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 |------|--------|
 | 2026-04-16 | Próximos include **future-dated `transactions/`** rows (editor), not only `upcomingTransactions` + recurring. |
 | 2026-04-16 | Recent transactions exclude future-dated rows; próximos merge **upcoming** + **recurring**; dashboard month key follows profile today; expense/budget rings use **MTD through today**; net-worth window ends on profile today. |
+| 2026-04-16 | Net cash row: **info** icon + dialog with localized explanation of how net cash is summed (`includeInNetCash`, defaults, `balanceMinorMain` / `balanceMinor`). |
 | 2026-04-16 | Replaced “frontend mock” section with **live Firestore-backed** dashboard mapping (streams, fallbacks, stubs). Documented net worth series, monthly totals, accounts/net cash, budget teaser, refresh + materialization, and remaining UI stubs (deltas, expense chart). |
 

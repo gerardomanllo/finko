@@ -33,7 +33,7 @@ DateTime _mondayOfCalendarDay(DateTime dateOnly) {
   if (u.amountMinorMain != null && u.currency != mainCurrency) {
     return (
       amountText:
-          '$sign ${formatMinorUnits(u.amountMinorMain!, mainCurrency, loc)}',
+          '$sign${formatMinorUnits(u.amountMinorMain!, mainCurrency, loc)}',
       secondaryAmountText: formatMinorUnitsWithCode(
         u.amountMinor,
         u.currency,
@@ -43,13 +43,13 @@ DateTime _mondayOfCalendarDay(DateTime dateOnly) {
   }
   if (u.currency == mainCurrency) {
     return (
-      amountText: '$sign ${formatMinorUnits(u.amountMinor, u.currency, loc)}',
+      amountText: '$sign${formatMinorUnits(u.amountMinor, u.currency, loc)}',
       secondaryAmountText: null,
     );
   }
   return (
     amountText:
-        '$sign ${formatMinorUnitsWithCode(u.amountMinor, u.currency, loc)}',
+        '$sign${formatMinorUnitsWithCode(u.amountMinor, u.currency, loc)}',
     secondaryAmountText: null,
   );
 }
