@@ -24,25 +24,26 @@ abstract final class FinkoTheme {
   static const Color _lightSurface = Colors.white;
 
   static ThemeData light() {
-    final scheme = ColorScheme.fromSeed(
-      brightness: Brightness.light,
-      seedColor: FinkoColors.primary,
-      primary: FinkoColors.primary,
-      secondary: FinkoColors.primaryLight,
-      tertiary: FinkoColors.gray,
-      surface: _lightSurface,
-      onSurface: FinkoColors.grayDark,
-      error: const Color(0xFFBA1A1A),
-    ).copyWith(
-      surface: _lightSurface,
-      surfaceDim: _lightSurface,
-      surfaceBright: _lightSurface,
-      surfaceContainerLowest: _lightSurface,
-      surfaceContainerLow: _lightSurface,
-      surfaceContainer: _lightSurface,
-      surfaceContainerHigh: _lightSurface,
-      surfaceContainerHighest: _lightSurface,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          brightness: Brightness.light,
+          seedColor: FinkoColors.primary,
+          primary: FinkoColors.primary,
+          secondary: FinkoColors.primaryLight,
+          tertiary: FinkoColors.gray,
+          surface: _lightSurface,
+          onSurface: FinkoColors.grayDark,
+          error: const Color(0xFFBA1A1A),
+        ).copyWith(
+          surface: _lightSurface,
+          surfaceDim: _lightSurface,
+          surfaceBright: _lightSurface,
+          surfaceContainerLowest: _lightSurface,
+          surfaceContainerLow: _lightSurface,
+          surfaceContainer: _lightSurface,
+          surfaceContainerHigh: _lightSurface,
+          surfaceContainerHighest: _lightSurface,
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -60,7 +61,9 @@ abstract final class FinkoTheme {
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
       ),
       dividerColor: FinkoColors.grayLight,
       textTheme: const TextTheme(
@@ -179,7 +182,9 @@ abstract final class FinkoTheme {
         color: FinkoColors.navy800,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
       ),
       dividerColor: FinkoColors.navy700,
       textTheme: const TextTheme(

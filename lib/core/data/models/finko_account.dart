@@ -20,6 +20,8 @@ class FinkoAccount {
     required this.sortOrder,
     required this.createdAt,
     required this.updatedAt,
+    this.iconKey = 'account_balance',
+    this.colorArgb,
   });
 
   @JsonKey(includeToJson: false)
@@ -40,6 +42,12 @@ class FinkoAccount {
 
   @FirestoreUtcDateTimeConverter()
   final DateTime updatedAt;
+
+  /// Material icon key from onboarding / account editor.
+  final String iconKey;
+
+  /// Optional ARGB tint; persisted from onboarding.
+  final int? colorArgb;
 
   factory FinkoAccount.fromJson(Map<String, dynamic> json) =>
       _$FinkoAccountFromJson(json);
@@ -71,6 +79,10 @@ class FinkoAccount {
         : (type == FinkoAccountType.checking ||
               type == FinkoAccountType.creditCard);
 
+    final rawIcon = (data['iconKey'] as String?)?.trim();
+    final rawColor = data['colorArgb'];
+    final colorArgb = rawColor is num ? rawColor.toInt() : null;
+
     return FinkoAccount(
       id: id,
       name: (data['name'] as String?)?.trim().isNotEmpty == true
@@ -88,6 +100,10 @@ class FinkoAccount {
       sortOrder: readInt('sortOrder', fallback: 0),
       createdAt: readDate('createdAt'),
       updatedAt: readDate('updatedAt'),
+      iconKey: (rawIcon != null && rawIcon.isNotEmpty)
+          ? rawIcon
+          : 'account_balance',
+      colorArgb: colorArgb,
     );
   }
 

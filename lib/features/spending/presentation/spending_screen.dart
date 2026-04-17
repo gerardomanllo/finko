@@ -196,8 +196,7 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                           controller: _stripScrollController,
                           scrollDirection: Axis.horizontal,
                           itemCount: filtered.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(width: 10),
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
                           itemBuilder: (context, i) {
                             final d = filtered[i];
                             return _SpendingMiniCard(

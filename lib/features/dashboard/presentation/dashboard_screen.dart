@@ -364,7 +364,8 @@ class DashboardScreen extends ConsumerWidget {
                 if (m == null) {
                   return Text(l10n.emptyNoMonthlyTotals);
                 }
-                final budgets = userProfileAsync.valueOrNull?.budgets ??
+                final budgets =
+                    userProfileAsync.valueOrNull?.budgets ??
                     const <String, MonthlyBudgetEntry>{};
                 final budgetTotal = totalExpenseBudgetMinor(budgets);
                 final spent = expenseMinorMainThroughDate(m, todayKey);

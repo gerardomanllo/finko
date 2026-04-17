@@ -56,9 +56,7 @@ class _AppShellState extends State<AppShell> {
                   builder: (context) {
                     final theme = Theme.of(context);
                     return Theme(
-                      data: theme.copyWith(
-                        primaryTextTheme: theme.textTheme,
-                      ),
+                      data: theme.copyWith(primaryTextTheme: theme.textTheme),
                       child: UserAccountsDrawerHeader(
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,

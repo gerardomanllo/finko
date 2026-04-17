@@ -89,6 +89,12 @@ abstract class FirestoreDataRepository {
 
   /// Hard-deletes a transaction ([`docs/data-model.md`] §4).
   Future<void> deleteTransaction(String uid, String transactionId);
+
+  /// User metadata on `categories/{id}` — does not touch aggregates.
+  Future<void> updateCategory(String uid, FinkoCategory category);
+
+  /// User metadata on `accounts/{id}` — does not change balances.
+  Future<void> updateAccountMetadata(String uid, FinkoAccount account);
 }
 
 class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
@@ -390,6 +396,38 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
   @override
   Future<void> deleteTransaction(String uid, String transactionId) async {
     await _db.doc(FirestorePaths.transactionDoc(uid, transactionId)).delete();
+  }
+
+  @override
+  Future<void> updateCategory(String uid, FinkoCategory category) async {
+    final payload = <String, dynamic>{
+      'name': category.name,
+      'kind': category.kind.wireName,
+      'iconKey': category.iconKey,
+      'sortOrder': category.sortOrder,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    final cur = category.currency?.trim();
+    if (cur != null && cur.isNotEmpty) {
+      payload['currency'] = cur;
+    }
+    if (category.colorArgb != null) {
+      payload['colorArgb'] = category.colorArgb;
+    }
+    await _db.doc(FirestorePaths.categoryDoc(uid, category.id)).update(payload);
+  }
+
+  @override
+  Future<void> updateAccountMetadata(String uid, FinkoAccount account) async {
+    await _db.doc(FirestorePaths.accountDoc(uid, account.id)).update({
+      'name': account.name,
+      'type': account.type.wireName,
+      'currency': account.currency,
+      'includeInNetCash': account.includeInNetCash,
+      'iconKey': account.iconKey,
+      'colorArgb': account.colorArgb ?? 0xFF607D8B,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }
 

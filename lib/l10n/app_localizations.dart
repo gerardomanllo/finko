@@ -1244,6 +1244,30 @@ abstract class AppLocalizations {
   /// **'Aún no hay totales del mes — añade un transacción.'**
   String get emptyNoMonthlyTotals;
 
+  /// No description provided for @summaryMonthTotalLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get summaryMonthTotalLabel;
+
+  /// No description provided for @summaryRecentTransactionsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Transacciones recientes'**
+  String get summaryRecentTransactionsLabel;
+
+  /// No description provided for @summaryNoTransactionsThisMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay transacciones este mes.'**
+  String get summaryNoTransactionsThisMonth;
+
+  /// No description provided for @summaryYearMonthHeading.
+  ///
+  /// In es, this message translates to:
+  /// **'{yearMonth}'**
+  String summaryYearMonthHeading(String yearMonth);
+
   /// No description provided for @spendingPeriodWeek.
   ///
   /// In es, this message translates to:
@@ -1769,7 +1793,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoriesEmpty.
   ///
   /// In es, this message translates to:
-  /// **'Aún no hay categorías en los datos del mes.'**
+  /// **'Aún no hay categorías.'**
   String get categoriesEmpty;
 
   /// No description provided for @accountsListSubtitle.

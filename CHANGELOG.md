@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Category / account summary sheets:** Per-row amounts and the **account month net** now use **`amountMinorMain`** when present, else **`amountMinor`** only if the row currency matches **main currency** (same rule as spending aggregates / transactions list); foreign rows without a main stamp show **native** signed totals and are excluded from the main-currency month sum.
+
 - **Transactions (`/transactions`):** ledger **paper list** is **full width** (removed body-wide horizontal padding); **search + filter** row keeps **16** gutters; each transaction row uses **16** horizontal inset so content does not touch screen edges.
 
 - **Money display:** amounts from **`formatMinorUnits`** / **`formatMinorUnitsWithCode`** now include a **`$`** prefix (e.g. `$1,234.56`, `$1,234.56 MXN` for secondary-currency rows).

@@ -33,11 +33,15 @@ String accountTypeLabel(AppLocalizations l10n, OnboardingAccountType t) {
 }
 
 /// Modal bottom sheet editor for add/edit account (name, type, currency, color, starting balance).
+///
+/// When [metadataOnly] is true and [existing] is non-null, the starting balance field is hidden
+/// (post-onboarding account list: balances come from the ledger).
 Future<void> showOnboardingAccountEditor({
   required BuildContext context,
   required AppLocalizations l10n,
   OnboardingAccountDraft? existing,
   required void Function(OnboardingAccountDraft draft) onSave,
+  bool metadataOnly = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -47,6 +51,7 @@ Future<void> showOnboardingAccountEditor({
         l10n: l10n,
         existing: existing,
         onSave: onSave,
+        metadataOnly: metadataOnly,
       );
     },
   );
@@ -57,11 +62,13 @@ class _OnboardingAccountEditorSheet extends StatefulWidget {
     required this.l10n,
     this.existing,
     required this.onSave,
+    this.metadataOnly = false,
   });
 
   final AppLocalizations l10n;
   final OnboardingAccountDraft? existing;
   final void Function(OnboardingAccountDraft draft) onSave;
+  final bool metadataOnly;
 
   @override
   State<_OnboardingAccountEditorSheet> createState() =>
@@ -187,36 +194,51 @@ class _OnboardingAccountEditorSheetState
               onChanged: (v) => setState(() => _type = v ?? _type),
             ),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    key: ValueKey<String>(_currency),
-                    initialValue: _currency,
-                    decoration: InputDecoration(
-                      labelText: l10n.onboardingCurrencyLabel,
-                    ),
-                    items: kOnboardingCurrencies
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _currency = v ?? _currency),
-                  ),
+            if (widget.metadataOnly && existing != null)
+              DropdownButtonFormField<String>(
+                key: ValueKey<String>(_currency),
+                initialValue: _currency,
+                decoration: InputDecoration(
+                  labelText: l10n.onboardingCurrencyLabel,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OnboardingAmountTextField(
-                    controller: _balanceController,
-                    decoration: onboardingMoneyDecoration(
-                      context: context,
-                      labelText: l10n.onboardingStartingBalanceLabel,
-                      currencyCode: _currency,
+                items: kOnboardingCurrencies
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .toList(),
+                onChanged: (v) => setState(() => _currency = v ?? _currency),
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      key: ValueKey<String>(_currency),
+                      initialValue: _currency,
+                      decoration: InputDecoration(
+                        labelText: l10n.onboardingCurrencyLabel,
+                      ),
+                      items: kOnboardingCurrencies
+                          .map(
+                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+                          )
+                          .toList(),
+                      onChanged: (v) =>
+                          setState(() => _currency = v ?? _currency),
                     ),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OnboardingAmountTextField(
+                      controller: _balanceController,
+                      decoration: onboardingMoneyDecoration(
+                        context: context,
+                        labelText: l10n.onboardingStartingBalanceLabel,
+                        currencyCode: _currency,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 16),
             Text(
               l10n.onboardingSectionColor,
@@ -252,7 +274,9 @@ class _OnboardingAccountEditorSheetState
               onPressed: () {
                 final name = _nameController.text.trim();
                 if (name.isEmpty) return;
-                final minor = parseMajorToMinor(_balanceController.text) ?? 0;
+                final minor = widget.metadataOnly && existing != null
+                    ? 0
+                    : (parseMajorToMinor(_balanceController.text) ?? 0);
                 widget.onSave(
                   OnboardingAccountDraft(
                     id:

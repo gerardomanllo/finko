@@ -10,6 +10,7 @@ Future<void> showOnboardingCategoryEditor({
   required AppLocalizations l10n,
   OnboardingCategoryDraft? existing,
   required void Function(OnboardingCategoryDraft draft) onSave,
+  bool lockKind = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -18,6 +19,7 @@ Future<void> showOnboardingCategoryEditor({
       l10n: l10n,
       existing: existing,
       onSave: onSave,
+      lockKind: lockKind,
     ),
   );
 }
@@ -27,11 +29,13 @@ class _OnboardingCategoryEditorSheet extends StatefulWidget {
     required this.l10n,
     this.existing,
     required this.onSave,
+    this.lockKind = false,
   });
 
   final AppLocalizations l10n;
   final OnboardingCategoryDraft? existing;
   final void Function(OnboardingCategoryDraft draft) onSave;
+  final bool lockKind;
 
   @override
   State<_OnboardingCategoryEditorSheet> createState() =>
@@ -91,19 +95,25 @@ class _OnboardingCategoryEditorSheetState
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 12),
-            SegmentedButton<OnboardingCategoryKind>(
-              segments: [
-                ButtonSegment(
-                  value: OnboardingCategoryKind.income,
-                  label: Text(l10n.onboardingCategoryKindIncome),
+            IgnorePointer(
+              ignoring: widget.lockKind,
+              child: Opacity(
+                opacity: widget.lockKind ? 0.45 : 1,
+                child: SegmentedButton<OnboardingCategoryKind>(
+                  segments: [
+                    ButtonSegment(
+                      value: OnboardingCategoryKind.income,
+                      label: Text(l10n.onboardingCategoryKindIncome),
+                    ),
+                    ButtonSegment(
+                      value: OnboardingCategoryKind.expense,
+                      label: Text(l10n.onboardingCategoryKindExpense),
+                    ),
+                  ],
+                  selected: <OnboardingCategoryKind>{_kind},
+                  onSelectionChanged: (s) => setState(() => _kind = s.first),
                 ),
-                ButtonSegment(
-                  value: OnboardingCategoryKind.expense,
-                  label: Text(l10n.onboardingCategoryKindExpense),
-                ),
-              ],
-              selected: <OnboardingCategoryKind>{_kind},
-              onSelectionChanged: (s) => setState(() => _kind = s.first),
+              ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -155,7 +165,7 @@ class _OnboardingCategoryEditorSheetState
                     name: name,
                     kind: _kind,
                     iconKey: _iconKey,
-                    isSystem: false,
+                    isSystem: existing?.isSystem ?? false,
                   ),
                 );
                 Navigator.of(context).pop();

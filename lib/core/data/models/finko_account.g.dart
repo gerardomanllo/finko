@@ -21,6 +21,8 @@ FinkoAccount _$FinkoAccountFromJson(Map<String, dynamic> json) => FinkoAccount(
   sortOrder: (json['sortOrder'] as num).toInt(),
   createdAt: const FirestoreUtcDateTimeConverter().fromJson(json['createdAt']),
   updatedAt: const FirestoreUtcDateTimeConverter().fromJson(json['updatedAt']),
+  iconKey: json['iconKey'] as String? ?? 'account_balance',
+  colorArgb: (json['colorArgb'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$FinkoAccountToJson(FinkoAccount instance) =>
@@ -38,6 +40,8 @@ Map<String, dynamic> _$FinkoAccountToJson(FinkoAccount instance) =>
       'updatedAt': ?const FirestoreUtcDateTimeConverter().toJson(
         instance.updatedAt,
       ),
+      'iconKey': instance.iconKey,
+      'colorArgb': ?instance.colorArgb,
     };
 
 const _$FinkoAccountTypeEnumMap = {

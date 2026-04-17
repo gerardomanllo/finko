@@ -232,6 +232,17 @@
   "emptyNoTransactions": "No transactions yet.",
   "emptyNoUpcoming": "Nothing upcoming.",
   "emptyNoMonthlyTotals": "No monthly totals yet — add a transaction.",
+  "summaryMonthTotalLabel": "This month",
+  "summaryRecentTransactionsLabel": "Recent transactions",
+  "summaryNoTransactionsThisMonth": "No transactions this month.",
+  "summaryYearMonthHeading": "{yearMonth}",
+  "@summaryYearMonthHeading": {
+    "placeholders": {
+      "yearMonth": {
+        "type": "String"
+      }
+    }
+  },
   "spendingPeriodWeek": "Week",
   "spendingPeriodMonth": "Month",
   "spendingPeriodQuarter": "Quarter",
@@ -371,6 +382,6 @@
   "recurringDueSoon": "Due soon",
   "recurringComingLater": "Coming later",
   "actionRetry": "Retry",
-  "categoriesEmpty": "No categories in monthly data yet.",
+  "categoriesEmpty": "No categories yet.",
   "accountsListSubtitle": "Tap an account when detail routes exist."
 }

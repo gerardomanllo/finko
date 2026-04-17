@@ -232,6 +232,17 @@
   "emptyNoTransactions": "Aún no hay transacciones.",
   "emptyNoUpcoming": "No hay próximas transacciones.",
   "emptyNoMonthlyTotals": "Aún no hay totales del mes — añade un transacción.",
+  "summaryMonthTotalLabel": "Este mes",
+  "summaryRecentTransactionsLabel": "Transacciones recientes",
+  "summaryNoTransactionsThisMonth": "No hay transacciones este mes.",
+  "summaryYearMonthHeading": "{yearMonth}",
+  "@summaryYearMonthHeading": {
+    "placeholders": {
+      "yearMonth": {
+        "type": "String"
+      }
+    }
+  },
   "spendingPeriodWeek": "Semana",
   "spendingPeriodMonth": "Mes",
   "spendingPeriodQuarter": "Trimestre",
@@ -371,6 +382,6 @@
   "recurringDueSoon": "Pronto",
   "recurringComingLater": "Más adelante",
   "actionRetry": "Reintentar",
-  "categoriesEmpty": "Aún no hay categorías en los datos del mes.",
+  "categoriesEmpty": "Aún no hay categorías.",
   "accountsListSubtitle": "Toca una cuenta cuando existan detalles."
 }

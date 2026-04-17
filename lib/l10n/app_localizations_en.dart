@@ -611,6 +611,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'No monthly totals yet — add a transaction.';
 
   @override
+  String get summaryMonthTotalLabel => 'This month';
+
+  @override
+  String get summaryRecentTransactionsLabel => 'Recent transactions';
+
+  @override
+  String get summaryNoTransactionsThisMonth => 'No transactions this month.';
+
+  @override
+  String summaryYearMonthHeading(String yearMonth) {
+    return '$yearMonth';
+  }
+
+  @override
   String get spendingPeriodWeek => 'Week';
 
   @override
@@ -904,7 +918,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionRetry => 'Retry';
 
   @override
-  String get categoriesEmpty => 'No categories in monthly data yet.';
+  String get categoriesEmpty => 'No categories yet.';
 
   @override
   String get accountsListSubtitle => 'Tap an account when detail routes exist.';

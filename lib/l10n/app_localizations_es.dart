@@ -616,6 +616,20 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no hay totales del mes — añade un transacción.';
 
   @override
+  String get summaryMonthTotalLabel => 'Este mes';
+
+  @override
+  String get summaryRecentTransactionsLabel => 'Transacciones recientes';
+
+  @override
+  String get summaryNoTransactionsThisMonth => 'No hay transacciones este mes.';
+
+  @override
+  String summaryYearMonthHeading(String yearMonth) {
+    return '$yearMonth';
+  }
+
+  @override
   String get spendingPeriodWeek => 'Semana';
 
   @override
@@ -914,7 +928,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get actionRetry => 'Reintentar';
 
   @override
-  String get categoriesEmpty => 'Aún no hay categorías en los datos del mes.';
+  String get categoriesEmpty => 'Aún no hay categorías.';
 
   @override
   String get accountsListSubtitle => 'Toca una cuenta cuando existan detalles.';
