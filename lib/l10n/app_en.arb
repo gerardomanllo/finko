@@ -172,6 +172,47 @@
   "loginErrorEmailInUse": "This email is already registered",
   "loginErrorGeneric": "Sign-in could not be completed",
   "settingsSignOut": "Sign out",
+  "settingsAppearanceSection": "Appearance",
+  "settingsThemeLabel": "Color theme",
+  "settingsMembershipSection": "Membership",
+  "settingsManagePlan": "Manage your plan",
+  "settingsManagePlanSubtitle": "Opens Stripe billing (coming soon).",
+  "settingsComingSoonLabel": "Coming soon",
+  "settingsMessagingSection": "Messaging",
+  "settingsMessagingWhatsApp": "WhatsApp",
+  "settingsMessagingTelegram": "Telegram",
+  "settingsMessagingStatusConnected": "Connected",
+  "settingsMessagingStatusNotConnected": "Not connected",
+  "settingsMessagingConnectedWhatsAppDetail": "WhatsApp number: {phone}",
+  "@settingsMessagingConnectedWhatsAppDetail": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingConnectedTelegramDetail": "Telegram: {username}",
+  "@settingsMessagingConnectedTelegramDetail": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingVerifiedOn": "Verified on {date}",
+  "@settingsMessagingVerifiedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingDisconnect": "Disconnect",
+  "settingsMessagingDisconnectConfirmTitle": "Disconnect this channel?",
+  "settingsMessagingDisconnectConfirmBody": "You can reconnect anytime from Settings.",
+  "settingsMessagingDisconnectConfirmCta": "Disconnect",
+  "settingsMessagingDisconnectCancel": "Cancel",
+  "settingsErrorSave": "Could not save. Try again.",
   "dashboardSignedInAs": "Signed in as {email}",
   "@dashboardSignedInAs": {
     "placeholders": {

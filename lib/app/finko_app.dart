@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../core/locale/locale_notifier.dart';
 import '../core/locale/locale_support.dart';
 import 'materialize_listener.dart';
+import 'profile_theme_sync_listener.dart';
 import 'router.dart';
 
 class FinkoApp extends ConsumerWidget {
@@ -30,7 +31,9 @@ class FinkoApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: router,
       builder: (context, child) => MaterializeDueUpcomingListener(
-        child: child ?? const SizedBox.shrink(),
+        child: ProfileThemeSyncListener(
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     );
   }

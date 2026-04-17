@@ -467,6 +467,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSignOut => 'Sign out';
 
   @override
+  String get settingsAppearanceSection => 'Appearance';
+
+  @override
+  String get settingsThemeLabel => 'Color theme';
+
+  @override
+  String get settingsMembershipSection => 'Membership';
+
+  @override
+  String get settingsManagePlan => 'Manage your plan';
+
+  @override
+  String get settingsManagePlanSubtitle =>
+      'Opens Stripe billing (coming soon).';
+
+  @override
+  String get settingsComingSoonLabel => 'Coming soon';
+
+  @override
+  String get settingsMessagingSection => 'Messaging';
+
+  @override
+  String get settingsMessagingWhatsApp => 'WhatsApp';
+
+  @override
+  String get settingsMessagingTelegram => 'Telegram';
+
+  @override
+  String get settingsMessagingStatusConnected => 'Connected';
+
+  @override
+  String get settingsMessagingStatusNotConnected => 'Not connected';
+
+  @override
+  String settingsMessagingConnectedWhatsAppDetail(String phone) {
+    return 'WhatsApp number: $phone';
+  }
+
+  @override
+  String settingsMessagingConnectedTelegramDetail(String username) {
+    return 'Telegram: $username';
+  }
+
+  @override
+  String settingsMessagingVerifiedOn(String date) {
+    return 'Verified on $date';
+  }
+
+  @override
+  String get settingsMessagingDisconnect => 'Disconnect';
+
+  @override
+  String get settingsMessagingDisconnectConfirmTitle =>
+      'Disconnect this channel?';
+
+  @override
+  String get settingsMessagingDisconnectConfirmBody =>
+      'You can reconnect anytime from Settings.';
+
+  @override
+  String get settingsMessagingDisconnectConfirmCta => 'Disconnect';
+
+  @override
+  String get settingsMessagingDisconnectCancel => 'Cancel';
+
+  @override
+  String get settingsErrorSave => 'Could not save. Try again.';
+
+  @override
   String dashboardSignedInAs(String email) {
     return 'Signed in as $email';
   }

@@ -14,21 +14,20 @@
 
 ### Appearance
 
-- **Dark / light theme** selector (toggle or segmented control).
+- **Color theme:** three-way control (**Light** / **Dark** / **System**) with icons (`FinkoThemeModeToggle`). Persists to `users/{uid}.themePreference` and applies via `themeModeProvider`; profile stream is mirrored into the app theme in `ProfileThemeSyncListener` (`lib/app/profile_theme_sync_listener.dart`).
 
 ### Membership
 
-- Add a **Manage your plan** CTA that opens the user-specific Stripe Customer Portal link.
-- Portal link must be generated **server-side** for authenticated `uid` (single-use URL), then opened by the app.
-- On return from portal, refresh membership state and entitlements.
+- **Manage your plan** — opens the user-specific Stripe Customer Portal (or Billing Portal “magic”) link once the backend exposes it.
+- Today: **disabled** control with **Coming soon** copy (no URL); when shipped: portal link must be generated **server-side** for authenticated `uid` (single-use URL), then opened by the app; on return, refresh membership state and entitlements.
 
 ### Messaging integrations (optional)
 
-- Separate **CTAs** so the user can **connect or configure** (implement as “Set up”, “Connect”, or “Manage” per design):
-  - **WhatsApp** — user-created link / flow to **send transactions** or **query their data** through WhatsApp (backend handles the channel; the app only exposes setup UX).
-  - **Telegram** — same idea for Telegram (or connected bot/channel).
+- Separate rows (**WhatsApp**, **Telegram**) with **Connected** / **Not connected** from `UserProfile.integrations`.
+- **Not connected:** same bottom sheet as onboarding — `showOnboardingMessagingChannelSheet` + `requestMessagingOtp` / `verifyMessagingOtp` Cloud Functions; then refresh profile stream.
+- **Connected:** bottom sheet shows identity (`phoneE164` / `@username`) and verified date when present; **Disconnect** → confirm dialog → client merge/removes `integrations.whatsapp` or `integrations.telegram` on `users/{uid}` (empty `integrations` object removed).
 - User may connect **one, both, or neither** — do not require both.
-- Show **status** per channel (“Not connected”, “Connected”, “Pending”) — stub strings until backend exists.
+- Copy must **not** imply WhatsApp/Telegram are sign-in methods (they are **messaging** integrations only).
 
 ## Navigation
 
@@ -38,14 +37,18 @@
 
 - Shared settings row / section widgets.
 
-## Data (frontend phase)
+## Data
 
-- `ThemeMode` persistence local-only until Firebase/backend.
-- Channel connection state: mock toggles or flags.
+- `themePreference` on `users/{uid}` (`light` | `dark` | `system`) — client merge on change from Settings.
+- Messaging link state: `integrations.whatsapp` / `integrations.telegram` on profile (see `docs/data-model.md`).
 
 ## Acceptance
 
-- [ ] Theme switch applies globally (via `ThemeMode` / provider).
-- [ ] **Manage your plan** CTA exists and opens a server-generated Stripe Customer Portal link.
-- [ ] **At least two** distinct CTAs: WhatsApp and Telegram (handlers stubbed).
-- [ ] Copy does **not** imply WhatsApp/Telegram are sign-in methods.
+- [x] Theme switch applies globally (`themeModeProvider` + Firestore `themePreference` + profile-driven sync).
+- [ ] **Manage your plan** opens a server-generated Stripe portal link (UI placeholder until backend).
+- [x] **At least two** distinct CTAs: WhatsApp and Telegram (OTP flow wired; disconnect via Firestore).
+- [x] Copy does **not** imply WhatsApp/Telegram are sign-in methods.
+
+## Revision log
+
+- **2026-04-16** — Appearance: icon **three-way theme** toggle + Firestore persistence + `ProfileThemeSyncListener`. Membership: **Manage your plan** disabled with **Coming soon**. Messaging: WhatsApp/Telegram rows, reuse onboarding OTP sheet when not linked, connected-details sheet + confirm disconnect.

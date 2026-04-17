@@ -472,6 +472,75 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSignOut => 'Cerrar sesión';
 
   @override
+  String get settingsAppearanceSection => 'Apariencia';
+
+  @override
+  String get settingsThemeLabel => 'Tema de color';
+
+  @override
+  String get settingsMembershipSection => 'Membresía';
+
+  @override
+  String get settingsManagePlan => 'Administrar tu plan';
+
+  @override
+  String get settingsManagePlanSubtitle =>
+      'Abre la facturación de Stripe (próximamente).';
+
+  @override
+  String get settingsComingSoonLabel => 'Próximamente';
+
+  @override
+  String get settingsMessagingSection => 'Mensajería';
+
+  @override
+  String get settingsMessagingWhatsApp => 'WhatsApp';
+
+  @override
+  String get settingsMessagingTelegram => 'Telegram';
+
+  @override
+  String get settingsMessagingStatusConnected => 'Conectado';
+
+  @override
+  String get settingsMessagingStatusNotConnected => 'Sin conectar';
+
+  @override
+  String settingsMessagingConnectedWhatsAppDetail(String phone) {
+    return 'Número de WhatsApp: $phone';
+  }
+
+  @override
+  String settingsMessagingConnectedTelegramDetail(String username) {
+    return 'Telegram: $username';
+  }
+
+  @override
+  String settingsMessagingVerifiedOn(String date) {
+    return 'Verificado el $date';
+  }
+
+  @override
+  String get settingsMessagingDisconnect => 'Desconectar';
+
+  @override
+  String get settingsMessagingDisconnectConfirmTitle =>
+      '¿Desconectar este canal?';
+
+  @override
+  String get settingsMessagingDisconnectConfirmBody =>
+      'Puedes volver a conectarlo cuando quieras desde Ajustes.';
+
+  @override
+  String get settingsMessagingDisconnectConfirmCta => 'Desconectar';
+
+  @override
+  String get settingsMessagingDisconnectCancel => 'Cancelar';
+
+  @override
+  String get settingsErrorSave => 'No se pudo guardar. Intenta de nuevo.';
+
+  @override
   String dashboardSignedInAs(String email) {
     return 'Sesión: $email';
   }

@@ -968,6 +968,126 @@ abstract class AppLocalizations {
   /// **'Cerrar sesión'**
   String get settingsSignOut;
 
+  /// No description provided for @settingsAppearanceSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia'**
+  String get settingsAppearanceSection;
+
+  /// No description provided for @settingsThemeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema de color'**
+  String get settingsThemeLabel;
+
+  /// No description provided for @settingsMembershipSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Membresía'**
+  String get settingsMembershipSection;
+
+  /// No description provided for @settingsManagePlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Administrar tu plan'**
+  String get settingsManagePlan;
+
+  /// No description provided for @settingsManagePlanSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre la facturación de Stripe (próximamente).'**
+  String get settingsManagePlanSubtitle;
+
+  /// No description provided for @settingsComingSoonLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get settingsComingSoonLabel;
+
+  /// No description provided for @settingsMessagingSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajería'**
+  String get settingsMessagingSection;
+
+  /// No description provided for @settingsMessagingWhatsApp.
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get settingsMessagingWhatsApp;
+
+  /// No description provided for @settingsMessagingTelegram.
+  ///
+  /// In es, this message translates to:
+  /// **'Telegram'**
+  String get settingsMessagingTelegram;
+
+  /// No description provided for @settingsMessagingStatusConnected.
+  ///
+  /// In es, this message translates to:
+  /// **'Conectado'**
+  String get settingsMessagingStatusConnected;
+
+  /// No description provided for @settingsMessagingStatusNotConnected.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conectar'**
+  String get settingsMessagingStatusNotConnected;
+
+  /// No description provided for @settingsMessagingConnectedWhatsAppDetail.
+  ///
+  /// In es, this message translates to:
+  /// **'Número de WhatsApp: {phone}'**
+  String settingsMessagingConnectedWhatsAppDetail(String phone);
+
+  /// No description provided for @settingsMessagingConnectedTelegramDetail.
+  ///
+  /// In es, this message translates to:
+  /// **'Telegram: {username}'**
+  String settingsMessagingConnectedTelegramDetail(String username);
+
+  /// No description provided for @settingsMessagingVerifiedOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificado el {date}'**
+  String settingsMessagingVerifiedOn(String date);
+
+  /// No description provided for @settingsMessagingDisconnect.
+  ///
+  /// In es, this message translates to:
+  /// **'Desconectar'**
+  String get settingsMessagingDisconnect;
+
+  /// No description provided for @settingsMessagingDisconnectConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Desconectar este canal?'**
+  String get settingsMessagingDisconnectConfirmTitle;
+
+  /// No description provided for @settingsMessagingDisconnectConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes volver a conectarlo cuando quieras desde Ajustes.'**
+  String get settingsMessagingDisconnectConfirmBody;
+
+  /// No description provided for @settingsMessagingDisconnectConfirmCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Desconectar'**
+  String get settingsMessagingDisconnectConfirmCta;
+
+  /// No description provided for @settingsMessagingDisconnectCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get settingsMessagingDisconnectCancel;
+
+  /// No description provided for @settingsErrorSave.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar. Intenta de nuevo.'**
+  String get settingsErrorSave;
+
   /// No description provided for @dashboardSignedInAs.
   ///
   /// In es, this message translates to:

@@ -76,6 +76,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Social / provider auth buttons** | Google, Apple per design system | Login |
 | **Email/password form** | Fields + submit | Login |
 | **Settings row / section** | Theme toggle; external service CTAs | Settings |
+| **FinkoThemeModeToggle** | Three icon buttons (light / dark / system) for `ThemePreference` | Settings |
 | **Onboarding typewriter header** | Step title animation with reduced-motion + semantics-safe label | Onboarding |
 | **Onboarding wizard progress** | Global 9-step progress bar + nav controls | Onboarding |
 
@@ -97,6 +98,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-04-16** — **`FinkoThemeModeToggle`:** three-way theme control on `/settings`.
 - **2026-04-16** — **`FinkoPaperCard`:** with **`title == null`**, skip the internal title+`Column` wrapper so **`ListView` / `RefreshIndicator`** children get bounded vertical constraints (fixes `/transactions` viewport layout error). Titled cards unchanged.
 - **2026-04-16** — Light scaffold stays **cloud**; accordions/charts/lists that sit on the scaffold use **paper** (`FinkoPaperCard` / existing cards) for white panels. `FinkoPaperCard` applies **InkWell** only when `onTap` is non-null so embedded scroll views behave.
 - **2026-04-16** — **Spending** (`/spending`): **stacked paper sections** (strip, accordion, donut in paper, top tx in paper) with **fixed vertical gap** so **cloud** shows between widgets.

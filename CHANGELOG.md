@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Settings (`/settings`):** three-way **color theme** toggle (icons) with Firestore `themePreference` + app-wide sync from profile; **Manage your plan** stub (disabled, “Coming soon”); **WhatsApp** / **Telegram** rows reusing onboarding OTP bottom sheet when not linked, connected-details sheet + confirm disconnect when linked (`UserSettingsWriter`, `ProfileThemeSyncListener`, `FinkoThemeModeToggle`).
+
 - **Categories (`/categories`) & Accounts (`/accounts`):** paper lists with **icons**; categories grouped income/expense; accounts grouped by type (dashboard order). Row tap opens a **summary bottom sheet** (this month + recent transactions; accounts show **net** in main currency from ledger). **Edit** opens the same **slide-up editors** as onboarding (categories; accounts use **metadata-only** mode—no starting balance). Firestore: `updateCategory`, `updateAccountMetadata`; `FinkoAccount` includes **`iconKey`** / **`colorArgb`**.
 
 - **Dashboard — net cash:** **info** icon on the net cash row in the accounts accordion opens a localized dialog explaining how net cash is calculated (`FinkoCashFlowAccountsAccordion`).

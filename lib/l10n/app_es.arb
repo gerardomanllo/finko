@@ -172,6 +172,47 @@
   "loginErrorEmailInUse": "Este correo ya está registrado",
   "loginErrorGeneric": "No se pudo completar el inicio de sesión",
   "settingsSignOut": "Cerrar sesión",
+  "settingsAppearanceSection": "Apariencia",
+  "settingsThemeLabel": "Tema de color",
+  "settingsMembershipSection": "Membresía",
+  "settingsManagePlan": "Administrar tu plan",
+  "settingsManagePlanSubtitle": "Abre la facturación de Stripe (próximamente).",
+  "settingsComingSoonLabel": "Próximamente",
+  "settingsMessagingSection": "Mensajería",
+  "settingsMessagingWhatsApp": "WhatsApp",
+  "settingsMessagingTelegram": "Telegram",
+  "settingsMessagingStatusConnected": "Conectado",
+  "settingsMessagingStatusNotConnected": "Sin conectar",
+  "settingsMessagingConnectedWhatsAppDetail": "Número de WhatsApp: {phone}",
+  "@settingsMessagingConnectedWhatsAppDetail": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingConnectedTelegramDetail": "Telegram: {username}",
+  "@settingsMessagingConnectedTelegramDetail": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingVerifiedOn": "Verificado el {date}",
+  "@settingsMessagingVerifiedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsMessagingDisconnect": "Desconectar",
+  "settingsMessagingDisconnectConfirmTitle": "¿Desconectar este canal?",
+  "settingsMessagingDisconnectConfirmBody": "Puedes volver a conectarlo cuando quieras desde Ajustes.",
+  "settingsMessagingDisconnectConfirmCta": "Desconectar",
+  "settingsMessagingDisconnectCancel": "Cancelar",
+  "settingsErrorSave": "No se pudo guardar. Intenta de nuevo.",
   "dashboardSignedInAs": "Sesión: {email}",
   "@dashboardSignedInAs": {
     "placeholders": {
