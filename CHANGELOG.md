@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Tooling:** `.vscode/launch.json` lists **mobile** (shared iOS/Android), **Web**, and **desktop** debug targets with the right `--flavor` only where Flutter supports it; `.vscode/extensions.json` recommends the Dart extension; `docs/references/README.md` explains Cursor/VS Code usage and why `pubspec` omits `default-flavor` (it breaks `flutter run -d macos` without matching Xcode schemes).
+
 - **Accounts:** editing from the account **summary** sheet only updates **name**, **icon**, and **color**; **account type** and **currency** are shown read-only and are not changed in Firestore (preserves `includeInNetCash` as stored).
 
 ### Added

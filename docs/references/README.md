@@ -53,3 +53,17 @@ Decisions for client code. **Detail:** `.cursor/rules/finko-flutter-architecture
 - iOS prod: `flutter run --flavor prod -t lib/main_prod.dart`
 - Web dev: `flutter run -d chrome -t lib/main_dev.dart`
 - Web prod-like: `flutter run -d chrome --release -t lib/main_prod.dart`
+- macOS / Windows / Linux: `flutter run -d <platform> -t lib/main_dev.dart` (or `main_prod.dart`); entrypoints pick Firebase options in Dart. This repo does **not** mirror iOS/Android Xcode/Gradle flavors on desktop hosts.
+
+### VS Code / Cursor (Run and Debug)
+
+- Configurations live in **`.vscode/launch.json`**. Pick the row that matches your **device** and environment:
+  - **Finko Dev (mobile)** / **Finko Prod (mobile)** — iOS or Android; passes `--flavor` so the correct native Firebase config is used.
+  - **Finko Dev (Web)** / **Finko Prod (Web)** — Chrome; **no** `--flavor` (web tooling does not support flavors the same way as mobile).
+  - **Finko Dev (macOS)** etc. — desktop; **no** `--flavor`; `main_dev.dart` / `main_prod.dart` select `firebase_options_*` in Dart.
+- Do **not** set workspace-wide `dart.flutterRunAdditionalArgs` to `--flavor` — that breaks web (and is easy to forget when switching devices).
+- **Why not `default-flavor` in `pubspec.yaml`?** Flutter applies that hint to **macOS** as well; this app’s macOS Xcode project only has the default **Runner** scheme, so a pubspec `default-flavor: dev` makes `flutter run -d macos` fail with “You must specify a --flavor option…”. Prefer explicit `--flavor` via launch configs for **mobile only**.
+
+### Revision log
+
+- **2026-04-18:** Documented VS Code launch entries, desktop run commands, and why `default-flavor` is omitted (macOS / Flutter tool interaction).
