@@ -34,6 +34,9 @@ dev_dependencies:
   json_serializable: ^6.9.0
 
 flutter:
+  # Used when `flutter run` / IDE debug does not pass `--flavor` (iOS/Android).
+  # Web / Windows / Linux desktop runs ignore native flavors; use the Web / desktop launch configs.
+  default-flavor: dev
   uses-material-design: true
   generate: true
   assets:

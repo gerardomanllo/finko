@@ -2,48 +2,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Finko Dev (iOS)",
+      "name": "Finko Dev (mobile)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
       "flutterMode": "debug",
-      "toolArgs": [
-        "--flavor",
-        "dev"
-      ]
+      "toolArgs": ["--flavor", "dev"]
     },
     {
-      "name": "Finko Prod (iOS)",
+      "name": "Finko Prod (mobile)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
       "flutterMode": "release",
-      "toolArgs": [
-        "--flavor",
-        "prod"
-      ]
-    },
-    {
-      "name": "Finko Dev (Android)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main_dev.dart",
-      "flutterMode": "debug",
-      "toolArgs": [
-        "--flavor",
-        "dev"
-      ]
-    },
-    {
-      "name": "Finko Prod (Android)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main_prod.dart",
-      "flutterMode": "release",
-      "toolArgs": [
-        "--flavor",
-        "prod"
-      ]
+      "toolArgs": ["--flavor", "prod"]
     },
     {
       "name": "Finko Dev (Web)",
@@ -59,6 +31,54 @@
       "type": "dart",
       "program": "lib/main_prod.dart",
       "deviceId": "chrome",
+      "flutterMode": "release"
+    },
+    {
+      "name": "Finko Dev (macOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "deviceId": "macos",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "Finko Prod (macOS)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "deviceId": "macos",
+      "flutterMode": "release"
+    },
+    {
+      "name": "Finko Dev (Windows)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "deviceId": "windows",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "Finko Prod (Windows)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "deviceId": "windows",
+      "flutterMode": "release"
+    },
+    {
+      "name": "Finko Dev (Linux)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "deviceId": "linux",
+      "flutterMode": "debug"
+    },
+    {
+      "name": "Finko Prod (Linux)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "deviceId": "linux",
       "flutterMode": "release"
     }
   ]

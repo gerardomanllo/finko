@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Accounts:** editing from the account **summary** sheet only updates **name**, **icon**, and **color**; **account type** and **currency** are shown read-only and are not changed in Firestore (preserves `includeInNetCash` as stored).
+
 ### Added
 
 - **Settings (`/settings`):** three-way **color theme** toggle (icons) with Firestore `themePreference` + app-wide sync from profile; **Manage your plan** stub (disabled, “Coming soon”); **WhatsApp** / **Telegram** rows reusing onboarding OTP bottom sheet when not linked, connected-details sheet + confirm disconnect when linked (`UserSettingsWriter`, `ProfileThemeSyncListener`, `FinkoThemeModeToggle`).

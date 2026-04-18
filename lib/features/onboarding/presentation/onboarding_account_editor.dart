@@ -34,8 +34,9 @@ String accountTypeLabel(AppLocalizations l10n, OnboardingAccountType t) {
 
 /// Modal bottom sheet editor for add/edit account (name, type, currency, color, starting balance).
 ///
-/// When [metadataOnly] is true and [existing] is non-null, the starting balance field is hidden
-/// (post-onboarding account list: balances come from the ledger).
+/// When [metadataOnly] is true and [existing] is non-null, **type** and **currency** are read-only,
+/// the starting balance field is hidden, and only **name**, **icon**, and **color** are editable
+/// (balances and money semantics come from the ledger).
 Future<void> showOnboardingAccountEditor({
   required BuildContext context,
   required AppLocalizations l10n,
@@ -177,36 +178,44 @@ class _OnboardingAccountEditorSheetState
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<OnboardingAccountType>(
-              key: ValueKey<OnboardingAccountType>(_type),
-              initialValue: _type,
-              decoration: InputDecoration(
-                labelText: l10n.onboardingAccountTypeLabel,
+            if (widget.metadataOnly && existing != null) ...[
+              Text(
+                l10n.onboardingAccountTypeLabel,
+                style: Theme.of(context).textTheme.labelLarge,
               ),
-              items: OnboardingAccountType.values
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(accountTypeLabel(l10n, e)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (v) => setState(() => _type = v ?? _type),
-            ),
-            const SizedBox(height: 12),
-            if (widget.metadataOnly && existing != null)
-              DropdownButtonFormField<String>(
-                key: ValueKey<String>(_currency),
-                initialValue: _currency,
+              const SizedBox(height: 4),
+              Text(
+                accountTypeLabel(l10n, existing.type),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.onboardingCurrencyLabel,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                existing.currency,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ] else ...[
+              DropdownButtonFormField<OnboardingAccountType>(
+                key: ValueKey<OnboardingAccountType>(_type),
+                initialValue: _type,
                 decoration: InputDecoration(
-                  labelText: l10n.onboardingCurrencyLabel,
+                  labelText: l10n.onboardingAccountTypeLabel,
                 ),
-                items: kOnboardingCurrencies
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                items: OnboardingAccountType.values
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(accountTypeLabel(l10n, e)),
+                      ),
+                    )
                     .toList(),
-                onChanged: (v) => setState(() => _currency = v ?? _currency),
-              )
-            else
+                onChanged: (v) => setState(() => _type = v ?? _type),
+              ),
+              const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -239,6 +248,7 @@ class _OnboardingAccountEditorSheetState
                   ),
                 ],
               ),
+            ],
             const SizedBox(height: 16),
             Text(
               l10n.onboardingSectionColor,
@@ -277,14 +287,18 @@ class _OnboardingAccountEditorSheetState
                 final minor = widget.metadataOnly && existing != null
                     ? 0
                     : (parseMajorToMinor(_balanceController.text) ?? 0);
+                final lockedTypeCurrency =
+                    widget.metadataOnly && existing != null;
                 widget.onSave(
                   OnboardingAccountDraft(
                     id:
                         existing?.id ??
                         DateTime.now().microsecondsSinceEpoch.toString(),
                     name: name,
-                    type: _type,
-                    currency: _currency,
+                    type: lockedTypeCurrency ? existing.type : _type,
+                    currency: lockedTypeCurrency
+                        ? existing.currency
+                        : _currency,
                     colorArgb: _colorArgb,
                     startingBalanceMinor: minor,
                     iconKey: _iconKey,

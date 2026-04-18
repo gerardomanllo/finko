@@ -100,15 +100,14 @@ FinkoAccount _finkoAccountFromDraft(
   FinkoAccount previous,
   OnboardingAccountDraft d,
 ) {
-  final t = finkoAccountTypeFromOnboarding(d.type);
   return FinkoAccount(
     id: previous.id,
     name: d.name,
-    type: t,
-    currency: d.currency,
+    type: previous.type,
+    currency: previous.currency,
     balanceMinor: previous.balanceMinor,
     balanceMinorMain: previous.balanceMinorMain,
-    includeInNetCash: defaultIncludeInNetCashForFinkoType(t),
+    includeInNetCash: previous.includeInNetCash,
     sortOrder: previous.sortOrder,
     createdAt: previous.createdAt,
     updatedAt: previous.updatedAt,
