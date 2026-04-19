@@ -165,7 +165,7 @@ When a **transaction is created/updated**:
 - **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, and **`fxRateDateUsed`** on a transaction are **server-owned**; the app may read them for diagnostics. **`firestore.rules`** rejects client **create/update** that adds or changes these keys (Admin SDK / Functions bypass rules). Catch-up when aggregates never ran still works on **allowed** client edits (e.g. memo) that do not touch those keys.
 - Optional **`reload`** / **`aggregateReload`** toggles remain **ops / Functions-only** (not client-writable); use callables / materialization flows for normal product behavior.
 
-**Pull-to-refresh / materialization** (app): dashboard/recurring refresh runs **`materializeDueUpcoming`** and **`reconcileDeferredLedgerForUser`** (always); lifecycle also runs deferred reconcile **once per profile calendar day** (SharedPreferences flag). These complement aggregates but do not replace the transaction trigger above.
+**Pull-to-refresh / materialization** (app): any screen with **`RefreshIndicator`** uses **`ledgerAwareAppRefreshProvider.runPullToRefresh`** ([`ledger_aware_app_refresh.dart`](../lib/core/refresh/ledger_aware_app_refresh.dart)): **~20s** local throttle (SharedPreferences, per uid); **`fetchUserProfileSync`** (`Source.server`) reads **`aggregateLastCompletedAt`** / **`ledgerSourcesLastChangedAt`**; **always** invokes **`materializeDueUpcoming`**; invokes **`reconcileDeferredLedgerForUser`** only when timestamps are missing or **`ledgerSourcesLastChangedAt`** is after **`aggregateLastCompletedAt`**; then **invalidates** one canonical set of aggregate-backed providers (accounts, profile, monthly totals, transactions streams, recurring, categories, spending windows, etc.). Lifecycle still runs deferred reconcile **at most once per profile calendar day** via **`DeferredLedgerReconcileService.runOncePerProfileDayIfSignedIn`**. These flows complement aggregates but do not replace the transaction trigger above.
 
 ---
 
@@ -173,6 +173,8 @@ When a **transaction is created/updated**:
 
 | Date | Change |
 |------|--------|
+| 2026-04-18 | **§11** App-wide **pull-to-refresh**: `ledgerAwareAppRefreshProvider` (throttle + server timestamp gate + conditional **`reconcileDeferredLedgerForUser`** + canonical **`ref.invalidate`** list). |
+| 2026-04-18 | Ledger rows require **`categoryId`** (see `data-model.md` §4). **`categoriesStreamProvider`** omits reserved **`ledger-transfer`** from `/categories` pickers. Repository adds **`createCategory`**, **`createAccount`**, **`deleteCategoryCascade`**, **`deleteAccountCascade`**, **`preview*Delete`**, **`ensureLedgerTransferCategory`**, and cross-currency **`createTransferLegPair`**. **`createAccount`:** opening-balance adjustment requires caller-supplied **`openingBalanceTransactionDateYyyyMmDd`** (UI: **`todayYyyyMmDdProvider`**) when starting balance ≠ 0. |
 | 2026-04-16 | **§12** [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md): formulas, functional mermaid pipelines, calculation→test traceability. |
 | 2026-04-16 | §1 / §11–12: **`reconcileDeferredLedgerForUser`** callable + app lifecycle (replaces scheduled aggregate job). |
 | 2026-04-16 | §1 / §12: future-dated ledger aggregates deferred + scheduled reconcile (superseded). |

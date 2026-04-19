@@ -597,6 +597,46 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetsTitle => 'Presupuestos';
 
   @override
+  String get categoryEditorDeleteCategory => 'Eliminar categoría…';
+
+  @override
+  String get accountEditorDeleteAccount => 'Eliminar cuenta…';
+
+  @override
+  String categoryDeleteCascadeTitle(String name) {
+    return '¿Eliminar “$name” y todos los datos relacionados?';
+  }
+
+  @override
+  String categoryDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  ) {
+    return 'Se eliminarán $transactions transacciones, $recurring reglas recurrentes, $upcoming próximos y la fila de presupuesto de esta categoría. No se puede deshacer.';
+  }
+
+  @override
+  String accountDeleteCascadeTitle(String name) {
+    return '¿Eliminar la cuenta “$name” y todos los datos relacionados?';
+  }
+
+  @override
+  String accountDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  ) {
+    return 'Se eliminarán $transactions transacciones (incluidos tramos de transferencia emparejados), $recurring recurrentes, $upcoming próximos y luego la cuenta. No se puede deshacer.';
+  }
+
+  @override
+  String get deleteCascadeConfirm => 'Eliminar todo';
+
+  @override
+  String get deleteCascadeSuccess => 'Eliminado.';
+
+  @override
   String get categoriesTitle => 'Categorías';
 
   @override
@@ -637,7 +677,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get dashboardNetCashInfoBody =>
-      'El efectivo neto es la suma de los saldos de las cuentas que cuentan como flujo de efectivo líquido.\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.';
+      'El efectivo neto es un total con signo para las cuentas que cuentan como flujo de efectivo líquido: se suman los saldos de cuentas de activo (por ejemplo, débito) y se restan los importes adeudados en cuentas de pasivo (por ejemplo, tarjetas de crédito).\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.';
 
   @override
   String get loansMortgageSectionTitle => 'Préstamos e hipoteca';
@@ -781,6 +821,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionEditorFieldAmount => 'Importe';
+
+  @override
+  String get transactionEditorFieldTransferAmountOut => 'Importe enviado';
+
+  @override
+  String get transactionEditorFieldTransferAmountIn => 'Importe recibido';
 
   @override
   String get transactionEditorFieldDirection => 'Dirección';
@@ -998,6 +1044,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoriesEmpty => 'Aún no hay categorías.';
+
+  @override
+  String get categoriesAddCategory => 'Añadir categoría';
+
+  @override
+  String get accountsAddAccount => 'Añadir cuenta';
 
   @override
   String get accountsListSubtitle => 'Toca una cuenta cuando existan detalles.';

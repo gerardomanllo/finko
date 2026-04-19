@@ -8,6 +8,7 @@ export const USER_TODAY_YMD = "2026-04-15";
 export const ACC = {
   checking: "acc_checking",
   savings: "acc_savings",
+  creditCard: "acc_credit",
 } as const;
 
 /** Category ids */
@@ -31,12 +32,21 @@ export function emptyMonthBody(yearMonth: string): Record<string, unknown> {
 /** Starting balances: 1,000,000 minor units each (same currency as main). */
 export function initialAccounts(): Record<
   string,
-  { balanceMinor: number; balanceMinorMain: number }
+  {
+    balanceMinor: number;
+    balanceMinorMain: number;
+    balancePolarity?: "asset" | "liability";
+  }
 > {
   const bal = 1_000_000;
   return {
     [ACC.checking]: { balanceMinor: bal, balanceMinorMain: bal },
     [ACC.savings]: { balanceMinor: bal, balanceMinorMain: bal },
+    [ACC.creditCard]: {
+      balanceMinor: 0,
+      balanceMinorMain: 0,
+      balancePolarity: "liability",
+    },
   };
 }
 

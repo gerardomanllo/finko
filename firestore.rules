@@ -26,10 +26,33 @@ service cloud.firestore {
       return !forbiddenClientTransactionKeys().hasAny(request.resource.data.keys());
     }
 
+    // Allowlist: only these fields may appear in the update diff. Avoids false
+    // positives where `affectedKeys` treats server-owned values as client-changed.
+    function clientLedgerTransactionMutableKeys() {
+      return [
+        'transactionDate',
+        'amountMinor',
+        'direction',
+        'currency',
+        'accountId',
+        'categoryId',
+        'type',
+        'memo',
+        'transferGroupId',
+        'linkedTransactionId',
+        'sourceUpcomingId',
+        'updatedAt'
+      ];
+    }
+
     function clientTransactionUpdateAllowed() {
-      return !forbiddenClientTransactionKeys().hasAny(
-        request.resource.data.diff(resource.data).affectedKeys()
-      );
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(clientLedgerTransactionMutableKeys().toSet());
+    }
+
+    function ledgerTransactionCategoryIdOk() {
+      return request.resource.data.categoryId is string
+        && request.resource.data.categoryId.size() > 0;
     }
 
     // Global FX cache — written only by Cloud Functions (Admin SDK).
@@ -45,12 +68,16 @@ service cloud.firestore {
       allow create: if signedIn(userId)
         && !request.resource.data.keys().hasAny([
           'onboardingCompleted',
-          'integrations'
+          'integrations',
+          'aggregateLastCompletedAt',
+          'ledgerSourcesLastChangedAt'
         ]);
       allow update: if signedIn(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'onboardingCompleted',
-          'integrations'
+          'integrations',
+          'aggregateLastCompletedAt',
+          'ledgerSourcesLastChangedAt'
         ]);
       allow delete: if false;
 
@@ -73,8 +100,12 @@ service cloud.firestore {
 
       match /transactions/{txId} {
         allow read: if signedIn(userId);
-        allow create: if signedIn(userId) && clientTransactionCreateAllowed();
-        allow update: if signedIn(userId) && clientTransactionUpdateAllowed();
+        allow create: if signedIn(userId)
+          && clientTransactionCreateAllowed()
+          && ledgerTransactionCategoryIdOk();
+        allow update: if signedIn(userId)
+          && clientTransactionUpdateAllowed()
+          && ledgerTransactionCategoryIdOk();
         allow delete: if signedIn(userId);
       }
 

@@ -238,6 +238,38 @@
   "spendingTitle": "Spending",
   "transactionsTitle": "Transactions",
   "budgetsTitle": "Budgets",
+  "categoryEditorDeleteCategory": "Delete category…",
+  "accountEditorDeleteAccount": "Delete account…",
+  "categoryDeleteCascadeTitle": "Delete “{name}” and all related data?",
+  "@categoryDeleteCascadeTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "categoryDeleteCascadeBody": "This removes {transactions} transactions, {recurring} recurring rules, {upcoming} upcoming items, and this category’s budget row. This cannot be undone.",
+  "@categoryDeleteCascadeBody": {
+    "placeholders": {
+      "transactions": { "type": "int" },
+      "recurring": { "type": "int" },
+      "upcoming": { "type": "int" }
+    }
+  },
+  "accountDeleteCascadeTitle": "Delete account “{name}” and all related data?",
+  "@accountDeleteCascadeTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "accountDeleteCascadeBody": "This removes {transactions} transactions (including paired transfer legs), {recurring} recurring rows, {upcoming} upcoming items, then the account. This cannot be undone.",
+  "@accountDeleteCascadeBody": {
+    "placeholders": {
+      "transactions": { "type": "int" },
+      "recurring": { "type": "int" },
+      "upcoming": { "type": "int" }
+    }
+  },
+  "deleteCascadeConfirm": "Delete everything",
+  "deleteCascadeSuccess": "Deleted.",
   "categoriesTitle": "Categories",
   "accountsTitle": "Accounts",
   "metricNetWorth": "Net Worth",
@@ -251,7 +283,7 @@
   "netCashLabel": "Net cash",
   "dashboardNetCashInfoTooltip": "How net cash is calculated",
   "dashboardNetCashInfoTitle": "Net cash",
-  "dashboardNetCashInfoBody": "Net cash is the sum of balances for accounts that count toward liquid cash flow.\n\nAn account is included when “Include in net cash” is turned on for that account. If that was never set, checking and credit card accounts are included by default; savings, investments, loans, and mortgages are not.\n\nFor each included account, Finko uses the balance in your main currency when available; otherwise it uses the balance in that account’s currency.",
+  "dashboardNetCashInfoBody": "Net cash is a signed total for accounts that count toward liquid cash flow: balances on asset accounts (such as checking) are added, and amounts owed on liability accounts (such as credit cards) are subtracted.\n\nAn account is included when “Include in net cash” is turned on for that account. If that was never set, checking and credit card accounts are included by default; savings, investments, loans, and mortgages are not.\n\nFor each included account, Finko uses the balance in your main currency when available; otherwise it uses the balance in that account’s currency.",
   "loansMortgageSectionTitle": "Loans & mortgage",
   "dashboardAccountsHeading": "Accounts",
   "dashboardUpcomingHeading": "Upcoming",
@@ -317,6 +349,8 @@
   "transactionEditorSheetEditTitle": "Edit transaction",
   "transactionEditorFieldDate": "Date",
   "transactionEditorFieldAmount": "Amount",
+  "transactionEditorFieldTransferAmountOut": "Amount sent",
+  "transactionEditorFieldTransferAmountIn": "Amount received",
   "transactionEditorFieldDirection": "Direction",
   "transactionEditorDirectionIn": "Income",
   "transactionEditorDirectionOut": "Expense",
@@ -424,5 +458,7 @@
   "recurringComingLater": "Coming later",
   "actionRetry": "Retry",
   "categoriesEmpty": "No categories yet.",
+  "categoriesAddCategory": "Add category",
+  "accountsAddAccount": "Add account",
   "accountsListSubtitle": "Tap an account when detail routes exist."
 }

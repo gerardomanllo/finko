@@ -170,8 +170,8 @@ flowchart TB
 |-----------|---------------------|------------------------|------|
 | MTD expense card | `expenseMinorMainThroughDate` | `monthlyTotals.days.*.expenseMinorMain`, `expenseMinorMain` | [`test/core/monthly_totals_as_of_date_test.dart`](../test/core/monthly_totals_as_of_date_test.dart) |
 | Category ring scaling | `byCategoryMinorMainThroughDate` | `expenseMinorMain`, `byCategoryMinorMain`, `days` | [`test/core/monthly_totals_as_of_date_test.dart`](../test/core/monthly_totals_as_of_date_test.dart) |
-| Net worth headline when sparkline empty | Sum `balanceMinorMain ?? balanceMinor` | `accounts` | *Widget/integration optional; logic is trivial sum* |
-| Net cash line | Sum balances where `includeInNetCash` | `accounts` | *Same* |
+| Net worth headline when sparkline empty | **Signed** sum: add asset accounts, subtract liability (`creditCard`, `loan`, `mortgage`) using `balanceMinorMain ?? balanceMinor` | `accounts` | [`finko_account_kind.dart`](../lib/core/data/models/finko_account_kind.dart) |
+| Net cash line | Same **signing** for accounts where `includeInNetCash` | `accounts` | *Same* |
 | Sparkline 30 points | `netWorthSparklineSeriesProvider` | `monthlyTotals.days.*.netWorthEodMinorMain` | *Add `test/core/net_worth_sparkline_test.dart` if you want strict coverage* |
 | Recent row amounts | Format `LedgerTransaction` | `transactions` | Canonical **per-tx** amounts, not `monthlyTotals` |
 
@@ -183,9 +183,12 @@ For one **`AggregateOp`** with `tx`, `sign` ∈ `{+1, −1}`, **`amountMain`** i
 
 **Account** (`applyAccountDelta`):
 
+- Read `accounts/{accountId}.type`. Let **`m = −1`** if type is **`creditCard`**, **`loan`**, or **`mortgage`** (liability); else **`m = 1`** (asset).
 - `dirSign = 1` if `direction === "in"`, else `−1`.
-- `balanceMinor += sign * dirSign * amountMinor`
-- `balanceMinorMain += sign * dirSign * amountMain`
+- `balanceMinor += sign * m * dirSign * amountMinor`
+- `balanceMinorMain += sign * m * dirSign * amountMain`
+
+Liabilities: **positive balance = amount owed** (`out` increases owed, `in` decreases). Assets: unchanged from classic bookkeeping.
 
 **Month doc** (skip entirely if `type === "transferLeg"`):
 
@@ -201,6 +204,15 @@ Full code: [`ledgerAggregateMath.ts`](../functions/src/ledgerAggregateMath.ts). 
 ## 5. Deferred and reconcile
 
 If **`transactionDate`** is **after** profile **today**, aggregates above are **not** applied; **`aggregateDeferred`** may be set. Callable **`reconcileDeferredLedgerForUser`** re-runs **`runLedgerAggregate(..., +1, ...)`** when the date becomes effective — see [`reconcileDeferredLedgerCore.ts`](../functions/src/reconcileDeferredLedgerCore.ts).
+
+### 5.1 User profile sync timestamps
+
+On **`users/{uid}`**, Cloud Functions maintain (server timestamps, client read-only via rules):
+
+- **`ledgerSourcesLastChangedAt`** — bumped when **ledger sources** change in a product-relevant way: non–audit-only **`transactions`** writes, **`categories/{id}`** writes, **`accounts/{id}`** writes that are **not** balance-only denormalized updates (see [`ledgerCategoryAccountTriggers.ts`](../functions/src/ledgerCategoryAccountTriggers.ts) and the transaction trigger in [`index.ts`](../functions/src/index.ts)).
+- **`aggregateLastCompletedAt`** — bumped after a successful aggregate pass that applied money to **`accounts`** / **`monthlyTotals`** (see [`aggregateLedger.ts`](../functions/src/aggregateLedger.ts), helpers in [`userLedgerSync.ts`](../functions/src/userLedgerSync.ts)).
+
+The Flutter app uses these fields (plus a short local throttle) to **gate** **`reconcileDeferredLedgerForUser`** on pull-to-refresh while **always** running **`materializeDueUpcoming`** — see [`ledger_aware_app_refresh.dart`](../lib/core/refresh/ledger_aware_app_refresh.dart) and **`data-contract.md` §11**. **`commitOnboarding`** also merges **`ledgerSourcesLastChangedAt`** after the batch commit so onboarding stays consistent with triggers.
 
 ---
 
@@ -218,6 +230,8 @@ If **`transactionDate`** is **after** profile **today**, aggregates above are **
 
 | Date | Change |
 |------|--------|
+| 2026-04-18 | **§5.1** `users/{uid}` **`ledgerSourcesLastChangedAt`** / **`aggregateLastCompletedAt`** (CF maintenance + app pull-to-refresh gating). |
+| 2026-04-18 | §3.2 / §4: **Liability-aware** `applyAccountDelta` (`m` factor from account `type`); Flutter net worth / net cash **signed** sums; migration note in [`references/liability-balance-migration.md`](references/liability-balance-migration.md). |
 | 2026-04-16 | Budget teaser: **BT** uses **`totalExpenseBudgetMinor`** on **`userProfileStreamProvider.budgets`**; **PP** stream + **RG** edges; **`commitOnboarding`** writes budgets on profile only. |
 | 2026-04-16 | Functional flowcharts (CF + dashboard), traceability tables, Jest/Dart test mapping, propagation rules; Dart tests for MTD helpers. |
 | 2026-04-16 | Initial doc: CF math, gates, transfers, deferred reconcile, Flutter providers and MTD/sparkline client derivations. |

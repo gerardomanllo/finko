@@ -54,6 +54,8 @@ forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not 
 | `updatedAt` | `Timestamp` | UTC. |
 | `ledgerVersion` | `int` | Optional cache busting. |
 | `budgets` | `map<string, object>` | **Recurring monthly targets** (same every month): `categoryId` → `{ "targetMinorMain": int, "kind": "income"|"expense" }`. **Legacy:** flat `categoryId` → minor int coerces to `{ targetMinorMain, kind: expense }` in clients; **`commitOnboarding`** writes canonical rows. |
+| `ledgerSourcesLastChangedAt` | `Timestamp?` | **Server-only** (Cloud Functions / Admin): last time **ledger sources** changed in a way that can require aggregates—**transactions** (non–audit-only writes), **categories**, or **accounts** (excluding balance-only denormalized updates). Clients read for pull-to-refresh gating; **`firestore.rules`** block client **create/update** on this key. |
+| `aggregateLastCompletedAt` | `Timestamp?` | **Server-only**: last time incremental **aggregates** finished applying (`accounts` / `monthlyTotals`) for this user. Clients read for gating; rules block client writes. |
 
 ### 3.1 Integrations (messaging / OTP-linked channels)
 
@@ -88,7 +90,7 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | `direction` | `string` | ✓ | `in` \| `out` (map to income/expense UX as needed). |
 | `currency` | `string` | ✓ | ISO 4217; may differ from `mainCurrency`. |
 | `accountId` | `string` | ✓ | |
-| `categoryId` | `string?` | | |
+| `categoryId` | `string` | ✓ | Non-empty. **Transfer legs** use reserved id **`ledger-transfer`** (see §6). **Adjustments** (e.g. onboarding opening balance) may use **`fixed-expenses`**. |
 | `type` | `string` | ✓ | `standard`, `transferLeg`, `adjustment`, … |
 | `memo` | `string?` | | |
 | `transferGroupId` | `string?` | | Same UUID on **both** legs of a transfer. |
@@ -108,7 +110,7 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 
 **Indexes:** Composite indexes listed in **`firestore.indexes.json`** when query shapes are fixed (TBD).
 
-**Writes:** Client writes legs for transfers in one batch when possible. **Cloud Functions** maintain `accounts`, `monthlyTotals` (in **main currency**), etc., and populate **`amountMinorMain`** / **`fxRateDateUsed`** for support and reconciliation.
+**Writes:** Client writes legs for transfers in one batch when possible. **Cross-currency transfers:** each leg carries its own **`currency`** and **`amountMinor`** (no inferred FX between legs). **Cloud Functions** maintain `accounts`, `monthlyTotals` (in **main currency**), etc., and populate **`amountMinorMain`** / **`fxRateDateUsed`** for support and reconciliation.
 
 ### 4.1 Idempotency (aggregate `onWrite` triggers)
 
@@ -149,10 +151,12 @@ Implementation lives in **`functions/src/index.ts`** + **`functions/src/aggregat
 
 ### 4.2 Net worth vs net cash (definitions)
 
+**Asset vs liability:** Account types **`checking`**, **`savings`**, **`investment`** are **assets** (positive balance = money held). Types **`creditCard`**, **`loan`**, **`mortgage`** are **liabilities** (positive balance = **amount owed**). Ledger aggregation applies direction to balances accordingly (see [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md) §4).
+
 | Metric | Definition |
 |--------|------------|
-| **Net worth** | Sum of **all** accounts’ balances (converted to **main currency** for display), using each account’s `balanceMinorMain` (or equivalent). No exclusion flag required unless product later adds “hidden” accounts. |
-| **Net cash** | Sum of balances only for accounts that count as **liquid** (e.g. checking, credit cards—per product list), identified by **`includeInNetCash: true`** on `accounts/{accountId}`. |
+| **Net worth** | **Signed** sum over all accounts in **main currency** (`balanceMinorMain` when set, else `balanceMinor` per account): **add** asset balances, **subtract** liability balances (owed reduces net worth). |
+| **Net cash** | Same **signing** as net worth, but only for accounts with **`includeInNetCash: true`** (liquid cash-flow accounts). |
 
 Charts and cards must label which metric they show. `monthlyTotals.days.*.netWorthEodMinorMain` follows **net worth** unless you split series later.
 
@@ -191,19 +195,21 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `name` | `string` | |
 | `type` | `string` | One of **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`**. |
 | `currency` | `string` | ISO 4217 per account. |
-| `balanceMinor` | `int` | In **account currency** (denormalized). |
-| `balanceMinorMain` | `int?` | Optional denormalized balance in **mainCurrency** for dashboard (maintained by Functions using rates). |
+| `balanceMinor` | `int` | In **account currency** (denormalized). **Assets:** positive = money in the account. **Liabilities** (`creditCard`, `loan`, `mortgage`): positive = amount owed. |
+| `balanceMinorMain` | `int?` | Optional denormalized balance in **mainCurrency** for dashboard (maintained by Functions using rates). Same sign convention as `balanceMinor`. |
 | `includeInNetCash` | `bool` | **Net cash** (liquid) rollup—e.g. checking, credit cards when true. |
 | `sortOrder` | `int` | |
 | `createdAt` / `updatedAt` | `Timestamp` | UTC. |
 | `iconKey` | `string` | UI key into the fixed Material map (default **`account_balance`** if omitted in older rows). |
 | `colorArgb` | `int?` | Optional UI tint (ARGB); onboarding writes a palette value. |
 
-**Net worth** sums **all** accounts (§4.2). **Net cash** sums only accounts with **`includeInNetCash`** true.
+**Net worth** and **net cash** use the signed definitions in §4.2 (not a naive sum of raw `balanceMinor` across mixed asset/liability accounts).
 
 ---
 
 ## 6. `categories/{categoryId}`
+
+**Reserved ids:** **`fixed-expenses`** — system “fixed expenses” bucket from onboarding. **`ledger-transfer`** — internal category for **both** `transferLeg` rows; hidden from `/categories` list in the app but present in Firestore after **`commitOnboarding`** (or client **`ensureLedgerTransferCategory`** for older accounts).
 
 | Field | Type | Notes |
 |-------|------|--------|
@@ -315,7 +321,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 ## 11. Security rules (intent)
 
 - `users/{uid}/**`: `request.auth.uid == uid`.
-- **`users/{uid}` profile document:** **Create** must not include **`onboardingCompleted`** or **`integrations`** (there is no **`resource`** on create, so rules must not use **`request.resource.data.diff(resource.data)`** for that path). **Update** rejects any **addition, removal, or in-place change** to **`onboardingCompleted`** and **`integrations`** via **`request.resource.data.diff(resource.data).affectedKeys()`** (use **`affectedKeys`**, not **`changedKeys`**: the latter only lists keys present in **both** before and after with unequal values, so a client could **add** a missing server-only field and bypass a **`changedKeys`** check).
+- **`users/{uid}` profile document:** **Create** must not include **`onboardingCompleted`**, **`integrations`**, **`aggregateLastCompletedAt`**, or **`ledgerSourcesLastChangedAt`** (there is no **`resource`** on create, so rules must not use **`request.resource.data.diff(resource.data)`** for that path). **Update** rejects any **addition, removal, or in-place change** to **`onboardingCompleted`**, **`integrations`**, **`aggregateLastCompletedAt`**, and **`ledgerSourcesLastChangedAt`** via **`request.resource.data.diff(resource.data).affectedKeys()`** (use **`affectedKeys`**, not **`changedKeys`**: the latter only lists keys present in **both** before and after with unequal values, so a client could **add** a missing server-only field and bypass a **`changedKeys`** check).
 - **`onboardingCompleted`**, **`integrations.*.verifiedAt`**, and any **verified channel identifiers** — prefer **Callable / Admin-only writes** or field-level rules so clients **cannot** forge completion or verification.
 - **`forexRates`**: read for authenticated users (or public read if rates are non-sensitive); **write** only from **admin SDK** / scheduled Function.
 - **Aggregate docs** (`monthlyTotals`, `accounts.balance*`) — **client direct writes discouraged**; Functions as source of truth for denormalized fields.
@@ -350,6 +356,8 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-04-18 | §3: **`ledgerSourcesLastChangedAt`** + **`aggregateLastCompletedAt`** on `users/{uid}` (server timestamps for app-wide pull refresh + reconcile gating). §11: same keys denied on client **create/update** alongside **`onboardingCompleted`** / **`integrations`**. |
+| 2026-04-18 | §4: **`categoryId` required** on all transaction writes; **`ledger-transfer`** category (§6) for transfer legs; cross-currency transfers = explicit per-leg amounts/currencies. **Cascade deletes** (categories/accounts) remove dependent `transactions`, `recurring`, `upcomingTransactions`, profile `budgets` keys, then the entity doc. **Rules:** client transaction updates allowlisted keys only (avoids spurious `permission-denied`). §4.2 / §5: **asset vs liability** types; **`balanceMinor`** positive = owed for liabilities; **net worth** / **net cash** = signed sums; Functions `applyAccountDelta` + opening-balance **direction** rules; one-time migration ([`references/liability-balance-migration.md`](references/liability-balance-migration.md)). |
 | 2026-04-14 | Initial data model: paths, core fields, `monthlyTotals.days` embedding, real-time-only stance. |
 | 2026-04-14 | Resolved: direction + positive amounts, two-leg transfers, `transactionDate`/`loadedAt`, multi-currency + `forexRates` + Frankfurter, budgets in `monthlyTotals`, `upcomingTransactions` + materialization flow. |
 | 2026-04-14 | §10: if `forexRates` missing for `transactionDate`, Functions walk backward to **previous stored day** (previous business day behavior); max lookback + logging. |

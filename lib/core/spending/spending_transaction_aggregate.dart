@@ -49,7 +49,7 @@ SpendingTxRollup aggregateSpendingTransactions(
     final minor = expenseMinorComparable(t, mainCurrency);
     if (minor == null) continue;
     total += minor;
-    final cid = t.categoryId ?? '';
+    final cid = t.categoryId;
     byCat[cid] = (byCat[cid] ?? 0) + minor;
     out.add(t);
   }

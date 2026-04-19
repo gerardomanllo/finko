@@ -7,17 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **UI:** modal bottom sheets (transaction editor, filters, onboarding editors, messaging, month summaries) use **nearly full height** via a shared helper (keyboard-aware, respects the **status-bar inset**, and leaves a **small peek** above the sheet so underlying UI stays visible) instead of short intrinsic or ~82% caps. **Add/edit account** and **add/edit category** sheets use **`useSafeArea` + drag handle** on `showModalBottomSheet` (same as the transaction editor) so they are not edge-to-edge under the status bar. **Category / account month-detail** summary sheets do the same (modal `useSafeArea`, no duplicate inner `SafeArea`).
+
 ### Fixed
+
+- **Ledger / accounts:** **liability** account types (`creditCard`, `loan`, `mortgage`) now use **positive balance = amount owed**; Cloud Functions **`applyAccountDelta`** applies transaction direction using account **`type`**. **Opening-balance** adjustments use inverted **`in`/`out`** for liabilities vs assets. **Net worth** and **net cash** on the dashboard use **signed** sums (subtract liabilities). Existing Firestore data: run the one-time migration in [`docs/references/liability-balance-migration.md`](docs/references/liability-balance-migration.md) per environment after deploy.
+
+- **Categories / Accounts:** after a successful **cascade delete** from the summary **Edit** sheet, the app **closes** the editor and summary bottom sheets so you return to the list.
+
+- **Transactions:** create/edit sheet shows the **account currency** as a **suffix** on amount fields (updates when the account or transfer from/to selection changes).
+
+- **Firestore rules:** transaction **updates** use an **allowlisted `affectedKeys` check** so client edits no longer hit **`permission-denied`** when server aggregate fields are present on the document.
 
 - **Tooling:** `.vscode/launch.json` lists **mobile** (shared iOS/Android), **Web**, and **desktop** debug targets with the right `--flavor` only where Flutter supports it; `.vscode/extensions.json` recommends the Dart extension; `docs/references/README.md` explains Cursor/VS Code usage and why `pubspec` omits `default-flavor` (it breaks `flutter run -d macos` without matching Xcode schemes).
 
 - **Accounts:** editing from the account **summary** sheet only updates **name**, **icon**, and **color**; **account type** and **currency** are shown read-only and are not changed in Firestore (preserves `includeInNetCash` as stored).
 
+- **Accounts:** **Add account** opening-balance adjustment uses **profile calendar “today”** (`todayYyyyMmDdProvider`) passed into `createAccount`, not UTC date, so the ledger row lands on the correct calendar day for the user.
+
 ### Added
+
+- **Ledger sync / pull-to-refresh:** Firestore **`users/{uid}.ledgerSourcesLastChangedAt`** and **`aggregateLastCompletedAt`** (server-only; rules-enforced) updated by Cloud Functions; app-wide **`ledgerAwareAppRefreshProvider`** throttles refresh, reads flags from the server, always runs **`materializeDueUpcoming`**, conditionally runs **`reconcileDeferredLedgerForUser`**, then invalidates one canonical set of aggregate-backed Riverpod providers (dashboard, recurring, transactions, spending windows, etc.).
+
+- **Ledger:** every transaction row requires **`categoryId`**; transfer legs use reserved **`ledger-transfer`** category (created at onboarding / ensured on first transfer). **Cross-currency transfers** collect **two amounts** (per leg). **Cascade delete** for categories and accounts (with confirmation counts) removes related transactions, recurring, upcoming, and budget keys.
 
 - **Settings (`/settings`):** three-way **color theme** toggle (icons) with Firestore `themePreference` + app-wide sync from profile; **Manage your plan** stub (disabled, “Coming soon”); **WhatsApp** / **Telegram** rows reusing onboarding OTP bottom sheet when not linked, connected-details sheet + confirm disconnect when linked (`UserSettingsWriter`, `ProfileThemeSyncListener`, `FinkoThemeModeToggle`).
 
-- **Categories (`/categories`) & Accounts (`/accounts`):** paper lists with **icons**; categories grouped income/expense; accounts grouped by type (dashboard order). Row tap opens a **summary bottom sheet** (this month + recent transactions; accounts show **net** in main currency from ledger). **Edit** opens the same **slide-up editors** as onboarding (categories; accounts use **metadata-only** mode—no starting balance). Firestore: `updateCategory`, `updateAccountMetadata`; `FinkoAccount` includes **`iconKey`** / **`colorArgb`**.
+- **Categories (`/categories`) & Accounts (`/accounts`):** paper lists with **icons**; categories grouped income/expense; accounts grouped by type (dashboard order). Row tap opens a **summary bottom sheet** (this month + recent transactions; accounts show **net** in main currency from ledger). **Edit** opens the same **slide-up editors** as onboarding (categories; accounts use **metadata-only** mode—no starting balance). Firestore: `updateCategory`, `updateAccountMetadata`; `FinkoAccount` includes **`iconKey`** / **`colorArgb`**. **Add** uses a **bottom-center floating extended FAB** (tonal) on both routes.
 
 - **Dashboard — net cash:** **info** icon on the net cash row in the accounts accordion opens a localized dialog explaining how net cash is calculated (`FinkoCashFlowAccountsAccordion`).
 

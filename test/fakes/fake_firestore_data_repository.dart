@@ -7,6 +7,9 @@ import 'package:finko/core/data/repositories/firestore_data_repository.dart';
 class FakeFirestoreDataRepository implements FirestoreDataRepository {
   FakeFirestoreDataRepository({
     Stream<UserProfile?>? profile,
+
+    /// Returned by [fetchUserProfileSync] (server-style gate in tests).
+    UserProfile? userProfileForFetchSync,
     Stream<List<FinkoAccount>>? accounts,
     Stream<MonthlyTotals?>? monthly,
     Stream<List<LedgerTransaction>>? recent,
@@ -16,6 +19,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     Stream<List<RecurringRule>>? recurringRules,
     Stream<ForexRatesDoc?>? forex,
   }) : _profile = profile ?? Stream<UserProfile?>.value(null),
+       _userProfileForFetchSync = userProfileForFetchSync,
        _accounts = accounts ?? Stream<List<FinkoAccount>>.value(const []),
        _monthly = monthly ?? Stream<MonthlyTotals?>.value(null),
        _recent = recent ?? Stream<List<LedgerTransaction>>.value(const []),
@@ -29,6 +33,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
        _forex = forex ?? Stream<ForexRatesDoc?>.value(null);
 
   final Stream<UserProfile?> _profile;
+  final UserProfile? _userProfileForFetchSync;
   final Stream<List<FinkoAccount>> _accounts;
   final Stream<MonthlyTotals?> _monthly;
   final Stream<List<LedgerTransaction>> _recent;
@@ -40,6 +45,10 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
 
   @override
   Stream<UserProfile?> watchUserProfile(String uid) => _profile;
+
+  @override
+  Future<UserProfile?> fetchUserProfileSync(String uid) async =>
+      _userProfileForFetchSync;
 
   @override
   Stream<List<FinkoAccount>> watchAccounts(String uid) => _accounts;
@@ -91,12 +100,54 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
   Future<({String fromLegId, String toLegId})> createTransferLegPair(
     String uid, {
     required String transactionDate,
-    required int amountMinor,
+    required int fromAmountMinor,
     required String fromAccountId,
+    required String fromCurrency,
+    required int toAmountMinor,
     required String toAccountId,
-    required String currency,
+    required String toCurrency,
     String? memo,
   }) async => (fromLegId: 'fake_from', toLegId: 'fake_to');
+
+  @override
+  Future<void> ensureLedgerTransferCategory(String uid) async {}
+
+  @override
+  Future<String> createCategory(
+    String uid, {
+    required String name,
+    required CategoryKind kind,
+    required String iconKey,
+    int? colorArgb,
+  }) async => 'fake_cat';
+
+  @override
+  Future<String> createAccount(
+    String uid, {
+    required String name,
+    required FinkoAccountType type,
+    required String currency,
+    required int colorArgb,
+    required String iconKey,
+    int startingBalanceMinor = 0,
+    String? openingBalanceTransactionDateYyyyMmDd,
+  }) async => 'fake_acc';
+
+  @override
+  Future<void> deleteCategoryCascade(String uid, String categoryId) async {}
+
+  @override
+  Future<void> deleteAccountCascade(String uid, String accountId) async {}
+
+  @override
+  Future<({int transactions, int recurring, int upcoming})>
+  previewCategoryDelete(String uid, String categoryId) async =>
+      (transactions: 0, recurring: 0, upcoming: 0);
+
+  @override
+  Future<({int transactions, int recurring, int upcoming})>
+  previewAccountDelete(String uid, String accountId) async =>
+      (transactions: 0, recurring: 0, upcoming: 0);
 
   @override
   Future<void> updateTransferLegPair(

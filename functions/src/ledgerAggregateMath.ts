@@ -128,6 +128,9 @@ export function applyMonthDelta(
   base.days = days;
 }
 
+/** Asset: positive balance = money held. Liability: positive balance = amount owed. */
+export type BalancePolarity = "asset" | "liability";
+
 export type AccountBalanceState = {
   balanceMinor: number;
   balanceMinorMain: number;
@@ -135,16 +138,19 @@ export type AccountBalanceState = {
 
 /**
  * Applies one aggregate op to account balances (same rules as runAggregateOpsTransaction).
+ * [balancePolarity] inverts the direction effect for liabilities so `out` increases owed.
  */
 export function applyAccountDelta(
   account: AccountBalanceState,
   tx: TxPayload,
   sign: 1 | -1,
-  amountMain: number
+  amountMain: number,
+  balancePolarity: BalancePolarity = "asset"
 ): void {
   const dirSign = tx.direction === "in" ? 1 : -1;
-  account.balanceMinor += sign * dirSign * tx.amountMinor;
-  account.balanceMinorMain += sign * dirSign * amountMain;
+  const m = balancePolarity === "liability" ? -1 : 1;
+  account.balanceMinor += sign * m * dirSign * tx.amountMinor;
+  account.balanceMinorMain += sign * m * dirSign * amountMain;
 }
 
 /**

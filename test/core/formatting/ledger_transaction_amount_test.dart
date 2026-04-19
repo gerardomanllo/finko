@@ -9,7 +9,7 @@ LedgerTransaction _tx({
   required int amountMinor,
   required String currency,
   int? amountMinorMain,
-  String? categoryId,
+  String categoryId = 'c_test',
   String accountId = 'acc1',
 }) {
   final ph = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);

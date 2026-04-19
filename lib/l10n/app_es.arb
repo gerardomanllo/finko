@@ -238,6 +238,38 @@
   "spendingTitle": "Gastos",
   "transactionsTitle": "Transacciones",
   "budgetsTitle": "Presupuestos",
+  "categoryEditorDeleteCategory": "Eliminar categoría…",
+  "accountEditorDeleteAccount": "Eliminar cuenta…",
+  "categoryDeleteCascadeTitle": "¿Eliminar “{name}” y todos los datos relacionados?",
+  "@categoryDeleteCascadeTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "categoryDeleteCascadeBody": "Se eliminarán {transactions} transacciones, {recurring} reglas recurrentes, {upcoming} próximos y la fila de presupuesto de esta categoría. No se puede deshacer.",
+  "@categoryDeleteCascadeBody": {
+    "placeholders": {
+      "transactions": { "type": "int" },
+      "recurring": { "type": "int" },
+      "upcoming": { "type": "int" }
+    }
+  },
+  "accountDeleteCascadeTitle": "¿Eliminar la cuenta “{name}” y todos los datos relacionados?",
+  "@accountDeleteCascadeTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "accountDeleteCascadeBody": "Se eliminarán {transactions} transacciones (incluidos tramos de transferencia emparejados), {recurring} recurrentes, {upcoming} próximos y luego la cuenta. No se puede deshacer.",
+  "@accountDeleteCascadeBody": {
+    "placeholders": {
+      "transactions": { "type": "int" },
+      "recurring": { "type": "int" },
+      "upcoming": { "type": "int" }
+    }
+  },
+  "deleteCascadeConfirm": "Eliminar todo",
+  "deleteCascadeSuccess": "Eliminado.",
   "categoriesTitle": "Categorías",
   "accountsTitle": "Cuentas",
   "metricNetWorth": "Patrimonio neto",
@@ -251,7 +283,7 @@
   "netCashLabel": "Efectivo neto",
   "dashboardNetCashInfoTooltip": "Cómo se calcula el efectivo neto",
   "dashboardNetCashInfoTitle": "Efectivo neto",
-  "dashboardNetCashInfoBody": "El efectivo neto es la suma de los saldos de las cuentas que cuentan como flujo de efectivo líquido.\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.",
+  "dashboardNetCashInfoBody": "El efectivo neto es un total con signo para las cuentas que cuentan como flujo de efectivo líquido: se suman los saldos de cuentas de activo (por ejemplo, débito) y se restan los importes adeudados en cuentas de pasivo (por ejemplo, tarjetas de crédito).\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.",
   "loansMortgageSectionTitle": "Préstamos e hipoteca",
   "dashboardAccountsHeading": "Cuentas",
   "dashboardUpcomingHeading": "Próximos",
@@ -317,6 +349,8 @@
   "transactionEditorSheetEditTitle": "Editar transacción",
   "transactionEditorFieldDate": "Fecha",
   "transactionEditorFieldAmount": "Importe",
+  "transactionEditorFieldTransferAmountOut": "Importe enviado",
+  "transactionEditorFieldTransferAmountIn": "Importe recibido",
   "transactionEditorFieldDirection": "Dirección",
   "transactionEditorDirectionIn": "Ingreso",
   "transactionEditorDirectionOut": "Gasto",
@@ -424,5 +458,7 @@
   "recurringComingLater": "Más adelante",
   "actionRetry": "Reintentar",
   "categoriesEmpty": "Aún no hay categorías.",
+  "categoriesAddCategory": "Añadir categoría",
+  "accountsAddAccount": "Añadir cuenta",
   "accountsListSubtitle": "Toca una cuenta cuando existan detalles."
 }

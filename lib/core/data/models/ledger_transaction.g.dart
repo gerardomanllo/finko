@@ -20,7 +20,7 @@ LedgerTransaction _$LedgerTransactionFromJson(
   ),
   currency: json['currency'] as String,
   accountId: json['accountId'] as String,
-  categoryId: json['categoryId'] as String?,
+  categoryId: _ledgerCategoryIdFromJson(json['categoryId']),
   type: $enumDecode(
     _$LedgerTransactionKindEnumMap,
     json['type'],
@@ -45,7 +45,7 @@ Map<String, dynamic> _$LedgerTransactionToJson(
   'direction': _$MoneyDirectionEnumMap[instance.direction]!,
   'currency': instance.currency,
   'accountId': instance.accountId,
-  'categoryId': ?instance.categoryId,
+  'categoryId': instance.categoryId,
   'type': _$LedgerTransactionKindEnumMap[instance.type]!,
   'memo': ?instance.memo,
   'transferGroupId': ?instance.transferGroupId,

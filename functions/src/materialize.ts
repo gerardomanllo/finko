@@ -5,6 +5,9 @@ import * as logger from "firebase-functions/logger";
 
 import { computeNextTransactionDate, resolveAsOfYmd } from "./scheduleNext";
 
+const LEDGER_TRANSFER_CATEGORY_ID = "ledger-transfer";
+const FALLBACK_CATEGORY_ID = "fixed-expenses";
+
 export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (request) => {
   const db = getFirestore();
   if (!request.auth?.uid) {
@@ -57,7 +60,10 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
         direction: u.direction,
         currency: u.currency,
         accountId: u.accountId,
-        categoryId: u.categoryId ?? null,
+        categoryId:
+          typeof u.categoryId === "string" && u.categoryId.trim().length > 0
+            ? u.categoryId.trim()
+            : FALLBACK_CATEGORY_ID,
         type: "standard",
         memo: u.memo ?? null,
         sourceUpcomingId: upcomingId,
@@ -78,7 +84,7 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
         direction: "out",
         currency: u.currency,
         accountId: fromId,
-        categoryId: null,
+        categoryId: LEDGER_TRANSFER_CATEGORY_ID,
         type: "transferLeg",
         memo: u.memo ?? null,
         transferGroupId: gid,
@@ -94,7 +100,7 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
         direction: "in",
         currency: u.currency,
         accountId: toId,
-        categoryId: null,
+        categoryId: LEDGER_TRANSFER_CATEGORY_ID,
         type: "transferLeg",
         memo: u.memo ?? null,
         transferGroupId: gid,

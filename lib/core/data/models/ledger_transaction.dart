@@ -1,10 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../../spending/fixed_variable_expense.dart'
+    show kFixedExpensesCategoryId;
 import '../json/json_converters.dart';
+import '../ledger_category_ids.dart';
 import 'finko_enums.dart';
 
 part 'ledger_transaction.g.dart';
+
+String _ledgerCategoryIdFromJson(Object? json) {
+  if (json is String && json.trim().isNotEmpty) return json.trim();
+  return kLedgerTransferCategoryId;
+}
 
 /// `users/{uid}/transactions/{txId}` — canonical ledger row.
 ///
@@ -19,7 +27,7 @@ class LedgerTransaction {
     required this.direction,
     required this.currency,
     required this.accountId,
-    this.categoryId,
+    required this.categoryId,
     required this.type,
     this.memo,
     this.transferGroupId,
@@ -48,7 +56,10 @@ class LedgerTransaction {
 
   final String currency;
   final String accountId;
-  final String? categoryId;
+
+  /// Always set on Firestore rows; [kLedgerTransferCategoryId] for transfer legs.
+  @JsonKey(fromJson: _ledgerCategoryIdFromJson)
+  final String categoryId;
 
   @JsonKey(name: 'type', unknownEnumValue: LedgerTransactionKind.standard)
   final LedgerTransactionKind type;
@@ -75,7 +86,19 @@ class LedgerTransaction {
     String id,
     Map<String, dynamic> data,
   ) {
-    return LedgerTransaction.fromJson({...data, 'id': id});
+    final map = Map<String, dynamic>.from(data);
+    map['id'] = id;
+    final kind =
+        LedgerTransactionKind.tryParse(map['type'] as String?) ??
+        LedgerTransactionKind.standard;
+    final rawCat = map['categoryId'];
+    final hasCat = rawCat is String && rawCat.trim().isNotEmpty;
+    if (!hasCat) {
+      map['categoryId'] = kind == LedgerTransactionKind.transferLeg
+          ? kLedgerTransferCategoryId
+          : kFixedExpensesCategoryId;
+    }
+    return LedgerTransaction.fromJson(map);
   }
 
   Map<String, dynamic> toFirestore({bool useServerTimestamps = false}) {

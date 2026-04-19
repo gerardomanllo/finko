@@ -592,6 +592,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsTitle => 'Budgets';
 
   @override
+  String get categoryEditorDeleteCategory => 'Delete category…';
+
+  @override
+  String get accountEditorDeleteAccount => 'Delete account…';
+
+  @override
+  String categoryDeleteCascadeTitle(String name) {
+    return 'Delete “$name” and all related data?';
+  }
+
+  @override
+  String categoryDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  ) {
+    return 'This removes $transactions transactions, $recurring recurring rules, $upcoming upcoming items, and this category’s budget row. This cannot be undone.';
+  }
+
+  @override
+  String accountDeleteCascadeTitle(String name) {
+    return 'Delete account “$name” and all related data?';
+  }
+
+  @override
+  String accountDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  ) {
+    return 'This removes $transactions transactions (including paired transfer legs), $recurring recurring rows, $upcoming upcoming items, then the account. This cannot be undone.';
+  }
+
+  @override
+  String get deleteCascadeConfirm => 'Delete everything';
+
+  @override
+  String get deleteCascadeSuccess => 'Deleted.';
+
+  @override
   String get categoriesTitle => 'Categories';
 
   @override
@@ -632,7 +672,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardNetCashInfoBody =>
-      'Net cash is the sum of balances for accounts that count toward liquid cash flow.\n\nAn account is included when “Include in net cash” is turned on for that account. If that was never set, checking and credit card accounts are included by default; savings, investments, loans, and mortgages are not.\n\nFor each included account, Finko uses the balance in your main currency when available; otherwise it uses the balance in that account’s currency.';
+      'Net cash is a signed total for accounts that count toward liquid cash flow: balances on asset accounts (such as checking) are added, and amounts owed on liability accounts (such as credit cards) are subtracted.\n\nAn account is included when “Include in net cash” is turned on for that account. If that was never set, checking and credit card accounts are included by default; savings, investments, loans, and mortgages are not.\n\nFor each included account, Finko uses the balance in your main currency when available; otherwise it uses the balance in that account’s currency.';
 
   @override
   String get loansMortgageSectionTitle => 'Loans & mortgage';
@@ -775,6 +815,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionEditorFieldAmount => 'Amount';
+
+  @override
+  String get transactionEditorFieldTransferAmountOut => 'Amount sent';
+
+  @override
+  String get transactionEditorFieldTransferAmountIn => 'Amount received';
 
   @override
   String get transactionEditorFieldDirection => 'Direction';
@@ -988,6 +1034,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoriesEmpty => 'No categories yet.';
+
+  @override
+  String get categoriesAddCategory => 'Add category';
+
+  @override
+  String get accountsAddAccount => 'Add account';
 
   @override
   String get accountsListSubtitle => 'Tap an account when detail routes exist.';

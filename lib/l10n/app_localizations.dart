@@ -1196,6 +1196,62 @@ abstract class AppLocalizations {
   /// **'Presupuestos'**
   String get budgetsTitle;
 
+  /// No description provided for @categoryEditorDeleteCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar categoría…'**
+  String get categoryEditorDeleteCategory;
+
+  /// No description provided for @accountEditorDeleteAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar cuenta…'**
+  String get accountEditorDeleteAccount;
+
+  /// No description provided for @categoryDeleteCascadeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar “{name}” y todos los datos relacionados?'**
+  String categoryDeleteCascadeTitle(String name);
+
+  /// No description provided for @categoryDeleteCascadeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminarán {transactions} transacciones, {recurring} reglas recurrentes, {upcoming} próximos y la fila de presupuesto de esta categoría. No se puede deshacer.'**
+  String categoryDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  );
+
+  /// No description provided for @accountDeleteCascadeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar la cuenta “{name}” y todos los datos relacionados?'**
+  String accountDeleteCascadeTitle(String name);
+
+  /// No description provided for @accountDeleteCascadeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminarán {transactions} transacciones (incluidos tramos de transferencia emparejados), {recurring} recurrentes, {upcoming} próximos y luego la cuenta. No se puede deshacer.'**
+  String accountDeleteCascadeBody(
+    int transactions,
+    int recurring,
+    int upcoming,
+  );
+
+  /// No description provided for @deleteCascadeConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar todo'**
+  String get deleteCascadeConfirm;
+
+  /// No description provided for @deleteCascadeSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminado.'**
+  String get deleteCascadeSuccess;
+
   /// No description provided for @categoriesTitle.
   ///
   /// In es, this message translates to:
@@ -1277,7 +1333,7 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardNetCashInfoBody.
   ///
   /// In es, this message translates to:
-  /// **'El efectivo neto es la suma de los saldos de las cuentas que cuentan como flujo de efectivo líquido.\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.'**
+  /// **'El efectivo neto es un total con signo para las cuentas que cuentan como flujo de efectivo líquido: se suman los saldos de cuentas de activo (por ejemplo, débito) y se restan los importes adeudados en cuentas de pasivo (por ejemplo, tarjetas de crédito).\n\nUna cuenta entra cuando tiene activada la opción “Incluir en efectivo neto”. Si nunca se definió, por defecto se incluyen cuentas de débito y tarjetas de crédito; no se incluyen ahorros, inversiones, préstamos ni hipotecas.\n\nPara cada cuenta incluida, Finko usa el saldo en tu moneda principal cuando existe; si no, el saldo en la moneda de esa cuenta.'**
   String get dashboardNetCashInfoBody;
 
   /// No description provided for @loansMortgageSectionTitle.
@@ -1543,6 +1599,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Importe'**
   String get transactionEditorFieldAmount;
+
+  /// No description provided for @transactionEditorFieldTransferAmountOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Importe enviado'**
+  String get transactionEditorFieldTransferAmountOut;
+
+  /// No description provided for @transactionEditorFieldTransferAmountIn.
+  ///
+  /// In es, this message translates to:
+  /// **'Importe recibido'**
+  String get transactionEditorFieldTransferAmountIn;
 
   /// No description provided for @transactionEditorFieldDirection.
   ///
@@ -1915,6 +1983,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aún no hay categorías.'**
   String get categoriesEmpty;
+
+  /// No description provided for @categoriesAddCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir categoría'**
+  String get categoriesAddCategory;
+
+  /// No description provided for @accountsAddAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir cuenta'**
+  String get accountsAddAccount;
 
   /// No description provided for @accountsListSubtitle.
   ///

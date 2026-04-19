@@ -13,11 +13,11 @@ Map<String, dynamic> ledgerTransactionCreateMap(LedgerTransaction t) {
     'direction': t.direction.wireName,
     'currency': t.currency,
     'accountId': t.accountId,
+    'categoryId': t.categoryId,
     'type': t.type.wireName,
     'createdAt': FieldValue.serverTimestamp(),
     'updatedAt': FieldValue.serverTimestamp(),
   };
-  if (t.categoryId != null) m['categoryId'] = t.categoryId;
   if (t.memo != null && t.memo!.trim().isNotEmpty) {
     m['memo'] = t.memo!.trim();
   }
@@ -41,14 +41,10 @@ Map<String, dynamic> ledgerTransactionUpdateMap(LedgerTransaction t) {
     'direction': t.direction.wireName,
     'currency': t.currency,
     'accountId': t.accountId,
+    'categoryId': t.categoryId,
     'type': t.type.wireName,
     'updatedAt': FieldValue.serverTimestamp(),
   };
-  if (t.categoryId != null) {
-    m['categoryId'] = t.categoryId;
-  } else {
-    m['categoryId'] = FieldValue.delete();
-  }
   if (t.memo != null && t.memo!.trim().isNotEmpty) {
     m['memo'] = t.memo!.trim();
   } else {

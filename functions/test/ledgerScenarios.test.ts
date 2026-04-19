@@ -31,13 +31,13 @@ describe("ledger scenarios (mock world)", () => {
     accountId: ACC.checking,
   });
 
-  const transferIn = (d: string, amount: number): TxPayload => ({
+  const transferIn = (d: string, amount: number, accountId: string = ACC.savings): TxPayload => ({
     transactionDate: d,
     amountMinor: amount,
     direction: "in",
     currency: CURRENCY_MXN,
     type: "transferLeg",
-    accountId: ACC.savings,
+    accountId,
   });
 
   it("past expense updates account, month totals, category, and day", () => {
@@ -82,7 +82,7 @@ describe("ledger scenarios (mock world)", () => {
     const d = "2026-04-12";
     const ops = [
       { tx: transferOut(d, amt), sign: 1 as const, amountMain: amt },
-      { tx: transferIn(d, amt), sign: 1 as const, amountMain: amt },
+      { tx: transferIn(d, amt, ACC.savings), sign: 1 as const, amountMain: amt },
     ];
 
     simulateAggregateOps(ops, accounts, months);
@@ -164,5 +164,37 @@ describe("ledger scenarios (mock world)", () => {
       amountMain
     );
     expect(accounts[ACC.checking].balanceMinor).toBe(1_000_000 + amountMain);
+  });
+
+  it("credit card expense increases balance owed (liability)", () => {
+    const accounts = initialAccounts();
+    const months = initialMonths();
+    const amountMain = 15_000;
+    const tx = stdExpense("2026-04-11", amountMain, ACC.creditCard);
+
+    simulateAggregateOps([{ tx, sign: 1, amountMain }], accounts, months);
+
+    expect(accounts[ACC.creditCard].balanceMinor).toBe(amountMain);
+    expect(months["2026-04"].expenseMinorMain).toBe(amountMain);
+  });
+
+  it("transfer payment to credit card reduces balance owed", () => {
+    const accounts = initialAccounts();
+    const months = initialMonths();
+    const amt = 40_000;
+    const d = "2026-04-14";
+    const charge = stdExpense(d, amt, ACC.creditCard);
+    simulateAggregateOps([{ tx: charge, sign: 1, amountMain: amt }], accounts, months);
+    expect(accounts[ACC.creditCard].balanceMinor).toBe(amt);
+
+    const ops = [
+      { tx: transferOut(d, amt), sign: 1 as const, amountMain: amt },
+      { tx: transferIn(d, amt, ACC.creditCard), sign: 1 as const, amountMain: amt },
+    ];
+    simulateAggregateOps(ops, accounts, months);
+
+    expect(accounts[ACC.checking].balanceMinor).toBe(1_000_000 - amt);
+    expect(accounts[ACC.creditCard].balanceMinor).toBe(0);
+    expect(months["2026-04"].expenseMinorMain).toBe(amt);
   });
 });

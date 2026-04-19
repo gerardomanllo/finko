@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/refresh/ledger_aware_app_refresh.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
@@ -67,6 +68,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final current = ref.read(transactionsListNotifierProvider).filterIndex;
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
       builder: (ctx) => TransactionKindFilterSheet(
         selectedIndex: current,
@@ -196,7 +198,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 : FinkoPaperCard(
                     padding: EdgeInsets.zero,
                     child: RefreshIndicator(
-                      onRefresh: () => notifier.refresh(),
+                      onRefresh: () async {
+                        await ref
+                            .read(ledgerAwareAppRefreshProvider)
+                            .runPullToRefresh(ref);
+                        await notifier.refresh();
+                      },
                       child: Builder(
                         builder: (context) {
                           if (filtered.isEmpty) {

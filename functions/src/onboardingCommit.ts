@@ -2,7 +2,9 @@ import { randomUUID } from "crypto";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
+import { openingBalanceDirectionForAccount } from "./accountKinds";
 import { resolveAsOfYmd } from "./scheduleNext";
+import { touchLedgerSourcesLastChangedAt } from "./userLedgerSync";
 
 type JsonMap = Record<string, unknown>;
 
@@ -160,10 +162,10 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
         transactionDate: today,
         loadedAt: FieldValue.serverTimestamp(),
         amountMinor: Math.abs(start),
-        direction: start >= 0 ? "in" : "out",
+        direction: openingBalanceDirectionForAccount(accountType, start),
         currency: mustString(account.currency, "account.currency"),
         accountId,
-        categoryId: null,
+        categoryId: "fixed-expenses",
         type: "adjustment",
         memo: "Onboarding starting balance",
         createdAt: FieldValue.serverTimestamp(),
@@ -171,6 +173,20 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       });
     }
   }
+
+  const LEDGER_TRANSFER_CATEGORY_ID = "ledger-transfer";
+  batch.set(
+    db.doc(`users/${uid}/categories/${LEDGER_TRANSFER_CATEGORY_ID}`),
+    {
+      name: "Transfers",
+      kind: "expense",
+      iconKey: "swap_horiz",
+      sortOrder: -1,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
 
   for (const raw of categories) {
     const category = raw as JsonMap;
@@ -271,5 +287,8 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
   }
 
   await batch.commit();
+  // Category/account/transaction triggers also bump `ledgerSourcesLastChangedAt`;
+  // this merge keeps the user doc aligned even if trigger ordering differs.
+  await touchLedgerSourcesLastChangedAt(db, uid);
   return { committed: true, requestId, deduped: false };
 });

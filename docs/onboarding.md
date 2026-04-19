@@ -40,7 +40,8 @@
   - **Name**
   - **Type** — canonical enum stored as **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`** ([`data-model.md`](data-model.md) §5). **UI** shows localized labels from **l10n** keyed by enum value (not free-form strings in Firestore).
   - **Color** — fixed palette / tokens (ARGB or token id).
-  - **Currency** — ISO 4217; **default `MXN`**.
+  - **Currency** — ISO 4217; **default `MXN`**. For **`loan`** and **`mortgage`** (when [secured-account collateral](loans-collateral-and-net-worth.md) ships): **required**, **immutable after onboarding commit** — user cannot change currency later.
+- **Secured accounts (`loan`, `mortgage`)** — When collateral ships: collect **initial collateral / asset estimate** (optional or required per product), **starting liability balance** (existing **starting balance** path), and short **education** on how Finko shows **asset vs liability** in **one account** (see [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md)). Same step 2; no separate Property entity.
 - **Optional:** **Starting balance** — minor units; default **0**.
 - **Starting balance → persistence (recommended):** Create one **`transactions`** row per non-zero starting balance with **`type: adjustment`** (and appropriate **`direction`** / **`accountId`** / **`currency`**) on the **user’s chosen “as of” business date** (e.g. onboarding day in their **`timezone`**). **Why:** **`balanceMinor`** / aggregates stay driven by the **same** Cloud Functions path as every other movement — no split-brain between “manual balance” and ledger ([`data-model.md`](data-model.md) §4, §5). **Zero** balance needs no row.
 
@@ -131,9 +132,11 @@
 - [`data-contract.md`](data-contract.md) — streams after onboarding.
 - [`settings.md`](settings.md) — messaging parity.
 - [`login.md`](login.md) — auth entry.
+- [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md) — secured loan/mortgage onboarding + collateral (planned).
 
 ## Revision log
 
 | Date | Change |
 |------|--------|
+| 2026-04-19 | **§2 Accounts:** Note **immutable currency** and **secured-account** (loan/mortgage) fields + education when collateral ships; link to planning doc. |
 | 2026-04-16 | **§8 / §5:** Commit payload includes **`profile.mainCurrency`** (first account ISO code); **`budgets`** on **`users/{uid}`**; app invalidates core Firestore stream providers when entering **completion** before **`/dashboard`**. |

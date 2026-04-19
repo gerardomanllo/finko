@@ -7,6 +7,7 @@ import '../../../core/budget/monthly_budget_rollup.dart';
 import '../../../core/app_environment.dart';
 import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_account.dart';
+import '../../../core/data/models/finko_account_kind.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/models/monthly_totals.dart';
@@ -15,8 +16,7 @@ import '../../../core/data/monthly_totals_as_of_date.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/locale/app_environment_provider.dart';
-import '../../../core/upcoming/deferred_ledger_reconcile_provider.dart';
-import '../../../core/upcoming/materialize_upcoming_provider.dart';
+import '../../../core/refresh/ledger_aware_app_refresh.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
@@ -51,19 +51,6 @@ class DashboardScreen extends ConsumerWidget {
       FinkoAccountType.loan => l10n.loansMortgageSectionTitle,
       FinkoAccountType.mortgage => l10n.loansMortgageSectionTitle,
     };
-  }
-
-  static int _netCashMinor(Iterable<FinkoAccount> accounts) {
-    return accounts
-        .where((a) => a.includeInNetCash)
-        .fold<int>(0, (s, a) => s + (a.balanceMinorMain ?? a.balanceMinor));
-  }
-
-  static int _netWorthFromAccountsMinor(Iterable<FinkoAccount> accounts) {
-    return accounts.fold<int>(
-      0,
-      (s, a) => s + (a.balanceMinorMain ?? a.balanceMinor),
-    );
   }
 
   static String _daysUntilLabel(
@@ -149,13 +136,11 @@ class DashboardScreen extends ConsumerWidget {
         accountsAsync.valueOrNull?.firstOrNull?.currency ??
         'MXN';
     final accounts = accountsAsync.valueOrNull ?? const <FinkoAccount>[];
-    final netWorthFromAccounts = _netWorthFromAccountsMinor(accounts);
+    final netWorthFromAccounts = netWorthFromAccountsMinor(accounts);
     final hasSparklinePoints = sparkline.any((point) => point != 0);
     final netWorthDisplayMinor = hasSparklinePoints
         ? sparkline.last.toInt()
         : netWorthFromAccounts;
-    final uid = ref.watch(authUidProvider);
-    final timezone = userProfileAsync.valueOrNull?.timezone;
 
     return Scaffold(
       appBar: AppBar(
@@ -168,28 +153,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          if (uid != null) {
-            await ref
-                .read(materializeUpcomingServiceProvider)
-                .forceRefreshIfSignedIn(uid, timezone: timezone);
-            await ref
-                .read(deferredLedgerReconcileServiceProvider)
-                .forceReconcileIfSignedIn(uid, todayKey);
-          }
-          ref.invalidate(accountsStreamProvider);
-          ref.invalidate(userProfileStreamProvider);
-          ref.invalidate(
-            monthlyTotalsForMonthStreamProvider(
-              ref.read(dashboardYearMonthProvider),
-            ),
-          );
-          ref.invalidate(recentTransactionsStreamProvider);
-          ref.invalidate(upcomingTransactionsStreamProvider);
-          ref.invalidate(futureDatedLedgerTransactionsStreamProvider);
-          ref.invalidate(recurringRulesStreamProvider);
-          ref.invalidate(dashboardUpcomingStripProvider);
-          ref.invalidate(netWorthSparklineSeriesProvider);
-          await Future<void>.delayed(const Duration(milliseconds: 150));
+          await ref.read(ledgerAwareAppRefreshProvider).runPullToRefresh(ref);
         },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -258,7 +222,7 @@ class DashboardScreen extends ConsumerWidget {
                 return FinkoCashFlowAccountsAccordion(
                   accounts: accounts,
                   mainCurrencyCode: mainCurrency,
-                  netCashMinorMain: _netCashMinor(accounts),
+                  netCashMinorMain: netCashFromAccountsMinor(accounts),
                   formatMoney: (minor, code) =>
                       _formatMoney(context, minor, code),
                   formatMoneyWithCode: (minor, code) {

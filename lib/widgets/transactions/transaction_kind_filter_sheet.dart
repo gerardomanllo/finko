@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/ui/finko_modal_sheet_extent.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Slide-up to pick ledger transaction kind filter (matches app filter index 0–3).
@@ -26,31 +27,53 @@ class TransactionKindFilterSheet extends StatelessWidget {
     ];
     final normalized = selectedIndex % 4;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Text(
-                l10n.transactionsFilterSheetTitle,
-                style: theme.textTheme.titleMedium,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxH = finkoModalSheetMaxHeight(
+          context,
+          layoutMaxHeight: constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : null,
+        );
+        return SafeArea(
+          child: SizedBox(
+            height: maxH,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Text(
+                      l10n.transactionsFilterSheetTitle,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: options.length,
+                      itemBuilder: (context, i) {
+                        final o = options[i];
+                        return ListTile(
+                          title: Text(o.label),
+                          trailing: normalized == o.index
+                              ? Icon(
+                                  Icons.check,
+                                  color: theme.colorScheme.primary,
+                                )
+                              : null,
+                          onTap: () => onSelected(o.index),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            for (final o in options)
-              ListTile(
-                title: Text(o.label),
-                trailing: normalized == o.index
-                    ? Icon(Icons.check, color: theme.colorScheme.primary)
-                    : null,
-                onTap: () => onSelected(o.index),
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

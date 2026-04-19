@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_account.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
+import '../../../core/data/repositories/firestore_data_repository.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/summary/finko_month_category_account_summary_sheets.dart';
@@ -35,13 +37,74 @@ class AccountsScreen extends ConsumerWidget {
         async.valueOrNull?.firstOrNull?.currency ??
         'MXN';
     final yearMonth = ref.watch(currentYearMonthProvider);
+    final bottomInset =
+        88.0 + MediaQuery.paddingOf(context).bottom; // extended FAB + margin
+
+    void openAddAccount() {
+      final uid = ref.read(authUidProvider);
+      if (uid == null) return;
+      showOnboardingAccountEditor(
+        context: context,
+        l10n: l10n,
+        existing: null,
+        metadataOnly: false,
+        onSave: (draft) async {
+          try {
+            await ref
+                .read(firestoreDataRepositoryProvider)
+                .createAccount(
+                  uid,
+                  name: draft.name,
+                  type: finkoAccountTypeFromOnboarding(draft.type),
+                  currency: draft.currency,
+                  colorArgb: draft.colorArgb,
+                  iconKey: draft.iconKey,
+                  startingBalanceMinor: draft.startingBalanceMinor,
+                  openingBalanceTransactionDateYyyyMmDd: ref.read(
+                    todayYyyyMmDdProvider,
+                  ),
+                );
+            if (context.mounted) {
+              ref.invalidate(accountsStreamProvider);
+              ref.invalidate(currentMonthTotalsStreamProvider);
+              ref.invalidate(recentTransactionsStreamProvider);
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('$e')));
+            }
+          }
+        },
+      );
+    }
+
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.accountsTitle)),
+      floatingActionButton: async.maybeWhen(
+        data: (_) => FloatingActionButton.extended(
+          heroTag: 'accounts_add_fab',
+          onPressed: openAddAccount,
+          icon: const Icon(Icons.add),
+          label: Text(l10n.accountsAddAccount),
+          backgroundColor: scheme.secondaryContainer,
+          foregroundColor: scheme.onSecondaryContainer,
+        ),
+        orElse: () => null,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: async.when(
         data: (accounts) {
           if (accounts.isEmpty) {
-            return Center(child: Text(l10n.emptyNoAccounts));
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 0, 24, bottomInset),
+                child: Text(l10n.emptyNoAccounts),
+              ),
+            );
           }
 
           final children = <Widget>[];
@@ -83,7 +146,7 @@ class AccountsScreen extends ConsumerWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset),
             children: children,
           );
         },

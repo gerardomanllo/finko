@@ -95,7 +95,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored. |
 | **Upcoming strip** | `dashboardUpcomingStripProvider` | `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). |
 | **Recent list** | `recentTransactionsStreamProvider` | Last **5** with `transactionDate` **on or before** profile **today** (excludes future-dated ledger rows). |
-| **Pull-to-refresh** | `RefreshIndicator` | Invalidates dashboard-related providers and runs **`materializeDueUpcoming`** (see `data-contract.md` §11). |
+| **Pull-to-refresh** | `RefreshIndicator` | Calls **`ledgerAwareAppRefreshProvider.runPullToRefresh`** (shared with Recurring / Transactions): throttle, server profile gate, **`materializeDueUpcoming`**, conditional **`reconcileDeferredLedgerForUser`**, canonical provider invalidation — see **`data-contract.md` §11**. |
 
 **Still stub / placeholder:** metric card **delta** strings (both cards), monthly expense **chart** (icon only).
 
@@ -110,6 +110,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-04-18 | **Pull-to-refresh** documents shared **`ledgerAwareAppRefreshProvider`** pipeline (dashboard + other tabs); see **`data-contract.md` §11**. |
 | 2026-04-16 | Próximos include **future-dated `transactions/`** rows (editor), not only `upcomingTransactions` + recurring. |
 | 2026-04-16 | Recent transactions exclude future-dated rows; próximos merge **upcoming** + **recurring**; dashboard month key follows profile today; expense/budget rings use **MTD through today**; net-worth window ends on profile today. |
 | 2026-04-16 | Net cash row: **info** icon + dialog with localized explanation of how net cash is summed (`includeInNetCash`, defaults, `balanceMinorMain` / `balanceMinor`). |

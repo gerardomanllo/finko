@@ -3,12 +3,53 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/firebase_auth_providers.dart';
 import '../firestore_paths.dart';
+import '../../spending/fixed_variable_expense.dart'
+    show kFixedExpensesCategoryId;
+import '../ledger_category_ids.dart';
 import '../models/models.dart';
 import 'ledger_transaction_firestore_maps.dart';
+
+Future<Set<String>> _collectTransactionIdsForAccountDelete(
+  FirebaseFirestore db,
+  String uid,
+  String accountId,
+) async {
+  final txCol = db.collection(FirestorePaths.transactionsCollection(uid));
+  final snap = await txCol.where('accountId', isEqualTo: accountId).get();
+  final ids = <String>{};
+  final groupIds = <String>{};
+  for (final d in snap.docs) {
+    ids.add(d.id);
+    final data = d.data();
+    if (data['type'] == 'transferLeg') {
+      final g = data['transferGroupId'] as String?;
+      if (g != null && g.isNotEmpty) groupIds.add(g);
+    }
+  }
+  for (final g in groupIds) {
+    final pair = await txCol.where('transferGroupId', isEqualTo: g).get();
+    for (final d in pair.docs) {
+      ids.add(d.id);
+    }
+  }
+  return ids;
+}
+
+List<List<T>> _chunkList<T>(List<T> list, int size) {
+  final out = <List<T>>[];
+  for (var i = 0; i < list.length; i += size) {
+    final end = i + size > list.length ? list.length : i + size;
+    out.add(list.sublist(i, end));
+  }
+  return out;
+}
 
 /// Firestore reads for dashboard and lists — [`docs/data-contract.md`].
 abstract class FirestoreDataRepository {
   Stream<UserProfile?> watchUserProfile(String uid);
+
+  /// Fresh read for ledger refresh gate ([`Source.server`]).
+  Future<UserProfile?> fetchUserProfileSync(String uid);
 
   Stream<List<FinkoAccount>> watchAccounts(String uid);
 
@@ -66,16 +107,60 @@ abstract class FirestoreDataRepository {
   Future<LedgerTransaction?> fetchTransaction(String uid, String transactionId);
 
   /// Atomically creates two linked `transferLeg` documents ([`docs/data-model.md`] §4).
-  /// Out leg: [fromAccountId]; in leg: [toAccountId]. Both use [currency] and [amountMinor].
+  /// Out leg uses [fromAmountMinor] / [fromCurrency]; in leg uses [toAmountMinor] / [toCurrency].
   Future<({String fromLegId, String toLegId})> createTransferLegPair(
     String uid, {
     required String transactionDate,
-    required int amountMinor,
+    required int fromAmountMinor,
     required String fromAccountId,
+    required String fromCurrency,
+    required int toAmountMinor,
     required String toAccountId,
-    required String currency,
+    required String toCurrency,
     String? memo,
   });
+
+  /// Ensures reserved transfer category exists (older accounts pre-onboarding update).
+  Future<void> ensureLedgerTransferCategory(String uid);
+
+  /// Creates `categories/{id}`; returns new id.
+  Future<String> createCategory(
+    String uid, {
+    required String name,
+    required CategoryKind kind,
+    required String iconKey,
+    int? colorArgb,
+  });
+
+  /// Creates `accounts/{id}` and optionally an opening-balance adjustment in one batch.
+  ///
+  /// When [startingBalanceMinor] is non-zero, [openingBalanceTransactionDateYyyyMmDd]
+  /// must be the user's business calendar date (`yyyy-MM-dd`), typically
+  /// `ref.read(todayYyyyMmDdProvider)` from `finko_stream_providers.dart` — not UTC midnight.
+  Future<String> createAccount(
+    String uid, {
+    required String name,
+    required FinkoAccountType type,
+    required String currency,
+    required int colorArgb,
+    required String iconKey,
+    int startingBalanceMinor = 0,
+    String? openingBalanceTransactionDateYyyyMmDd,
+  });
+
+  /// Hard-deletes all transactions with this category, related rules/upcoming rows,
+  /// budget entry, then the category doc.
+  Future<void> deleteCategoryCascade(String uid, String categoryId);
+
+  /// Hard-deletes transactions (including paired transfer legs), related rules/upcoming,
+  /// then the account doc.
+  Future<void> deleteAccountCascade(String uid, String accountId);
+
+  Future<({int transactions, int recurring, int upcoming})>
+  previewCategoryDelete(String uid, String categoryId);
+
+  Future<({int transactions, int recurring, int upcoming})>
+  previewAccountDelete(String uid, String accountId);
 
   /// Updates both legs of a transfer in one batch.
   Future<void> updateTransferLegPair(
@@ -108,6 +193,15 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       if (!snapshot.exists || snapshot.data() == null) return null;
       return UserProfile.fromFirestore(uid, snapshot.data()!);
     });
+  }
+
+  @override
+  Future<UserProfile?> fetchUserProfileSync(String uid) async {
+    final snap = await _db
+        .doc(FirestorePaths.userDoc(uid))
+        .get(const GetOptions(source: Source.server));
+    if (!snap.exists || snap.data() == null) return null;
+    return UserProfile.fromFirestore(uid, snap.data()!);
   }
 
   @override
@@ -247,6 +341,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
         .map((snapshot) {
           final list = snapshot.docs
               .map((d) => FinkoCategory.fromFirestore(d.id, d.data()))
+              .where((c) => c.id != kLedgerTransferCategoryId)
               .toList();
           list.sort((a, b) {
             final byOrder = a.sortOrder.compareTo(b.sortOrder);
@@ -297,15 +392,32 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
   }
 
   @override
+  Future<void> ensureLedgerTransferCategory(String uid) async {
+    await _db
+        .doc(FirestorePaths.categoryDoc(uid, kLedgerTransferCategoryId))
+        .set({
+          'name': 'Transfers',
+          'kind': CategoryKind.expense.wireName,
+          'iconKey': 'swap_horiz',
+          'sortOrder': -1,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+  }
+
+  @override
   Future<({String fromLegId, String toLegId})> createTransferLegPair(
     String uid, {
     required String transactionDate,
-    required int amountMinor,
+    required int fromAmountMinor,
     required String fromAccountId,
+    required String fromCurrency,
+    required int toAmountMinor,
     required String toAccountId,
-    required String currency,
+    required String toCurrency,
     String? memo,
   }) async {
+    await ensureLedgerTransferCategory(uid);
     final col = _db.collection(FirestorePaths.transactionsCollection(uid));
     final batch = _db.batch();
     final groupId = col.doc().id;
@@ -319,11 +431,11 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       id: fromId,
       transactionDate: transactionDate,
       loadedAt: ph,
-      amountMinor: amountMinor,
+      amountMinor: fromAmountMinor,
       direction: MoneyDirection.out_,
-      currency: currency,
+      currency: fromCurrency,
       accountId: fromAccountId,
-      categoryId: null,
+      categoryId: kLedgerTransferCategoryId,
       type: LedgerTransactionKind.transferLeg,
       memo: memo,
       transferGroupId: groupId,
@@ -338,11 +450,11 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       id: toId,
       transactionDate: transactionDate,
       loadedAt: ph,
-      amountMinor: amountMinor,
+      amountMinor: toAmountMinor,
       direction: MoneyDirection.in_,
-      currency: currency,
+      currency: toCurrency,
       accountId: toAccountId,
-      categoryId: null,
+      categoryId: kLedgerTransferCategoryId,
       type: LedgerTransactionKind.transferLeg,
       memo: memo,
       transferGroupId: groupId,
@@ -428,6 +540,253 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       'colorArgb': account.colorArgb ?? 0xFF607D8B,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  Future<String> createCategory(
+    String uid, {
+    required String name,
+    required CategoryKind kind,
+    required String iconKey,
+    int? colorArgb,
+  }) async {
+    final ref = _db.collection(FirestorePaths.categoriesCollection(uid)).doc();
+    final payload = <String, dynamic>{
+      'name': name.trim(),
+      'kind': kind.wireName,
+      'iconKey': iconKey.trim().isEmpty ? 'category' : iconKey.trim(),
+      'sortOrder': 0,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (colorArgb != null) payload['colorArgb'] = colorArgb;
+    await ref.set(payload);
+    return ref.id;
+  }
+
+  @override
+  Future<String> createAccount(
+    String uid, {
+    required String name,
+    required FinkoAccountType type,
+    required String currency,
+    required int colorArgb,
+    required String iconKey,
+    int startingBalanceMinor = 0,
+    String? openingBalanceTransactionDateYyyyMmDd,
+  }) async {
+    final accountsCol = _db.collection(FirestorePaths.accountsCollection(uid));
+    final ref = accountsCol.doc();
+    final batch = _db.batch();
+    final includeInNetCash =
+        type == FinkoAccountType.checking ||
+        type == FinkoAccountType.creditCard;
+    batch.set(ref, {
+      'name': name.trim(),
+      'type': type.wireName,
+      'currency': currency.trim().toUpperCase(),
+      'includeInNetCash': includeInNetCash,
+      'colorArgb': colorArgb,
+      'iconKey': iconKey.trim().isEmpty ? 'account_balance' : iconKey.trim(),
+      'balanceMinor': 0,
+      'sortOrder': 0,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    final start = startingBalanceMinor;
+    if (start != 0) {
+      final ymd = openingBalanceTransactionDateYyyyMmDd?.trim();
+      if (ymd == null || ymd.isEmpty) {
+        throw ArgumentError.value(
+          openingBalanceTransactionDateYyyyMmDd,
+          'openingBalanceTransactionDateYyyyMmDd',
+          'required when startingBalanceMinor is non-zero (use profile calendar today, e.g. todayYyyyMmDdProvider)',
+        );
+      }
+      final txRef = _db
+          .collection(FirestorePaths.transactionsCollection(uid))
+          .doc();
+      final ph = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+      final adj = LedgerTransaction(
+        id: txRef.id,
+        transactionDate: ymd,
+        loadedAt: ph,
+        amountMinor: start.abs(),
+        direction: openingBalanceDirectionForAccount(type, start),
+        currency: currency.trim().toUpperCase(),
+        accountId: ref.id,
+        categoryId: kFixedExpensesCategoryId,
+        type: LedgerTransactionKind.adjustment,
+        memo: 'Opening balance',
+        transferGroupId: null,
+        linkedTransactionId: null,
+        sourceUpcomingId: null,
+        amountMinorMain: null,
+        fxRateDateUsed: null,
+        createdAt: ph,
+        updatedAt: ph,
+      );
+      batch.set(txRef, ledgerTransactionCreateMap(adj));
+    }
+    await batch.commit();
+    return ref.id;
+  }
+
+  @override
+  Future<void> deleteCategoryCascade(String uid, String categoryId) async {
+    if (categoryId == kFixedExpensesCategoryId ||
+        categoryId == kLedgerTransferCategoryId) {
+      throw ArgumentError.value(categoryId, 'categoryId', 'reserved category');
+    }
+    final txCol = _db.collection(FirestorePaths.transactionsCollection(uid));
+    final snap = await txCol.where('categoryId', isEqualTo: categoryId).get();
+    for (final part in _chunkList(snap.docs, 450)) {
+      final b = _db.batch();
+      for (final d in part) {
+        b.delete(d.reference);
+      }
+      await b.commit();
+    }
+
+    Future<void> delByField(String field) async {
+      final q = await _db
+          .collection(FirestorePaths.recurringCollection(uid))
+          .where(field, isEqualTo: categoryId)
+          .get();
+      for (final part in _chunkList(q.docs, 450)) {
+        final b = _db.batch();
+        for (final d in part) {
+          b.delete(d.reference);
+        }
+        await b.commit();
+      }
+    }
+
+    await delByField('categoryId');
+    final upSnap = await _db
+        .collection(FirestorePaths.upcomingTransactionsCollection(uid))
+        .where('categoryId', isEqualTo: categoryId)
+        .get();
+    for (final part in _chunkList(upSnap.docs, 450)) {
+      final b = _db.batch();
+      for (final d in part) {
+        b.delete(d.reference);
+      }
+      await b.commit();
+    }
+
+    await _db.doc(FirestorePaths.userDoc(uid)).update({
+      'budgets.$categoryId': FieldValue.delete(),
+    });
+    await _db.doc(FirestorePaths.categoryDoc(uid, categoryId)).delete();
+  }
+
+  @override
+  Future<void> deleteAccountCascade(String uid, String accountId) async {
+    final txCol = _db.collection(FirestorePaths.transactionsCollection(uid));
+    final ids = await _collectTransactionIdsForAccountDelete(
+      _db,
+      uid,
+      accountId,
+    );
+    for (final part in _chunkList(ids.toList(), 450)) {
+      final b = _db.batch();
+      for (final id in part) {
+        b.delete(txCol.doc(id));
+      }
+      await b.commit();
+    }
+
+    Future<void> delRecurring(String field) async {
+      final q = await _db
+          .collection(FirestorePaths.recurringCollection(uid))
+          .where(field, isEqualTo: accountId)
+          .get();
+      for (final part in _chunkList(q.docs, 450)) {
+        final b = _db.batch();
+        for (final d in part) {
+          b.delete(d.reference);
+        }
+        await b.commit();
+      }
+    }
+
+    await delRecurring('accountId');
+    await delRecurring('fromAccountId');
+    await delRecurring('toAccountId');
+
+    Future<void> delUpcoming(String field) async {
+      final q = await _db
+          .collection(FirestorePaths.upcomingTransactionsCollection(uid))
+          .where(field, isEqualTo: accountId)
+          .get();
+      for (final part in _chunkList(q.docs, 450)) {
+        final b = _db.batch();
+        for (final d in part) {
+          b.delete(d.reference);
+        }
+        await b.commit();
+      }
+    }
+
+    await delUpcoming('accountId');
+    await delUpcoming('fromAccountId');
+    await delUpcoming('toAccountId');
+
+    await _db.doc(FirestorePaths.accountDoc(uid, accountId)).delete();
+  }
+
+  @override
+  Future<({int transactions, int recurring, int upcoming})>
+  previewCategoryDelete(String uid, String categoryId) async {
+    final txCol = _db.collection(FirestorePaths.transactionsCollection(uid));
+    final txN = (await txCol.where('categoryId', isEqualTo: categoryId).get())
+        .docs
+        .length;
+    final recCol = _db.collection(FirestorePaths.recurringCollection(uid));
+    final recN = (await recCol.where('categoryId', isEqualTo: categoryId).get())
+        .docs
+        .length;
+    final upCol = _db.collection(
+      FirestorePaths.upcomingTransactionsCollection(uid),
+    );
+    final upN = (await upCol.where('categoryId', isEqualTo: categoryId).get())
+        .docs
+        .length;
+    return (transactions: txN, recurring: recN, upcoming: upN);
+  }
+
+  @override
+  Future<({int transactions, int recurring, int upcoming})>
+  previewAccountDelete(String uid, String accountId) async {
+    final ids = await _collectTransactionIdsForAccountDelete(
+      _db,
+      uid,
+      accountId,
+    );
+    final recCol = _db.collection(FirestorePaths.recurringCollection(uid));
+    final recIds = <String>{};
+    for (final field in ['accountId', 'fromAccountId', 'toAccountId']) {
+      final s = await recCol.where(field, isEqualTo: accountId).get();
+      for (final d in s.docs) {
+        recIds.add(d.id);
+      }
+    }
+    final upCol = _db.collection(
+      FirestorePaths.upcomingTransactionsCollection(uid),
+    );
+    final upIds = <String>{};
+    for (final field in ['accountId', 'fromAccountId', 'toAccountId']) {
+      final s = await upCol.where(field, isEqualTo: accountId).get();
+      for (final d in s.docs) {
+        upIds.add(d.id);
+      }
+    }
+    return (
+      transactions: ids.length,
+      recurring: recIds.length,
+      upcoming: upIds.length,
+    );
   }
 }
 

@@ -1,11 +1,18 @@
-import type { AggregateOp } from "../../src/ledgerAggregateMath";
+import type { AggregateOp, BalancePolarity } from "../../src/ledgerAggregateMath";
 import {
   applyAccountDelta,
   applyMonthDelta,
   monthKeyFromYmd,
 } from "../../src/ledgerAggregateMath";
 
-export type AccountMap = Record<string, { balanceMinor: number; balanceMinorMain: number }>;
+export type AccountMapEntry = {
+  balanceMinor: number;
+  balanceMinorMain: number;
+  /** Default `asset`. */
+  balancePolarity?: BalancePolarity;
+};
+
+export type AccountMap = Record<string, AccountMapEntry>;
 export type MonthMap = Record<string, Record<string, unknown>>;
 
 /**
@@ -22,7 +29,13 @@ export function simulateAggregateOps(
     if (!acc) {
       throw new Error(`Unknown account ${op.tx.accountId}`);
     }
-    applyAccountDelta(acc, op.tx, op.sign, op.amountMain);
+    applyAccountDelta(
+      acc,
+      op.tx,
+      op.sign,
+      op.amountMain,
+      acc.balancePolarity ?? "asset"
+    );
 
     if (op.tx.type !== "transferLeg") {
       const ym = monthKeyFromYmd(op.tx.transactionDate);

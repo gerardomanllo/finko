@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/recurring_rule.dart';
@@ -9,8 +8,7 @@ import '../../../core/data/models/upcoming_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/datetime/user_calendar_date.dart';
 import '../../../core/formatting/money_format.dart';
-import '../../../core/upcoming/deferred_ledger_reconcile_provider.dart';
-import '../../../core/upcoming/materialize_upcoming_provider.dart';
+import '../../../core/refresh/ledger_aware_app_refresh.dart';
 import '../../../features/onboarding/presentation/onboarding_category_icons.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/calendar/finko_two_week_calendar.dart';
@@ -86,23 +84,7 @@ class RecurringScreen extends ConsumerWidget {
   const RecurringScreen({super.key});
 
   Future<void> _onRefresh(WidgetRef ref) async {
-    final uid = ref.read(authUidProvider);
-    final timezone = ref.read(userProfileStreamProvider).valueOrNull?.timezone;
-    final todayKey = ref.read(todayYyyyMmDdProvider);
-    if (uid != null) {
-      await ref
-          .read(materializeUpcomingServiceProvider)
-          .forceRefreshIfSignedIn(uid, timezone: timezone);
-      await ref
-          .read(deferredLedgerReconcileServiceProvider)
-          .forceReconcileIfSignedIn(uid, todayKey);
-    }
-    ref.invalidate(accountsStreamProvider);
-    ref.invalidate(userProfileStreamProvider);
-    ref.invalidate(upcomingTransactionsStreamProvider);
-    ref.invalidate(categoriesStreamProvider);
-    ref.invalidate(recurringRulesStreamProvider);
-    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await ref.read(ledgerAwareAppRefreshProvider).runPullToRefresh(ref);
   }
 
   @override

@@ -32,27 +32,36 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
   budgets: json['budgets'] == null
       ? const {}
       : budgetMapFromFirestoreJson(json['budgets']),
+  aggregateLastCompletedAt: const FirestoreNullableUtcDateTimeConverter()
+      .fromJson(json['aggregateLastCompletedAt']),
+  ledgerSourcesLastChangedAt: const FirestoreNullableUtcDateTimeConverter()
+      .fromJson(json['ledgerSourcesLastChangedAt']),
 );
 
-Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
-    <String, dynamic>{
-      'displayName': instance.displayName,
-      'photoUrl': ?instance.photoUrl,
-      'mainCurrency': instance.mainCurrency,
-      'timezone': instance.timezone,
-      'locale': instance.locale,
-      'themePreference': ?_$ThemePreferenceEnumMap[instance.themePreference],
-      'onboardingCompleted': instance.onboardingCompleted,
-      'createdAt': ?const FirestoreNullableUtcDateTimeConverter().toJson(
-        instance.createdAt,
-      ),
-      'updatedAt': ?const FirestoreNullableUtcDateTimeConverter().toJson(
-        instance.updatedAt,
-      ),
-      'ledgerVersion': ?instance.ledgerVersion,
-      'integrations': instance.integrations.toJson(),
-      'budgets': budgetMapToFirestoreJson(instance.budgets),
-    };
+Map<String, dynamic> _$UserProfileToJson(
+  UserProfile instance,
+) => <String, dynamic>{
+  'displayName': instance.displayName,
+  'photoUrl': ?instance.photoUrl,
+  'mainCurrency': instance.mainCurrency,
+  'timezone': instance.timezone,
+  'locale': instance.locale,
+  'themePreference': ?_$ThemePreferenceEnumMap[instance.themePreference],
+  'onboardingCompleted': instance.onboardingCompleted,
+  'createdAt': ?const FirestoreNullableUtcDateTimeConverter().toJson(
+    instance.createdAt,
+  ),
+  'updatedAt': ?const FirestoreNullableUtcDateTimeConverter().toJson(
+    instance.updatedAt,
+  ),
+  'ledgerVersion': ?instance.ledgerVersion,
+  'integrations': instance.integrations.toJson(),
+  'budgets': budgetMapToFirestoreJson(instance.budgets),
+  'aggregateLastCompletedAt': ?const FirestoreNullableUtcDateTimeConverter()
+      .toJson(instance.aggregateLastCompletedAt),
+  'ledgerSourcesLastChangedAt': ?const FirestoreNullableUtcDateTimeConverter()
+      .toJson(instance.ledgerSourcesLastChangedAt),
+};
 
 const _$ThemePreferenceEnumMap = {
   ThemePreference.light: 'light',

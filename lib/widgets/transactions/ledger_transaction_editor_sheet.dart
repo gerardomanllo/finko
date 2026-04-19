@@ -6,10 +6,12 @@ import '../../core/auth/firebase_auth_providers.dart';
 import '../../core/data/models/finko_account.dart';
 import '../../core/data/models/finko_category.dart';
 import '../../core/data/models/finko_enums.dart';
+import '../../core/data/ledger_category_ids.dart';
 import '../../core/data/models/ledger_transaction.dart';
 import '../../core/data/providers/finko_stream_providers.dart';
 import '../../core/data/repositories/firestore_data_repository.dart';
 import '../../core/formatting/amount_input.dart';
+import '../../core/ui/finko_modal_sheet_extent.dart';
 import '../../features/transactions/application/transactions_list_notifier.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -48,6 +50,7 @@ enum _SheetMode { incomeExpense, transfer }
 class _LedgerTransactionEditorSheetState
     extends ConsumerState<LedgerTransactionEditorSheet> {
   final _amountController = TextEditingController();
+  final _toAmountController = TextEditingController();
   final _memoController = TextEditingController();
 
   late String _dateYmd;
@@ -83,7 +86,9 @@ class _LedgerTransactionEditorSheetState
     final t = widget.transaction;
     if (t != null) {
       _dateYmd = t.transactionDate;
-      _amountController.text = _minorToDecimalString(t.amountMinor);
+      if (t.type != LedgerTransactionKind.transferLeg) {
+        _amountController.text = _minorToDecimalString(t.amountMinor);
+      }
       _memoController.text = t.memo ?? '';
       if (t.type == LedgerTransactionKind.transferLeg) {
         _sheetMode = _SheetMode.transfer;
@@ -107,6 +112,7 @@ class _LedgerTransactionEditorSheetState
       });
     }
     _amountController.addListener(_onAmountChanged);
+    _toAmountController.addListener(_onAmountChanged);
   }
 
   Future<void> _loadPeerLeg() async {
@@ -130,6 +136,14 @@ class _LedgerTransactionEditorSheetState
           _fromAccountId = peer.accountId;
           _toAccountId = t.accountId;
         }
+        final outLeg = t.direction == MoneyDirection.out_ ? t : peer;
+        final inLeg = t.direction == MoneyDirection.out_ ? peer : t;
+        _amountController.text = _minorToDecimalString(outLeg.amountMinor);
+        if (outLeg.currency != inLeg.currency) {
+          _toAmountController.text = _minorToDecimalString(inLeg.amountMinor);
+        } else {
+          _toAmountController.clear();
+        }
       }
       _peerLoadDone = true;
     });
@@ -142,7 +156,9 @@ class _LedgerTransactionEditorSheetState
   @override
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
+    _toAmountController.removeListener(_onAmountChanged);
     _amountController.dispose();
+    _toAmountController.dispose();
     _memoController.dispose();
     super.dispose();
   }
@@ -184,6 +200,16 @@ class _LedgerTransactionEditorSheetState
     if (!_submitAttempted) return null;
     try {
       parseAmountStringToMinorUnits(_amountController.text);
+      return null;
+    } catch (_) {
+      return l10n.transactionEditorValidationAmount;
+    }
+  }
+
+  String? _toAmountErrorText(AppLocalizations l10n, {required bool cross}) {
+    if (!_submitAttempted || !cross) return null;
+    try {
+      parseAmountStringToMinorUnits(_toAmountController.text);
       return null;
     } catch (_) {
       return l10n.transactionEditorValidationAmount;
@@ -259,9 +285,6 @@ class _LedgerTransactionEditorSheetState
     final to = _accountFor(accounts, _toAccountId);
     if (from != null && to != null && from.id == to.id) {
       return l10n.transactionEditorValidationTransferDistinctAccounts;
-    }
-    if (from != null && to != null && from.currency != to.currency) {
-      return l10n.transactionEditorValidationTransferSameCurrency;
     }
     return null;
   }
@@ -455,7 +478,7 @@ class _LedgerTransactionEditorSheetState
       direction: direction,
       currency: currency,
       accountId: accountId,
-      categoryId: null,
+      categoryId: kLedgerTransferCategoryId,
       type: LedgerTransactionKind.transferLeg,
       memo: memo,
       transferGroupId: groupId,
@@ -487,17 +510,22 @@ class _LedgerTransactionEditorSheetState
 
     if (!_isValidCalendarDateYmd(_dateYmd)) return;
 
-    late final int minor;
-    try {
-      minor = parseAmountStringToMinorUnits(_amountController.text);
-    } catch (_) {
-      return;
-    }
-
     final fromAcc = _accountFor(accounts, _fromAccountId);
     final toAcc = _accountFor(accounts, _toAccountId);
     if (fromAcc == null || toAcc == null) return;
     if (_transferPairErrorText(l10n, accounts) != null) return;
+
+    final crossCurrency = fromAcc.currency != toAcc.currency;
+    late final int fromMinor;
+    late final int toMinor;
+    try {
+      fromMinor = parseAmountStringToMinorUnits(_amountController.text);
+      toMinor = crossCurrency
+          ? parseAmountStringToMinorUnits(_toAmountController.text)
+          : fromMinor;
+    } catch (_) {
+      return;
+    }
 
     setState(() {
       _submitAttempted = false;
@@ -523,7 +551,7 @@ class _LedgerTransactionEditorSheetState
         final outNext = _buildUpdatedTransferLeg(
           prev: outPrev,
           transactionDate: _dateYmd,
-          amountMinor: minor,
+          amountMinor: fromMinor,
           accountId: _fromAccountId!,
           currency: fromAcc.currency,
           direction: MoneyDirection.out_,
@@ -534,7 +562,7 @@ class _LedgerTransactionEditorSheetState
         final inNext = _buildUpdatedTransferLeg(
           prev: inPrev,
           transactionDate: _dateYmd,
-          amountMinor: minor,
+          amountMinor: toMinor,
           accountId: _toAccountId!,
           currency: toAcc.currency,
           direction: MoneyDirection.in_,
@@ -547,10 +575,12 @@ class _LedgerTransactionEditorSheetState
         await repo.createTransferLegPair(
           uid,
           transactionDate: _dateYmd,
-          amountMinor: minor,
+          fromAmountMinor: fromMinor,
           fromAccountId: _fromAccountId!,
+          fromCurrency: fromAcc.currency,
+          toAmountMinor: toMinor,
           toAccountId: _toAccountId!,
-          currency: fromAcc.currency,
+          toCurrency: toAcc.currency,
           memo: memo,
         );
       }
@@ -755,302 +785,406 @@ class _LedgerTransactionEditorSheetState
         ? l10n.transactionEditorSheetEditTitle
         : l10n.newTransactionSheetTitle;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 16),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge),
-            if (!_editing) ...[
-              const SizedBox(height: 6),
-              Text(
-                l10n.newTransactionSheetBody,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            if (_editing && widget.transaction != null) ...[
-              const SizedBox(height: 6),
-              Text(
-                '${widget.transaction!.transactionDate} · ${widget.transaction!.id}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            accountsAsync.when(
-              data: (accounts) {
-                if (accounts.isEmpty) {
-                  return Text(l10n.transactionEditorValidationAccount);
-                }
-
-                if (_sheetMode == _SheetMode.incomeExpense) {
-                  if (_accountId == null &&
-                      !_didPickDefaultAccount &&
-                      accounts.isNotEmpty) {
-                    _didPickDefaultAccount = true;
-                    Future.microtask(() {
-                      if (mounted) {
-                        setState(() => _accountId = accounts.first.id);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxH = finkoModalSheetMaxHeight(
+          context,
+          layoutMaxHeight: constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : null,
+        );
+        return SizedBox(
+          height: maxH,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + 16),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(title, style: theme.textTheme.titleLarge),
+                  if (!_editing) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.newTransactionSheetBody,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if (_editing && widget.transaction != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${widget.transaction!.transactionDate} · ${widget.transaction!.id}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  accountsAsync.when(
+                    data: (accounts) {
+                      if (accounts.isEmpty) {
+                        return Text(l10n.transactionEditorValidationAccount);
                       }
-                    });
-                  }
-                } else {
-                  _applyDefaultTransferAccountsIfNeeded(accounts);
-                }
 
-                final cats = categoriesAsync.valueOrNull ?? [];
-                final filteredCats = _categoriesForDirection(cats, _direction);
-                final showTransferForm = _isTransferContext;
+                      if (_sheetMode == _SheetMode.incomeExpense) {
+                        if (_accountId == null &&
+                            !_didPickDefaultAccount &&
+                            accounts.isNotEmpty) {
+                          _didPickDefaultAccount = true;
+                          Future.microtask(() {
+                            if (mounted) {
+                              setState(() => _accountId = accounts.first.id);
+                            }
+                          });
+                        }
+                      } else {
+                        _applyDefaultTransferAccountsIfNeeded(accounts);
+                      }
 
-                if (_editing &&
-                    widget.transaction?.type ==
-                        LedgerTransactionKind.transferLeg &&
-                    !_peerLoadDone) {
-                  return const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+                      final cats = categoriesAsync.valueOrNull ?? [];
+                      final filteredCats = _categoriesForDirection(
+                        cats,
+                        _direction,
+                      );
+                      final showTransferForm = _isTransferContext;
+                      final fromAccPick = _accountFor(accounts, _fromAccountId);
+                      final toAccPick = _accountFor(accounts, _toAccountId);
+                      final transferCrossCurrency =
+                          showTransferForm &&
+                          fromAccPick != null &&
+                          toAccPick != null &&
+                          fromAccPick.currency != toAccPick.currency;
+                      final primaryAmountCurrency = showTransferForm
+                          ? fromAccPick?.currency
+                          : _accountFor(accounts, _accountId)?.currency;
+                      final secondaryAmountCurrency = toAccPick?.currency;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _pickDate,
-                        borderRadius: BorderRadius.circular(4),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.transactionEditorFieldDate,
-                            border: const OutlineInputBorder(),
-                            errorText: _dateErrorText(l10n),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              children: [
-                                Expanded(child: Text(_dateYmd)),
-                                Icon(
-                                  Icons.calendar_today_outlined,
-                                  size: 20,
-                                  color: theme.colorScheme.onSurfaceVariant,
+                      if (_editing &&
+                          widget.transaction?.type ==
+                              LedgerTransactionKind.transferLeg &&
+                          !_peerLoadDone) {
+                        return const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _pickDate,
+                              borderRadius: BorderRadius.circular(4),
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  labelText: l10n.transactionEditorFieldDate,
+                                  border: const OutlineInputBorder(),
+                                  errorText: _dateErrorText(l10n),
                                 ),
-                              ],
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(child: Text(_dateYmd)),
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        size: 20,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                        signed: false,
-                      ),
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      inputFormatters: [AmountTextInputFormatter()],
-                      decoration: InputDecoration(
-                        labelText: l10n.transactionEditorFieldAmount,
-                        border: const OutlineInputBorder(),
-                        errorText: _amountErrorText(l10n),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.transactionEditorFieldDirection,
-                      style: theme.textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildModeSelector(l10n, theme),
-                    const SizedBox(height: 12),
-                    if (showTransferForm) ...[
-                      Builder(
-                        builder: (context) {
-                          final toAccounts = accounts
-                              .where(
-                                (a) =>
-                                    _fromAccountId == null ||
-                                    a.id != _fromAccountId,
-                              )
-                              .toList();
-                          final fromValue =
-                              _fromAccountId != null &&
-                                  accounts.any((a) => a.id == _fromAccountId)
-                              ? _fromAccountId
-                              : null;
-                          final toValue =
-                              _toAccountId != null &&
-                                  toAccounts.any((a) => a.id == _toAccountId)
-                              ? _toAccountId
-                              : null;
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              DropdownButtonFormField<String>(
-                                // ignore: deprecated_member_use
-                                value: fromValue,
-                                decoration: InputDecoration(
-                                  labelText:
-                                      l10n.transactionEditorFieldFromAccount,
-                                  border: const OutlineInputBorder(),
-                                  errorText:
-                                      _fromAccountErrorText(l10n, accounts) ??
-                                      _transferPairErrorText(l10n, accounts),
-                                ),
-                                items: [
-                                  for (final a in accounts)
-                                    DropdownMenuItem(
-                                      value: a.id,
-                                      child: Text(a.name),
-                                    ),
-                                ],
-                                onChanged: (v) => setState(() {
-                                  _fromAccountId = v;
-                                  if (v != null && v == _toAccountId) {
-                                    _toAccountId = null;
-                                  }
-                                }),
+                          TextField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: false,
+                            ),
+                            autocorrect: false,
+                            enableSuggestions: false,
+                            inputFormatters: [AmountTextInputFormatter()],
+                            decoration: InputDecoration(
+                              labelText: transferCrossCurrency
+                                  ? l10n.transactionEditorFieldTransferAmountOut
+                                  : l10n.transactionEditorFieldAmount,
+                              suffixText:
+                                  (primaryAmountCurrency != null &&
+                                      primaryAmountCurrency.isNotEmpty)
+                                  ? primaryAmountCurrency
+                                  : null,
+                              suffixStyle: theme.textTheme.titleSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
-                              const SizedBox(height: 12),
-                              DropdownButtonFormField<String>(
-                                // ignore: deprecated_member_use
-                                value: toValue,
+                              border: const OutlineInputBorder(),
+                              errorText: _amountErrorText(l10n),
+                            ),
+                          ),
+                          if (transferCrossCurrency) ...[
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: _toAmountController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                    signed: false,
+                                  ),
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              inputFormatters: [AmountTextInputFormatter()],
+                              decoration: InputDecoration(
+                                labelText:
+                                    l10n.transactionEditorFieldTransferAmountIn,
+                                suffixText:
+                                    (secondaryAmountCurrency != null &&
+                                        secondaryAmountCurrency.isNotEmpty)
+                                    ? secondaryAmountCurrency
+                                    : null,
+                                suffixStyle: theme.textTheme.titleSmall
+                                    ?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                border: const OutlineInputBorder(),
+                                errorText: _toAmountErrorText(
+                                  l10n,
+                                  cross: transferCrossCurrency,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          Text(
+                            l10n.transactionEditorFieldDirection,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildModeSelector(l10n, theme),
+                          const SizedBox(height: 12),
+                          if (showTransferForm) ...[
+                            Builder(
+                              builder: (context) {
+                                final toAccounts = accounts
+                                    .where(
+                                      (a) =>
+                                          _fromAccountId == null ||
+                                          a.id != _fromAccountId,
+                                    )
+                                    .toList();
+                                final fromValue =
+                                    _fromAccountId != null &&
+                                        accounts.any(
+                                          (a) => a.id == _fromAccountId,
+                                        )
+                                    ? _fromAccountId
+                                    : null;
+                                final toValue =
+                                    _toAccountId != null &&
+                                        toAccounts.any(
+                                          (a) => a.id == _toAccountId,
+                                        )
+                                    ? _toAccountId
+                                    : null;
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    DropdownButtonFormField<String>(
+                                      // ignore: deprecated_member_use
+                                      value: fromValue,
+                                      decoration: InputDecoration(
+                                        labelText: l10n
+                                            .transactionEditorFieldFromAccount,
+                                        border: const OutlineInputBorder(),
+                                        errorText:
+                                            _fromAccountErrorText(
+                                              l10n,
+                                              accounts,
+                                            ) ??
+                                            _transferPairErrorText(
+                                              l10n,
+                                              accounts,
+                                            ),
+                                      ),
+                                      items: [
+                                        for (final a in accounts)
+                                          DropdownMenuItem(
+                                            value: a.id,
+                                            child: Text(a.name),
+                                          ),
+                                      ],
+                                      onChanged: (v) => setState(() {
+                                        _fromAccountId = v;
+                                        if (v != null && v == _toAccountId) {
+                                          _toAccountId = null;
+                                        }
+                                      }),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    DropdownButtonFormField<String>(
+                                      // ignore: deprecated_member_use
+                                      value: toValue,
+                                      decoration: InputDecoration(
+                                        labelText: l10n
+                                            .transactionEditorFieldToAccount,
+                                        border: const OutlineInputBorder(),
+                                        errorText:
+                                            _toAccountErrorText(
+                                              l10n,
+                                              accounts,
+                                            ) ??
+                                            _transferPairErrorText(
+                                              l10n,
+                                              accounts,
+                                            ),
+                                      ),
+                                      items: [
+                                        for (final a in toAccounts)
+                                          DropdownMenuItem(
+                                            value: a.id,
+                                            child: Text(a.name),
+                                          ),
+                                      ],
+                                      onChanged: (v) =>
+                                          setState(() => _toAccountId = v),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ] else ...[
+                            DropdownButtonFormField<String>(
+                              // ignore: deprecated_member_use
+                              value:
+                                  _accountId != null &&
+                                      accounts.any((a) => a.id == _accountId)
+                                  ? _accountId
+                                  : null,
+                              decoration: InputDecoration(
+                                labelText: l10n.transactionEditorFieldAccount,
+                                border: const OutlineInputBorder(),
+                                errorText: _accountErrorText(l10n, accounts),
+                              ),
+                              items: [
+                                for (final a in accounts)
+                                  DropdownMenuItem(
+                                    value: a.id,
+                                    child: Text(a.name),
+                                  ),
+                              ],
+                              onChanged: (v) => setState(() => _accountId = v),
+                            ),
+                            const SizedBox(height: 12),
+                            if (filteredCats.isEmpty)
+                              InputDecorator(
                                 decoration: InputDecoration(
                                   labelText:
-                                      l10n.transactionEditorFieldToAccount,
+                                      l10n.transactionEditorFieldCategory,
                                   border: const OutlineInputBorder(),
-                                  errorText:
-                                      _toAccountErrorText(l10n, accounts) ??
-                                      _transferPairErrorText(l10n, accounts),
+                                  errorText: _categoryErrorText(
+                                    l10n,
+                                    filteredCats,
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  height: 24,
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Icon(
+                                      Icons.category_outlined,
+                                      size: 22,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              DropdownButtonFormField<String?>(
+                                // ignore: deprecated_member_use
+                                value: _categoryIdInFiltered(filteredCats)
+                                    ? _categoryId
+                                    : null,
+                                hint: Text(l10n.transactionEditorCategoryHint),
+                                decoration: InputDecoration(
+                                  labelText:
+                                      l10n.transactionEditorFieldCategory,
+                                  border: const OutlineInputBorder(),
+                                  errorText: _categoryErrorText(
+                                    l10n,
+                                    filteredCats,
+                                  ),
                                 ),
                                 items: [
-                                  for (final a in toAccounts)
+                                  for (final c in filteredCats)
                                     DropdownMenuItem(
-                                      value: a.id,
-                                      child: Text(a.name),
+                                      value: c.id,
+                                      child: Text(c.name),
                                     ),
                                 ],
                                 onChanged: (v) =>
-                                    setState(() => _toAccountId = v),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ] else ...[
-                      DropdownButtonFormField<String>(
-                        // ignore: deprecated_member_use
-                        value:
-                            _accountId != null &&
-                                accounts.any((a) => a.id == _accountId)
-                            ? _accountId
-                            : null,
-                        decoration: InputDecoration(
-                          labelText: l10n.transactionEditorFieldAccount,
-                          border: const OutlineInputBorder(),
-                          errorText: _accountErrorText(l10n, accounts),
-                        ),
-                        items: [
-                          for (final a in accounts)
-                            DropdownMenuItem(value: a.id, child: Text(a.name)),
-                        ],
-                        onChanged: (v) => setState(() => _accountId = v),
-                      ),
-                      const SizedBox(height: 12),
-                      if (filteredCats.isEmpty)
-                        InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.transactionEditorFieldCategory,
-                            border: const OutlineInputBorder(),
-                            errorText: _categoryErrorText(l10n, filteredCats),
-                          ),
-                          child: SizedBox(
-                            height: 24,
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Icon(
-                                Icons.category_outlined,
-                                size: 22,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        )
-                      else
-                        DropdownButtonFormField<String?>(
-                          // ignore: deprecated_member_use
-                          value: _categoryIdInFiltered(filteredCats)
-                              ? _categoryId
-                              : null,
-                          hint: Text(l10n.transactionEditorCategoryHint),
-                          decoration: InputDecoration(
-                            labelText: l10n.transactionEditorFieldCategory,
-                            border: const OutlineInputBorder(),
-                            errorText: _categoryErrorText(l10n, filteredCats),
-                          ),
-                          items: [
-                            for (final c in filteredCats)
-                              DropdownMenuItem(
-                                value: c.id,
-                                child: Text(c.name),
+                                    setState(() => _categoryId = v),
                               ),
                           ],
-                          onChanged: (v) => setState(() => _categoryId = v),
-                        ),
-                    ],
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _memoController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: l10n.transactionEditorFieldMemo,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: (_saving || _deleting) ? null : _save,
-                      child: _saving
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(l10n.transactionEditorSave),
-                    ),
-                    if (_editing) ...[
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: (_saving || _deleting)
-                            ? null
-                            : _confirmDelete,
-                        child: _deleting
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(l10n.transactionEditorDelete),
-                      ),
-                    ],
-                  ],
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('$e'),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _memoController,
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              labelText: l10n.transactionEditorFieldMemo,
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton(
+                            onPressed: (_saving || _deleting) ? null : _save,
+                            child: _saving
+                                ? const SizedBox(
+                                    height: 22,
+                                    width: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(l10n.transactionEditorSave),
+                          ),
+                          if (_editing) ...[
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: (_saving || _deleting)
+                                  ? null
+                                  : _confirmDelete,
+                              child: _deleting
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(l10n.transactionEditorDelete),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Text('$e'),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

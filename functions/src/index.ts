@@ -14,6 +14,11 @@ import { materializeDueUpcoming } from "./materialize";
 import { commitOnboarding } from "./onboardingCommit";
 import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
 import { reconcileDeferredLedgerForUser } from "./reconcileDeferredLedgerCallable";
+import {
+  onUserAccountWritten,
+  onUserCategoryWritten,
+} from "./ledgerCategoryAccountTriggers";
+import { touchLedgerSourcesLastChangedAt } from "./userLedgerSync";
 
 initializeApp();
 
@@ -24,6 +29,8 @@ export {
   requestMessagingOtp,
   verifyMessagingOtp,
   reconcileDeferredLedgerForUser,
+  onUserAccountWritten,
+  onUserCategoryWritten,
 };
 
 export const onLedgerTransactionWritten = onDocumentWritten(
@@ -59,6 +66,8 @@ export const onLedgerTransactionWritten = onDocumentWritten(
       ) {
         return;
       }
+
+      await touchLedgerSourcesLastChangedAt(db, uid);
 
       if (!before?.exists && after?.exists) {
         await runLedgerAggregate(db, uid, eventId, txDataToPayload(after.data()!), 1, after.ref);

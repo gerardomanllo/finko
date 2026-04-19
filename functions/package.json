@@ -10,7 +10,8 @@
     "build:watch": "tsc --watch",
     "lint": "eslint --ext .ts src/",
     "test": "jest",
-    "test:ci": "npm run build && npm test"
+    "test:ci": "npm run build && npm test",
+    "migrate:liability-balances": "npm run build && node lib/tools/migrateLiabilityBalances.js"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",

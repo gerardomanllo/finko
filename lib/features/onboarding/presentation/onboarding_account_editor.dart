@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/ui/finko_modal_sheet_extent.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/onboarding_models.dart';
 import 'onboarding_account_icons.dart';
@@ -43,16 +44,20 @@ Future<void> showOnboardingAccountEditor({
   OnboardingAccountDraft? existing,
   required void Function(OnboardingAccountDraft draft) onSave,
   bool metadataOnly = false,
+  Future<bool> Function()? onDelete,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    showDragHandle: true,
+    useSafeArea: true,
     builder: (ctx) {
       return _OnboardingAccountEditorSheet(
         l10n: l10n,
         existing: existing,
         onSave: onSave,
         metadataOnly: metadataOnly,
+        onDelete: onDelete,
       );
     },
   );
@@ -64,12 +69,14 @@ class _OnboardingAccountEditorSheet extends StatefulWidget {
     this.existing,
     required this.onSave,
     this.metadataOnly = false,
+    this.onDelete,
   });
 
   final AppLocalizations l10n;
   final OnboardingAccountDraft? existing;
   final void Function(OnboardingAccountDraft draft) onSave;
   final bool metadataOnly;
+  final Future<bool> Function()? onDelete;
 
   @override
   State<_OnboardingAccountEditorSheet> createState() =>
@@ -114,203 +121,242 @@ class _OnboardingAccountEditorSheetState
     final l10n = widget.l10n;
     final existing = widget.existing;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              existing == null
-                  ? l10n.onboardingAddAccount
-                  : l10n.onboardingEditAccount,
-              style: Theme.of(context).textTheme.titleLarge,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxH = finkoModalSheetMaxHeight(
+          context,
+          layoutMaxHeight: constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : null,
+        );
+        return SizedBox(
+          height: maxH,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 16,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.onboardingPickIcon,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 160,
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
-                itemCount: kOnboardingAccountIconMap.length,
-                itemBuilder: (context, i) {
-                  final key = kOnboardingAccountIconMap.keys.elementAt(i);
-                  final selected = _iconKey == key;
-                  return InkWell(
-                    onTap: () => setState(() => _iconKey = key),
-                    borderRadius: BorderRadius.circular(8),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: selected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          width: selected ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(onboardingAccountIconForKey(key)),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: l10n.onboardingAccountName,
-              ),
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 12),
-            if (widget.metadataOnly && existing != null) ...[
-              Text(
-                l10n.onboardingAccountTypeLabel,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                accountTypeLabel(l10n, existing.type),
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                l10n.onboardingCurrencyLabel,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                existing.currency,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ] else ...[
-              DropdownButtonFormField<OnboardingAccountType>(
-                key: ValueKey<OnboardingAccountType>(_type),
-                initialValue: _type,
-                decoration: InputDecoration(
-                  labelText: l10n.onboardingAccountTypeLabel,
-                ),
-                items: OnboardingAccountType.values
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(accountTypeLabel(l10n, e)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setState(() => _type = v ?? _type),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      key: ValueKey<String>(_currency),
-                      initialValue: _currency,
-                      decoration: InputDecoration(
-                        labelText: l10n.onboardingCurrencyLabel,
-                      ),
-                      items: kOnboardingCurrencies
-                          .map(
-                            (c) => DropdownMenuItem(value: c, child: Text(c)),
-                          )
-                          .toList(),
-                      onChanged: (v) =>
-                          setState(() => _currency = v ?? _currency),
+                  Text(
+                    existing == null
+                        ? l10n.onboardingAddAccount
+                        : l10n.onboardingEditAccount,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.onboardingPickIcon,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 160,
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                          ),
+                      itemCount: kOnboardingAccountIconMap.length,
+                      itemBuilder: (context, i) {
+                        final key = kOnboardingAccountIconMap.keys.elementAt(i);
+                        final selected = _iconKey == key;
+                        return InkWell(
+                          onTap: () => setState(() => _iconKey = key),
+                          borderRadius: BorderRadius.circular(8),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: selected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                width: selected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(onboardingAccountIconForKey(key)),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OnboardingAmountTextField(
-                      controller: _balanceController,
-                      decoration: onboardingMoneyDecoration(
-                        context: context,
-                        labelText: l10n.onboardingStartingBalanceLabel,
-                        currencyCode: _currency,
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.onboardingAccountName,
+                    ),
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 12),
+                  if (widget.metadataOnly && existing != null) ...[
+                    Text(
+                      l10n.onboardingAccountTypeLabel,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      accountTypeLabel(l10n, existing.type),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.onboardingCurrencyLabel,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      existing.currency,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ] else ...[
+                    DropdownButtonFormField<OnboardingAccountType>(
+                      key: ValueKey<OnboardingAccountType>(_type),
+                      initialValue: _type,
+                      decoration: InputDecoration(
+                        labelText: l10n.onboardingAccountTypeLabel,
+                      ),
+                      items: OnboardingAccountType.values
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(accountTypeLabel(l10n, e)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => setState(() => _type = v ?? _type),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            key: ValueKey<String>(_currency),
+                            initialValue: _currency,
+                            decoration: InputDecoration(
+                              labelText: l10n.onboardingCurrencyLabel,
+                            ),
+                            items: kOnboardingCurrencies
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _currency = v ?? _currency),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OnboardingAmountTextField(
+                            controller: _balanceController,
+                            decoration: onboardingMoneyDecoration(
+                              context: context,
+                              labelText: l10n.onboardingStartingBalanceLabel,
+                              currencyCode: _currency,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.onboardingSectionColor,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final argb in kOnboardingAccountColorPalette)
+                        GestureDetector(
+                          onTap: () => setState(() => _colorArgb = argb),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Color(argb),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: _colorArgb == argb
+                                    ? Theme.of(context).colorScheme.onSurface
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  if (widget.onDelete != null && existing != null) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () async {
+                          final removed = await widget.onDelete!();
+                          if (removed && context.mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: Text(
+                          l10n.accountEditorDeleteAccount,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+                  ],
+                  FilledButton(
+                    onPressed: () {
+                      final name = _nameController.text.trim();
+                      if (name.isEmpty) return;
+                      final minor = widget.metadataOnly && existing != null
+                          ? 0
+                          : (parseMajorToMinor(_balanceController.text) ?? 0);
+                      final lockedTypeCurrency =
+                          widget.metadataOnly && existing != null;
+                      widget.onSave(
+                        OnboardingAccountDraft(
+                          id:
+                              existing?.id ??
+                              DateTime.now().microsecondsSinceEpoch.toString(),
+                          name: name,
+                          type: lockedTypeCurrency ? existing.type : _type,
+                          currency: lockedTypeCurrency
+                              ? existing.currency
+                              : _currency,
+                          colorArgb: _colorArgb,
+                          startingBalanceMinor: minor,
+                          iconKey: _iconKey,
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(l10n.onboardingSaveAccount),
                   ),
                 ],
               ),
-            ],
-            const SizedBox(height: 16),
-            Text(
-              l10n.onboardingSectionColor,
-              style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final argb in kOnboardingAccountColorPalette)
-                  GestureDetector(
-                    onTap: () => setState(() => _colorArgb = argb),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Color(argb),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: _colorArgb == argb
-                              ? Theme.of(context).colorScheme.onSurface
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: () {
-                final name = _nameController.text.trim();
-                if (name.isEmpty) return;
-                final minor = widget.metadataOnly && existing != null
-                    ? 0
-                    : (parseMajorToMinor(_balanceController.text) ?? 0);
-                final lockedTypeCurrency =
-                    widget.metadataOnly && existing != null;
-                widget.onSave(
-                  OnboardingAccountDraft(
-                    id:
-                        existing?.id ??
-                        DateTime.now().microsecondsSinceEpoch.toString(),
-                    name: name,
-                    type: lockedTypeCurrency ? existing.type : _type,
-                    currency: lockedTypeCurrency
-                        ? existing.currency
-                        : _currency,
-                    colorArgb: _colorArgb,
-                    startingBalanceMinor: minor,
-                    iconKey: _iconKey,
-                  ),
-                );
-                Navigator.of(context).pop();
-              },
-              child: Text(l10n.onboardingSaveAccount),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

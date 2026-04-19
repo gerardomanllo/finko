@@ -16,6 +16,10 @@
 
 - **Color theme:** three-way control (**Light** / **Dark** / **System**) with icons (`FinkoThemeModeToggle`). Persists to `users/{uid}.themePreference` and applies via `themeModeProvider`; profile stream is mirrored into the app theme in `ProfileThemeSyncListener` (`lib/app/profile_theme_sync_listener.dart`).
 
+### Net worth (planned)
+
+- **Include secured-asset estimates in net worth** — toggle (persist on `users/{uid}`). When **on** (planned default), net worth includes **equity** from loan/mortgage accounts with collateral estimates; when **off**, use **balance-only** treatment for those accounts. See [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md).
+
 ### Membership
 
 - **Manage your plan** — opens the user-specific Stripe Customer Portal (or Billing Portal “magic”) link once the backend exposes it.
@@ -51,4 +55,5 @@
 
 ## Revision log
 
+- **2026-04-19** — Planned subsection: **net worth** toggle for **secured-asset estimates** (default on when feature ships); pointer to [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md).
 - **2026-04-16** — Appearance: icon **three-way theme** toggle + Firestore persistence + `ProfileThemeSyncListener`. Membership: **Manage your plan** disabled with **Coming soon**. Messaging: WhatsApp/Telegram rows, reuse onboarding OTP sheet when not linked, connected-details sheet + confirm disconnect.

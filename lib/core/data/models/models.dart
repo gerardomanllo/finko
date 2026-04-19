@@ -1,4 +1,5 @@
 export 'finko_account.dart';
+export 'finko_account_kind.dart';
 export 'finko_category.dart';
 export 'finko_enums.dart';
 export 'forex_rates.dart';

@@ -49,6 +49,10 @@ Close drawer on selection or scrim tap.
 
 - Stub user name/avatar.
 
+## Pull-to-refresh
+
+- New screens that add **`RefreshIndicator`** (or equivalent “reload remote data”) must call **`ledgerAwareAppRefreshProvider.runPullToRefresh`** so **materialize**, **conditional reconcile**, and **canonical Riverpod invalidation** stay consistent app-wide (see **`data-contract.md` §11**).
+
 ## Acceptance
 
 - [ ] Five bottom items in this order: Dashboard, Recurring, New transaction (+), Spending, Transactions.
@@ -56,3 +60,9 @@ Close drawer on selection or scrim tap.
 - [ ] Top-left settings cog toggles drawer.
 - [ ] Drawer lists three destinations and navigates correctly.
 - [ ] Current tab state visible.
+
+## Revision log
+
+| Date | Change |
+|------|--------|
+| 2026-04-18 | **Pull-to-refresh** convention: use **`ledgerAwareAppRefreshProvider`** on any new refresh surface (`data-contract.md` §11). |

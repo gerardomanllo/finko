@@ -2,15 +2,18 @@ import type { DocumentData, DocumentReference, Firestore } from "firebase-admin/
 import { FieldValue } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
 import { findForexDocWalkBack, foreignMinorToMainMinor } from "./forex";
+import { isLiabilityAccountType } from "./accountKinds";
 import {
   applyAccountDelta,
   applyMonthDelta as applyMonthDeltaPure,
   computeLedgerUpdateOps,
   monthKeyFromYmd,
   type AggregateOp,
+  type BalancePolarity,
   type TxPayload,
 } from "./ledgerAggregateMath";
 import { getUserTodayYmd, isLedgerDateEffectiveForAggregate } from "./userToday";
+import { touchAggregateLastCompletedAt } from "./userLedgerSync";
 
 export type { TxPayload } from "./ledgerAggregateMath";
 
@@ -189,6 +192,7 @@ async function runAggregateOpsTransaction(
   ops: AggregateOp[],
   ledgerTxRef?: DocumentReference
 ): Promise<void> {
+  let aggregateAppliedMoney = false;
   await db.runTransaction(async (t) => {
     const idemRef = db.doc(`users/${uid}/_processedAggregateEvents/${eventId}`);
     const accountRefs = new Map<string, FirebaseFirestore.DocumentReference>();
@@ -218,7 +222,12 @@ async function runAggregateOpsTransaction(
 
     const accountData = new Map<
       string,
-      { ref: FirebaseFirestore.DocumentReference; balanceMinor: number; balanceMinorMain: number }
+      {
+        ref: FirebaseFirestore.DocumentReference;
+        balanceMinor: number;
+        balanceMinorMain: number;
+        balancePolarity: BalancePolarity;
+      }
     >();
     const monthData = new Map<string, { ref: FirebaseFirestore.DocumentReference; base: Record<string, unknown> }>();
 
@@ -229,10 +238,15 @@ async function runAggregateOpsTransaction(
         throw new Error(`Missing account ${accountId}`);
       }
       const data = snap.data()!;
+      const rawType = typeof data.type === "string" ? data.type : "";
+      const balancePolarity: BalancePolarity = isLiabilityAccountType(rawType)
+        ? "liability"
+        : "asset";
       accountData.set(accountId, {
         ref,
         balanceMinor: (data.balanceMinor as number) ?? 0,
         balanceMinorMain: (data.balanceMinorMain as number | undefined) ?? 0,
+        balancePolarity,
       });
     }
 
@@ -247,7 +261,7 @@ async function runAggregateOpsTransaction(
     for (const op of ops) {
       const { tx, sign, amountMain } = op;
       const account = accountData.get(tx.accountId)!;
-      applyAccountDelta(account, tx, sign, amountMain);
+      applyAccountDelta(account, tx, sign, amountMain, account.balancePolarity);
 
       if (tx.type !== "transferLeg") {
         const ym = monthKeyFromYmd(tx.transactionDate);
@@ -280,7 +294,11 @@ async function runAggregateOpsTransaction(
         { merge: true }
       );
     }
+    aggregateAppliedMoney = true;
   });
+  if (aggregateAppliedMoney) {
+    await touchAggregateLastCompletedAt(db, uid);
+  }
 }
 
 /**

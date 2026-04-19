@@ -27,6 +27,8 @@ class UserProfile {
     this.ledgerVersion,
     this.integrations = const UserIntegrations(),
     this.budgets = const {},
+    this.aggregateLastCompletedAt,
+    this.ledgerSourcesLastChangedAt,
   });
 
   @JsonKey(includeToJson: false)
@@ -69,6 +71,15 @@ class UserProfile {
     toJson: budgetMapToFirestoreJson,
   )
   final Map<String, MonthlyBudgetEntry> budgets;
+
+  /// Server-only: last time ledger aggregates finished applying (Cloud Functions).
+  @FirestoreNullableUtcDateTimeConverter()
+  final DateTime? aggregateLastCompletedAt;
+
+  /// Server-only: last time transactions / categories / accounts changed in a
+  /// ledger-relevant way (Cloud Functions).
+  @FirestoreNullableUtcDateTimeConverter()
+  final DateTime? ledgerSourcesLastChangedAt;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);

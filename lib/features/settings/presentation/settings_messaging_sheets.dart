@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/data/models/user_profile.dart';
+import '../../../core/ui/finko_modal_sheet_extent.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Bottom sheet: linked channel identity + verified date + disconnect.
@@ -83,41 +84,68 @@ class _ConnectedMessagingSheet extends StatelessWidget {
       ];
     }
 
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              color: brand,
-              borderRadius: BorderRadius.circular(2),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxH = finkoModalSheetMaxHeight(
+          context,
+          layoutMaxHeight: constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : null,
+        );
+        return SizedBox(
+          height: maxH,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 12,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: brand,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        ...details,
+                        const SizedBox(height: 20),
+                        FilledButton.tonal(
+                          style: FilledButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            onDisconnect();
+                          },
+                          child: Text(l10n.settingsMessagingDisconnect),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          ...details,
-          const SizedBox(height: 20),
-          FilledButton.tonal(
-            style: FilledButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              onDisconnect();
-            },
-            child: Text(l10n.settingsMessagingDisconnect),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

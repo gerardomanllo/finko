@@ -40,6 +40,8 @@ Personal finance tracker (Flutter: iOS, Android, Web). Backend is **Firebase** (
 - **[data-model.md](data-model.md)** — Firestore paths, fields, **`monthlyTotals`** embedding, entities (transactions, accounts, categories, budgets, recurring). Includes **ledger aggregate trigger** idempotency, **`aggregateApplied`**, and **catch-up** behavior ([§4.1a](data-model.md)).
 - **[data-contract.md](data-contract.md)** — how **repositories + Riverpod + `snapshots()`** feed widgets; **real-time only** (no nightly batch for core data); screen→subscription map. Includes **client vs Cloud Functions** responsibilities for aggregates ([§12](data-contract.md)).
 - **[ledger-aggregations-and-ui-flow.md](ledger-aggregations-and-ui-flow.md)** — formulas for **account / monthlyTotals / day / category** deltas, **transfer** and **deferred** behavior, and **Flutter** providers plus MTD/sparkline derivations.
+- **[loans-collateral-and-net-worth.md](loans-collateral-and-net-worth.md)** — *Planning:* secured **loan/mortgage** (asset + liability in **one account**), **valuation history**, **net worth** toggle (default on), **immutable account currency** (not implemented yet).
+- **[credit-card-installments.md](credit-card-installments.md)** — *Planning:* **installment / deferred** purchases on **credit card** accounts (not implemented yet).
 - **[membership-and-monetization.md](membership-and-monetization.md)** — freemium UX patterns (paywalls, CTAs, upsells), **entitlements** and gating, **Stripe + Firebase** (extension vs custom webhooks). Align subscription fields with `data-model.md` when implemented.
 
 ## Project metadata

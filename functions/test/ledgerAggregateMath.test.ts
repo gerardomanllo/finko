@@ -50,11 +50,31 @@ describe("ledgerAggregateMath", () => {
   });
 
   describe("applyAccountDelta", () => {
-    it("decreases balance on outflow apply", () => {
+    it("decreases balance on outflow apply (asset)", () => {
       const acc = { balanceMinor: 100_000, balanceMinorMain: 100_000 };
-      applyAccountDelta(acc, baseTx({ amountMinor: 5000 }), 1, 5000);
+      applyAccountDelta(acc, baseTx({ amountMinor: 5000 }), 1, 5000, "asset");
       expect(acc.balanceMinor).toBe(95_000);
       expect(acc.balanceMinorMain).toBe(95_000);
+    });
+
+    it("increases liability balance on outflow (positive = owed)", () => {
+      const acc = { balanceMinor: 0, balanceMinorMain: 0 };
+      applyAccountDelta(acc, baseTx({ amountMinor: 5000 }), 1, 5000, "liability");
+      expect(acc.balanceMinor).toBe(5000);
+      expect(acc.balanceMinorMain).toBe(5000);
+    });
+
+    it("decreases liability balance on inflow (payment)", () => {
+      const acc = { balanceMinor: 10_000, balanceMinorMain: 10_000 };
+      applyAccountDelta(
+        acc,
+        baseTx({ amountMinor: 3000, direction: "in" }),
+        1,
+        3000,
+        "liability"
+      );
+      expect(acc.balanceMinor).toBe(7000);
+      expect(acc.balanceMinorMain).toBe(7000);
     });
   });
 

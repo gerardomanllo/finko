@@ -15,6 +15,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding); `InkWell` only when `onTap` is set (scrollable lists use plain padding). Without `title`, child is not wrapped in a min-height `Column` so **`ListView`** + **`RefreshIndicator`** get bounded height | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
+| **Ledger-aware pull refresh** | `ledgerAwareAppRefreshProvider.runPullToRefresh` — throttle, server timestamp gate, materialize + conditional reconcile, canonical `ref.invalidate` | Dashboard, Recurring, Transactions (`RefreshIndicator`); **required** for new refresh surfaces per `shell-navigation.md` |
 | **Pill toggle group** | Single-select pills (segmented control style) | Spending (`week` / `month` / `quarter` / `year`) |
 
 ## Formatting
@@ -33,6 +34,12 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period; optional **selected** border + tap | Spending (row of vertical period cards) |
 | **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Legacy / reuse |
 | **Donut + side legend** | Thin ring + **legend on the right** (swatch, name, amount, %); **centered horizontally**; center: title + period subtitle + bold total. On **Spending**, each block (strip, accordion, donut, top list) is its **own** paper/`Card` with **cloud** vertical gutters | Spending breakdown (`FinkoDonutWithSideLegend`) |
+
+## Core data (rollups)
+
+| Helper | Responsibility | Used on |
+|--------|----------------|---------|
+| **`finko_account_kind`** | `isLiabilityAccountType`, `netWorthFromAccountsMinor`, `netCashFromAccountsMinor`, `openingBalanceDirectionForAccount` — signed net worth/net cash; opening-balance tx direction for assets vs liabilities | Dashboard (net worth, net cash headline) |
 
 ## Accounts & grouping
 
@@ -98,6 +105,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-04-18** — **Ledger-aware pull refresh** row: `ledgerAwareAppRefreshProvider` for shared `RefreshIndicator` behavior.
 - **2026-04-16** — **`FinkoThemeModeToggle`:** three-way theme control on `/settings`.
 - **2026-04-16** — **`FinkoPaperCard`:** with **`title == null`**, skip the internal title+`Column` wrapper so **`ListView` / `RefreshIndicator`** children get bounded vertical constraints (fixes `/transactions` viewport layout error). Titled cards unchanged.
 - **2026-04-16** — Light scaffold stays **cloud**; accordions/charts/lists that sit on the scaffold use **paper** (`FinkoPaperCard` / existing cards) for white panels. `FinkoPaperCard` applies **InkWell** only when `onTap` is non-null so embedded scroll views behave.
