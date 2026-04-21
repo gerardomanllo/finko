@@ -1,0 +1,25 @@
+{
+  "projects": {
+    "default": "finkoappmx-dev",
+    "dev": "finkoappmx-dev",
+    "prod": "finkoappmx"
+  },
+  "targets": {
+    "finkoappmx-dev": {
+      "hosting": {
+        "dev": [
+          "finkoappmx-dev"
+        ],
+        "prod": [
+          "finkoappmx"
+        ]
+      }
+    },
+    "finkoappmx": {
+      "hosting": {
+        "prod": "finkoappmx"
+      }
+    }
+  },
+  "etags": {}
+}

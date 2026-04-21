@@ -1,0 +1,11 @@
+{
+  "name": "finko",
+  "private": true,
+  "description": "Flutter web + Firebase Hosting scripts (run from this folder).",
+  "scripts": {
+    "build:web:dev": "flutter build web -t lib/main_dev.dart",
+    "build:web:prod": "flutter build web -t lib/main_prod.dart",
+    "deploy:web:dev": "npm run build:web:dev && npx -y firebase-tools@latest deploy --only hosting:dev",
+    "deploy:web:prod": "npm run build:web:prod && npx -y firebase-tools@latest deploy --only hosting:prod"
+  }
+}
