@@ -186,10 +186,149 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingRequestOtpWhatsApp => 'Request WhatsApp OTP';
 
   @override
-  String get onboardingRequestOtpTelegram => 'Request Telegram OTP';
+  String get onboardingRequestOtpTelegram => 'Link Telegram';
 
   @override
   String get onboardingOtpCode => 'OTP code';
+
+  @override
+  String get messagingTelegramLinkInstructions =>
+      'Open the Finko bot in Telegram from the app, tap Start, then tap Done here when the app shows Telegram as linked.';
+
+  @override
+  String get messagingTelegramOpenBot => 'Open Telegram';
+
+  @override
+  String messagingOtpDevCodeSnack(String code) {
+    return 'Dev build: your OTP is $code';
+  }
+
+  @override
+  String get messagingTelegramIntro =>
+      'Link your Telegram account for Finko. Choose phone (international format) or your Telegram @username, then follow the steps.';
+
+  @override
+  String get messagingTelegramLinkMethodLabel =>
+      'How should we refer to your Telegram account?';
+
+  @override
+  String get messagingTelegramLinkMethodPhone => 'Phone';
+
+  @override
+  String get messagingTelegramLinkMethodUsername => 'Username';
+
+  @override
+  String get messagingTelegramCountryCodeLabel => 'Country code';
+
+  @override
+  String get messagingTelegramPhoneLabel => 'Phone number';
+
+  @override
+  String get messagingTelegramPhoneHint => 'Digits only (no spaces)';
+
+  @override
+  String get messagingTelegramUsernameLabel => 'Telegram username';
+
+  @override
+  String get messagingTelegramNext => 'Next';
+
+  @override
+  String get messagingTelegramStatusRegistering =>
+      'Registering phone / username with Finko…';
+
+  @override
+  String get messagingTelegramStatusPreparingTelegram =>
+      'Preparing secure link for Telegram…';
+
+  @override
+  String get messagingTelegramStatusWaitingForBot =>
+      'Waiting for you to open Telegram and tap Start on the Finko bot…';
+
+  @override
+  String get messagingTelegramAwaitingBotBody =>
+      'We will detect the link automatically. If nothing happens after you tap Start, return here and confirm your country code and number (or username) are correct.';
+
+  @override
+  String get messagingTelegramListeningFirestore =>
+      'Listening to your Firestore link document for chat_id…';
+
+  @override
+  String get messagingTelegramStatusLinkDetected =>
+      'Telegram chat linked successfully.';
+
+  @override
+  String get messagingTelegramLinkedTitle => 'Linked';
+
+  @override
+  String get messagingTelegramLinkedBody =>
+      'Your Telegram account is connected to Finko. Tap Done to continue, or close and finish later.';
+
+  @override
+  String get messagingTelegramDone => 'Done';
+
+  @override
+  String get messagingTelegramClose => 'Close';
+
+  @override
+  String get messagingTelegramPreparingHint =>
+      'Talking to Cloud Functions and Firestore. In debug builds, see the trace panel below.';
+
+  @override
+  String get messagingTelegramLinkFailedTitle => 'Something went wrong';
+
+  @override
+  String get messagingTelegramRetry => 'Try again';
+
+  @override
+  String get messagingTelegramErrPhoneTooShort =>
+      'Enter more digits for your phone number.';
+
+  @override
+  String get messagingTelegramErrPhoneFormat =>
+      'That phone number does not look like a valid international number (+country…).';
+
+  @override
+  String get messagingTelegramErrUsernameTooShort =>
+      'Enter a valid Telegram username (at least 5 characters after @).';
+
+  @override
+  String get messagingTelegramErrStepServer => 'Server configuration';
+
+  @override
+  String get messagingTelegramErrNoDeepLink =>
+      'The app did not receive a Telegram deep link. Check TELEGRAM_BOT_USERNAME and function deploy.';
+
+  @override
+  String get messagingTelegramErrUnexpectedResponse =>
+      'Unexpected server response. Try again or update the app.';
+
+  @override
+  String get messagingTelegramErrStepTimeout =>
+      'Timed out waiting for Telegram';
+
+  @override
+  String get messagingTelegramTimeoutBody =>
+      'Open Telegram from the button, tap Start on the bot, and try again. Tokens expire after a few minutes.';
+
+  @override
+  String get messagingTelegramErrStepCallable => 'Cloud Function error';
+
+  @override
+  String get messagingTelegramErrStepFirestore => 'Firestore listener error';
+
+  @override
+  String get messagingTelegramErrStepUnknown => 'Unexpected error';
+
+  @override
+  String get messagingTelegramErrLaunchTelegram =>
+      'Could not open Telegram from this device.';
+
+  @override
+  String get messagingTelegramErrStillNeedsBot =>
+      'The server still asks to open the bot. Tap Start in Telegram, then tap Continue again.';
+
+  @override
+  String get messagingTelegramErrVerify => 'Verification failed';
 
   @override
   String get onboardingVerifyWhatsApp => 'Verify WhatsApp';

@@ -110,6 +110,7 @@ TelegramAppIntegration _$TelegramAppIntegrationFromJson(
   Map<String, dynamic> json,
 ) => TelegramAppIntegration(
   username: json['username'] as String,
+  chatId: json['chatId'] as String?,
   verifiedAt: const FirestoreNullableUtcDateTimeConverter().fromJson(
     json['verifiedAt'],
   ),
@@ -119,6 +120,7 @@ Map<String, dynamic> _$TelegramAppIntegrationToJson(
   TelegramAppIntegration instance,
 ) => <String, dynamic>{
   'username': instance.username,
+  'chatId': ?instance.chatId,
   'verifiedAt': ?const FirestoreNullableUtcDateTimeConverter().toJson(
     instance.verifiedAt,
   ),

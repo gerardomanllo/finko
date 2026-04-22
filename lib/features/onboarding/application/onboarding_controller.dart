@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/onboarding_repository.dart';
+import '../domain/messaging_otp_request_result.dart';
 import '../domain/onboarding_models.dart';
 import 'onboarding_state.dart';
 
@@ -228,11 +229,11 @@ class OnboardingController extends Notifier<OnboardingState> {
     );
   }
 
-  Future<void> requestOtp({
+  Future<MessagingOtpRequestResult> requestOtp({
     required String channel,
     required String identity,
-  }) async {
-    await ref
+  }) {
+    return ref
         .read(onboardingRepositoryProvider)
         .requestMessagingOtp(channel: channel, identity: identity);
   }

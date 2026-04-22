@@ -28,8 +28,8 @@
 ### Messaging integrations (optional)
 
 - Separate rows (**WhatsApp**, **Telegram**) with **Connected** / **Not connected** from `UserProfile.integrations`.
-- **Not connected:** same bottom sheet as onboarding — `showOnboardingMessagingChannelSheet` + `requestMessagingOtp` / `verifyMessagingOtp` Cloud Functions; then refresh profile stream.
-- **Connected:** bottom sheet shows identity (`phoneE164` / `@username`) and verified date when present; **Disconnect** → confirm dialog → client merge/removes `integrations.whatsapp` or `integrations.telegram` on `users/{uid}` (empty `integrations` object removed).
+- **Not connected:** same bottom sheet as onboarding — `showOnboardingMessagingChannelSheet` + `requestMessagingOtp` / `verifyMessagingOtp` Cloud Functions; then refresh profile stream. **Telegram:** multi-step sheet (`TelegramChannelLinkSheet`) — **phone (dial + national) or @username** → **Next** → **Open Telegram** → real-time read of **`users/{uid}/_telegramLink/state`** until `chatId` appears → **Done** (no OTP; profile **`integrations.telegram`** is written by the webhook). **WhatsApp:** still OTP + verify (see [`references/telegram-bot-webhook.md`](references/telegram-bot-webhook.md)).
+- **Connected:** bottom sheet shows identity (`phoneE164` / `@username`) and verified date when present; **Disconnect** → confirm dialog → **`disconnectMessagingIntegration`** callable (removes `integrations.*` and, for Telegram, server-only link state under `users/{uid}/_telegramLink`).
 - User may connect **one, both, or neither** — do not require both.
 - Copy must **not** imply WhatsApp/Telegram are sign-in methods (they are **messaging** integrations only).
 
@@ -50,10 +50,12 @@
 
 - [x] Theme switch applies globally (`themeModeProvider` + Firestore `themePreference` + profile-driven sync).
 - [ ] **Manage your plan** opens a server-generated Stripe portal link (UI placeholder until backend).
-- [x] **At least two** distinct CTAs: WhatsApp and Telegram (OTP flow wired; disconnect via Firestore).
+- [x] **At least two** distinct CTAs: WhatsApp and Telegram (WhatsApp OTP; Telegram magic link; disconnect via **`disconnectMessagingIntegration`** callable).
 - [x] Copy does **not** imply WhatsApp/Telegram are sign-in methods.
 
 ## Revision log
 
+- **2026-04-22** — Telegram not-connected sheet: **phone/username** toggle, **`_telegramLink`** listener, multi-step copy; **Firestore** rules allow owner **read** on `_telegramLink`.
+- **2026-04-21** — Messaging: **Telegram** uses magic link + webhook only (no OTP); **disconnect** uses **`disconnectMessagingIntegration`** callable instead of client-only Firestore merge for integration removal.
 - **2026-04-19** — Planned subsection: **net worth** toggle for **secured-asset estimates** (default on when feature ships); pointer to [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md).
 - **2026-04-16** — Appearance: icon **three-way theme** toggle + Firestore persistence + `ProfileThemeSyncListener`. Membership: **Manage your plan** disabled with **Coming soon**. Messaging: WhatsApp/Telegram rows, reuse onboarding OTP sheet when not linked, connected-details sheet + confirm disconnect.

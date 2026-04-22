@@ -7,11 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Telegram messaging:** Cloud Function **`telegramWebhook`** (Telegram `secret_token` + `/start link_<token>`) binds **`chat_id`** and writes **`integrations.telegram`** in one transaction; **no Telegram OTP**. Flutter link sheet uses **`tg://` / `t.me`** when **`needsBotStart`** is returned; **`disconnectMessagingIntegration`** clears link state and profile integration. Firestore **`telegramLinkTokens`** + **`users/{uid}/_telegramLink`** (rules: client deny-all on token writes).
+
 ### Changed
+
+- **Telegram linking UX:** onboarding/settings sheet uses a **multi-step** flow (phone dial + national number **or** @username, **Next**, progress copy, **Open Telegram**, real-time **`_telegramLink/state`** listener, success checkmark, then OTP). **`kDebugMode`** shows a scrollable **debug trace**; Firestore rules allow **read** of `users/{uid}/_telegramLink` for the owner.
 
 - **UI:** modal bottom sheets (transaction editor, filters, onboarding editors, messaging, month summaries) use **nearly full height** via a shared helper (keyboard-aware, respects the **status-bar inset**, and leaves a **small peek** above the sheet so underlying UI stays visible) instead of short intrinsic or ~82% caps. **Add/edit account** and **add/edit category** sheets use **`useSafeArea` + drag handle** on `showModalBottomSheet` (same as the transaction editor) so they are not edge-to-edge under the status bar. **Category / account month-detail** summary sheets do the same (modal `useSafeArea`, no duplicate inner `SafeArea`).
 
 ### Fixed
+
+- **Telegram deep link handoff:** the link sheet tries **`tg://resolve?domain=…&start=…`** before **`https://t.me/…`** so the `start` payload is not dropped by the OS; iOS **`LSApplicationQueriesSchemes`** (`tg`) and Android **`<queries>`** for `tg` / `t.me` support `url_launcher`. Webhook accepts **`/start@BotUsername link_…`** when Telegram sends that command form.
+
+- **Telegram deep link:** link tokens are **hex-only** (safer for `?start=`), live **24h**, **`TELEGRAM_BOT_USERNAME`** strips a leading **`@`** (broken `t.me` URL otherwise). Webhook uses a **Firestore transaction** to bind `chat_id` and mark the token used atomically, and treats **repeat `/start`** for the same chat as **idempotent** success.
 
 - **Ledger / accounts:** **liability** account types (`creditCard`, `loan`, `mortgage`) now use **positive balance = amount owed**; Cloud Functions **`applyAccountDelta`** applies transaction direction using account **`type`**. **Opening-balance** adjustments use inverted **`in`/`out`** for liabilities vs assets. **Net worth** and **net cash** on the dashboard use **signed** sums (subtract liabilities). Existing Firestore data: run the one-time migration in [`docs/references/liability-balance-migration.md`](docs/references/liability-balance-migration.md) per environment after deploy.
 
@@ -33,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Ledger:** every transaction row requires **`categoryId`**; transfer legs use reserved **`ledger-transfer`** category (created at onboarding / ensured on first transfer). **Cross-currency transfers** collect **two amounts** (per leg). **Cascade delete** for categories and accounts (with confirmation counts) removes related transactions, recurring, upcoming, and budget keys.
 
-- **Settings (`/settings`):** three-way **color theme** toggle (icons) with Firestore `themePreference` + app-wide sync from profile; **Manage your plan** stub (disabled, “Coming soon”); **WhatsApp** / **Telegram** rows reusing onboarding OTP bottom sheet when not linked, connected-details sheet + confirm disconnect when linked (`UserSettingsWriter`, `ProfileThemeSyncListener`, `FinkoThemeModeToggle`).
+- **Settings (`/settings`):** three-way **color theme** toggle (icons) with Firestore `themePreference` + app-wide sync from profile; **Manage your plan** stub (disabled, “Coming soon”); **WhatsApp** / **Telegram** rows reusing onboarding OTP bottom sheet when not linked, connected-details sheet + confirm disconnect when linked (`UserSettingsWriter` for theme, **`disconnectMessagingIntegration`** callable for messaging disconnect, `ProfileThemeSyncListener`, `FinkoThemeModeToggle`).
 
 - **Categories (`/categories`) & Accounts (`/accounts`):** paper lists with **icons**; categories grouped income/expense; accounts grouped by type (dashboard order). Row tap opens a **summary bottom sheet** (this month + recent transactions; accounts show **net** in main currency from ledger). **Edit** opens the same **slide-up editors** as onboarding (categories; accounts use **metadata-only** mode—no starting balance). Firestore: `updateCategory`, `updateAccountMetadata`; `FinkoAccount` includes **`iconKey`** / **`colorArgb`**. **Add** uses a **bottom-center floating extended FAB** (tonal) on both routes.
 

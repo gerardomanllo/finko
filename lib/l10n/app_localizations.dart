@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingRequestOtpTelegram.
   ///
   /// In es, this message translates to:
-  /// **'Solicitar OTP de Telegram'**
+  /// **'Vincular Telegram'**
   String get onboardingRequestOtpTelegram;
 
   /// No description provided for @onboardingOtpCode.
@@ -451,6 +451,240 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Código OTP'**
   String get onboardingOtpCode;
+
+  /// No description provided for @messagingTelegramLinkInstructions.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre el bot de Finko en Telegram desde la app, pulsa Iniciar y luego pulsa Listo aquí cuando la app indique que Telegram quedó vinculado.'**
+  String get messagingTelegramLinkInstructions;
+
+  /// No description provided for @messagingTelegramOpenBot.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir Telegram'**
+  String get messagingTelegramOpenBot;
+
+  /// No description provided for @messagingOtpDevCodeSnack.
+  ///
+  /// In es, this message translates to:
+  /// **'Compilación de desarrollo: tu OTP es {code}'**
+  String messagingOtpDevCodeSnack(String code);
+
+  /// No description provided for @messagingTelegramIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Vincula tu cuenta de Telegram con Finko. Elige teléfono (formato internacional) o tu usuario @ de Telegram y sigue los pasos.'**
+  String get messagingTelegramIntro;
+
+  /// No description provided for @messagingTelegramLinkMethodLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cómo identificamos tu cuenta de Telegram?'**
+  String get messagingTelegramLinkMethodLabel;
+
+  /// No description provided for @messagingTelegramLinkMethodPhone.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono'**
+  String get messagingTelegramLinkMethodPhone;
+
+  /// No description provided for @messagingTelegramLinkMethodUsername.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario'**
+  String get messagingTelegramLinkMethodUsername;
+
+  /// No description provided for @messagingTelegramCountryCodeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Código de país'**
+  String get messagingTelegramCountryCodeLabel;
+
+  /// No description provided for @messagingTelegramPhoneLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Número de teléfono'**
+  String get messagingTelegramPhoneLabel;
+
+  /// No description provided for @messagingTelegramPhoneHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo dígitos (sin espacios)'**
+  String get messagingTelegramPhoneHint;
+
+  /// No description provided for @messagingTelegramUsernameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario de Telegram'**
+  String get messagingTelegramUsernameLabel;
+
+  /// No description provided for @messagingTelegramNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiente'**
+  String get messagingTelegramNext;
+
+  /// No description provided for @messagingTelegramStatusRegistering.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrando teléfono / usuario en Finko…'**
+  String get messagingTelegramStatusRegistering;
+
+  /// No description provided for @messagingTelegramStatusPreparingTelegram.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando enlace seguro para Telegram…'**
+  String get messagingTelegramStatusPreparingTelegram;
+
+  /// No description provided for @messagingTelegramStatusWaitingForBot.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando que abras Telegram y pulses Iniciar en el bot de Finko…'**
+  String get messagingTelegramStatusWaitingForBot;
+
+  /// No description provided for @messagingTelegramAwaitingBotBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Detectaremos el enlace automáticamente. Si no pasa nada tras pulsar Iniciar, vuelve aquí y confirma el código de país y el número (o el usuario).'**
+  String get messagingTelegramAwaitingBotBody;
+
+  /// No description provided for @messagingTelegramListeningFirestore.
+  ///
+  /// In es, this message translates to:
+  /// **'Escuchando el documento de enlace en Firestore para chat_id…'**
+  String get messagingTelegramListeningFirestore;
+
+  /// No description provided for @messagingTelegramStatusLinkDetected.
+  ///
+  /// In es, this message translates to:
+  /// **'Chat de Telegram vinculado correctamente.'**
+  String get messagingTelegramStatusLinkDetected;
+
+  /// No description provided for @messagingTelegramLinkedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vinculado'**
+  String get messagingTelegramLinkedTitle;
+
+  /// No description provided for @messagingTelegramLinkedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta de Telegram quedó conectada con Finko. Pulsa Listo para continuar o cierra y termina más tarde.'**
+  String get messagingTelegramLinkedBody;
+
+  /// No description provided for @messagingTelegramDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get messagingTelegramDone;
+
+  /// No description provided for @messagingTelegramClose.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get messagingTelegramClose;
+
+  /// No description provided for @messagingTelegramPreparingHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Hablando con Cloud Functions y Firestore. En depuración, revisa el panel de trazas abajo.'**
+  String get messagingTelegramPreparingHint;
+
+  /// No description provided for @messagingTelegramLinkFailedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Algo salió mal'**
+  String get messagingTelegramLinkFailedTitle;
+
+  /// No description provided for @messagingTelegramRetry.
+  ///
+  /// In es, this message translates to:
+  /// **'Intentar de nuevo'**
+  String get messagingTelegramRetry;
+
+  /// No description provided for @messagingTelegramErrPhoneTooShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe más dígitos en tu número.'**
+  String get messagingTelegramErrPhoneTooShort;
+
+  /// No description provided for @messagingTelegramErrPhoneFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese número no parece un formato internacional válido (+país…).'**
+  String get messagingTelegramErrPhoneFormat;
+
+  /// No description provided for @messagingTelegramErrUsernameTooShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un usuario de Telegram válido (al menos 5 caracteres tras @).'**
+  String get messagingTelegramErrUsernameTooShort;
+
+  /// No description provided for @messagingTelegramErrStepServer.
+  ///
+  /// In es, this message translates to:
+  /// **'Configuración del servidor'**
+  String get messagingTelegramErrStepServer;
+
+  /// No description provided for @messagingTelegramErrNoDeepLink.
+  ///
+  /// In es, this message translates to:
+  /// **'La app no recibió el enlace profundo de Telegram. Revisa TELEGRAM_BOT_USERNAME y el despliegue de funciones.'**
+  String get messagingTelegramErrNoDeepLink;
+
+  /// No description provided for @messagingTelegramErrUnexpectedResponse.
+  ///
+  /// In es, this message translates to:
+  /// **'Respuesta inesperada del servidor. Inténtalo de nuevo o actualiza la app.'**
+  String get messagingTelegramErrUnexpectedResponse;
+
+  /// No description provided for @messagingTelegramErrStepTimeout.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo de espera agotado'**
+  String get messagingTelegramErrStepTimeout;
+
+  /// No description provided for @messagingTelegramTimeoutBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre Telegram con el botón, pulsa Iniciar en el bot e inténtalo de nuevo. Los enlaces caducan en unos minutos.'**
+  String get messagingTelegramTimeoutBody;
+
+  /// No description provided for @messagingTelegramErrStepCallable.
+  ///
+  /// In es, this message translates to:
+  /// **'Error en Cloud Function'**
+  String get messagingTelegramErrStepCallable;
+
+  /// No description provided for @messagingTelegramErrStepFirestore.
+  ///
+  /// In es, this message translates to:
+  /// **'Error del listener de Firestore'**
+  String get messagingTelegramErrStepFirestore;
+
+  /// No description provided for @messagingTelegramErrStepUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'Error inesperado'**
+  String get messagingTelegramErrStepUnknown;
+
+  /// No description provided for @messagingTelegramErrLaunchTelegram.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir Telegram en este dispositivo.'**
+  String get messagingTelegramErrLaunchTelegram;
+
+  /// No description provided for @messagingTelegramErrStillNeedsBot.
+  ///
+  /// In es, this message translates to:
+  /// **'El servidor aún pide abrir el bot. Pulsa Iniciar en Telegram y luego Continuar otra vez.'**
+  String get messagingTelegramErrStillNeedsBot;
+
+  /// No description provided for @messagingTelegramErrVerify.
+  ///
+  /// In es, this message translates to:
+  /// **'La verificación falló'**
+  String get messagingTelegramErrVerify;
 
   /// No description provided for @onboardingVerifyWhatsApp.
   ///

@@ -4,6 +4,10 @@ abstract final class FirestorePaths {
 
   static String userDoc(String uid) => '$users/$uid';
 
+  /// Server-written Telegram bot link state (`chatId`, `username`, …) — client may **read** only.
+  static String telegramLinkStateDoc(String uid) =>
+      '$users/$uid/_telegramLink/state';
+
   static String transactionsCollection(String uid) =>
       '$users/$uid/transactions';
 

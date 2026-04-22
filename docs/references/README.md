@@ -12,6 +12,7 @@ Use this folder for **stable pointers** that agents should read when touching a 
 | **Stripe + Firebase (memberships)** | [Invertase “Run Payments with Stripe” extension](https://extensions.dev/extensions/invertase/firestore-stripe-payments) — Firestore sync + optional Auth custom claims; [invertase/stripe-firebase-extensions](https://github.com/invertase/stripe-firebase-extensions) (source, README, POSTINSTALL). [Stripe: Subscriptions](https://docs.stripe.com/subscriptions), [Checkout](https://docs.stripe.com/payments/checkout), [Customer Portal](https://docs.stripe.com/customer-management), [Webhooks (signing)](https://docs.stripe.com/webhooks/signatures). Product doc: [`../membership-and-monetization.md`](../membership-and-monetization.md). |
 | **Design** | Figma or asset URLs (if any) |
 | **APIs** | Third-party docs for providers (Google/Apple sign-in, messaging APIs) |
+| **Telegram bot (webhook + linking)** | [`telegram-bot-webhook.md`](telegram-bot-webhook.md) — secrets, `setWebhook`, deep-link flow, Cloud Function names |
 
 Keep entries **short**; prefer linking out over pasting large blobs. Update when environments or URLs change.
 

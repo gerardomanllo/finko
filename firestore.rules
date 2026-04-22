@@ -61,6 +61,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Telegram deep-link tokens — Functions / webhook only.
+    match /telegramLinkTokens/{tokenId} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
       // Profile document only (not subcollections).
       allow read: if signedIn(userId);
@@ -87,6 +92,12 @@ service cloud.firestore {
 
       match /_otpChallenges/{challengeId} {
         allow read, write: if false;
+      }
+
+      match /_telegramLink/{docId} {
+        // Client read-only: Telegram link sheet listens for `chatId` after user opens the bot.
+        allow read: if signedIn(userId);
+        allow write: if false;
       }
 
       match /monthlyTotals/{monthId} {

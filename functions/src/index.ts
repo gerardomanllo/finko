@@ -12,7 +12,9 @@ import {
 import { ingestDailyForexRates } from "./dailyForex";
 import { materializeDueUpcoming } from "./materialize";
 import { commitOnboarding } from "./onboardingCommit";
+import { disconnectMessagingIntegration } from "./disconnectMessagingIntegration";
 import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
+import { telegramWebhook } from "./telegramWebhook";
 import { reconcileDeferredLedgerForUser } from "./reconcileDeferredLedgerCallable";
 import {
   onUserAccountWritten,
@@ -26,11 +28,13 @@ export {
   ingestDailyForexRates,
   materializeDueUpcoming,
   commitOnboarding,
+  disconnectMessagingIntegration,
   requestMessagingOtp,
   verifyMessagingOtp,
   reconcileDeferredLedgerForUser,
   onUserAccountWritten,
   onUserCategoryWritten,
+  telegramWebhook,
 };
 
 export const onLedgerTransactionWritten = onDocumentWritten(

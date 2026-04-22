@@ -35,6 +35,7 @@ users/{uid}/recurring/{ruleId}           # rules that spawn / link upcoming rows
 users/{uid}/_processedAggregateEvents/{eventId}  # idempotency for CF aggregate runs (see §4.1)
 
 forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not user-scoped
+telegramLinkTokens/{tokenId}             # Telegram deep-link tokens (24h TTL; Functions + webhook only; see §3.1)
 ```
 
 ---
@@ -57,7 +58,7 @@ forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not 
 | `ledgerSourcesLastChangedAt` | `Timestamp?` | **Server-only** (Cloud Functions / Admin): last time **ledger sources** changed in a way that can require aggregates—**transactions** (non–audit-only writes), **categories**, or **accounts** (excluding balance-only denormalized updates). Clients read for pull-to-refresh gating; **`firestore.rules`** block client **create/update** on this key. |
 | `aggregateLastCompletedAt` | `Timestamp?` | **Server-only**: last time incremental **aggregates** finished applying (`accounts` / `monthlyTotals`) for this user. Clients read for gating; rules block client writes. |
 
-### 3.1 Integrations (messaging / OTP-linked channels)
+### 3.1 Integrations (messaging channels)
 
 Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollection later—avoid duplicating verification state).
 
@@ -72,7 +73,14 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | Key | Example value | Notes |
 |-----|----------------|-------|
 | `whatsapp` | `{ "phoneE164": "…", "verifiedAt": Timestamp }` | After server-side OTP. |
-| `telegram` | `{ "username": "…", "verifiedAt": Timestamp }` | **OTP** verification flow (product choice: standard UX). |
+| `telegram` | `{ "username": "…", "chatId": "…", "verifiedAt": Timestamp }` | **Magic link** via Telegram Bot: username is **server-trusted** from the linked chat when available; **`chatId`** is the Telegram numeric chat id as a **string** (avoids JSON precision loss). Written in the same **Firestore transaction** as **`_telegramLink/state`** in **`telegramWebhook`** (and **`requestMessagingOtp`** may **backfill** if legacy data had link state only). |
+
+**Telegram linking (server-only, not under `integrations`):**
+
+| Path | Purpose |
+|------|---------|
+| `users/{uid}/_telegramLink/state` | Pending / active **bot link**: `chatId`, `username` (lowercase, no `@`, may be empty), `updatedAt`. Populated by **`telegramWebhook`** after `/start link_<token>` (same transaction as **`integrations.telegram`**); read by **`requestMessagingOtp`** and **optionally the signed-in client** (real-time listener for link UX). Cleared by **`disconnectMessagingIntegration`**. |
+| `telegramLinkTokens/{tokenId}` | One-time deep-link token: `uid`, `expiresAt` (~24h), `used`. Minted by **`requestMessagingOtp`** when the user must open the bot first; consumed in a **transaction** with **`_telegramLink/state`** and **`integrations.telegram`** in **`telegramWebhook`**. |
 
 **Product rule:** At most **one** WhatsApp and **one** Telegram identity per user.
 
@@ -326,6 +334,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 - **`forexRates`**: read for authenticated users (or public read if rates are non-sensitive); **write** only from **admin SDK** / scheduled Function.
 - **Aggregate docs** (`monthlyTotals`, `accounts.balance*`) — **client direct writes discouraged**; Functions as source of truth for denormalized fields.
 - **`_processedAggregateEvents`** — **write** only from Functions (admin SDK); clients must not create these docs.
+- **`users/{uid}/_telegramLink/{doc}`** — **read** allowed for `request.auth.uid == uid` (linking UX listens for `chatId`); **write** only Functions / webhook / Admin SDK.
 - **`transactions.*` server-owned fields** — **`aggregateApplied`**, **`aggregateDeferred`**, **`reload`**, **`aggregateReload`**, **`amountMinorMain`**, **`fxRateDateUsed`**: **create/update** only from Cloud Functions (Admin SDK bypasses rules). Clients must not set **`aggregateApplied: true`** (or otherwise forge aggregate state); **`firestore.rules`** rejects writes that add or change these keys.
 
 ---
@@ -356,6 +365,9 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | **Telegram:** **`integrations.telegram`** written in **`telegramWebhook`** transaction with **`_telegramLink/state`** (no OTP). |
+| 2026-04-22 | **`telegramLinkTokens`:** 24h TTL, transactional consume + bind in webhook. **`_telegramLink`:** client **read** (same `uid`) for link UI. |
+| 2026-04-21 | §2–§3.1: **Telegram** magic link + **`telegramWebhook`** — `telegramLinkTokens`, `users/{uid}/_telegramLink/state`, `integrations.telegram.chatId`; callables **`telegramWebhook`**, **`disconnectMessagingIntegration`**; revision log. See [`references/telegram-bot-webhook.md`](references/telegram-bot-webhook.md). |
 | 2026-04-18 | §3: **`ledgerSourcesLastChangedAt`** + **`aggregateLastCompletedAt`** on `users/{uid}` (server timestamps for app-wide pull refresh + reconcile gating). §11: same keys denied on client **create/update** alongside **`onboardingCompleted`** / **`integrations`**. |
 | 2026-04-18 | §4: **`categoryId` required** on all transaction writes; **`ledger-transfer`** category (§6) for transfer legs; cross-currency transfers = explicit per-leg amounts/currencies. **Cascade deletes** (categories/accounts) remove dependent `transactions`, `recurring`, `upcomingTransactions`, profile `budgets` keys, then the entity doc. **Rules:** client transaction updates allowlisted keys only (avoids spurious `permission-denied`). §4.2 / §5: **asset vs liability** types; **`balanceMinor`** positive = owed for liabilities; **net worth** / **net cash** = signed sums; Functions `applyAccountDelta` + opening-balance **direction** rules; one-time migration ([`references/liability-balance-migration.md`](references/liability-balance-migration.md)). |
 | 2026-04-14 | Initial data model: paths, core fields, `monthlyTotals.days` embedding, real-time-only stance. |

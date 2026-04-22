@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/auth/auth_repository.dart';
+import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/user_profile.dart' show kDefaultMainCurrency;
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
@@ -880,6 +881,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingController controller,
   ) {
     final messaging = draft.messaging;
+    final uid = ref.read(authUidProvider);
+    final firestore = ref.read(firestoreProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -906,32 +909,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             backgroundColor: const Color(0xFF25D366),
             foregroundColor: Colors.white,
           ),
-          onPressed: () => showOnboardingMessagingChannelSheet(
-            context: context,
-            l10n: l10n,
-            channel: 'whatsapp',
-            initialIdentity: _waController.text.trim(),
-            onRequestOtp: (id) =>
-                controller.requestOtp(channel: 'whatsapp', identity: id),
-            onVerify: (id, code) async {
-              await controller.verifyOtp(
-                channel: 'whatsapp',
-                identity: id,
-                code: code,
-              );
-              _waController.text = id;
-              controller.setMessaging(
-                OnboardingMessagingState(
-                  whatsAppId: id,
-                  whatsAppVerified: true,
-                  telegramId: _tgController.text.trim().isEmpty
-                      ? null
-                      : _tgController.text.trim(),
-                  telegramVerified: messaging.telegramVerified,
-                ),
-              );
-            },
-          ),
+          onPressed: () {
+            if (uid == null) return;
+            showOnboardingMessagingChannelSheet(
+              context: context,
+              l10n: l10n,
+              channel: 'whatsapp',
+              initialIdentity: _waController.text.trim(),
+              firebaseUid: uid,
+              firestore: firestore,
+              onRequestOtp: (id) =>
+                  controller.requestOtp(channel: 'whatsapp', identity: id),
+              onVerify: (id, code) async {
+                await controller.verifyOtp(
+                  channel: 'whatsapp',
+                  identity: id,
+                  code: code,
+                );
+                _waController.text = id;
+                controller.setMessaging(
+                  OnboardingMessagingState(
+                    whatsAppId: id,
+                    whatsAppVerified: true,
+                    telegramId: _tgController.text.trim().isEmpty
+                        ? null
+                        : _tgController.text.trim(),
+                    telegramVerified: messaging.telegramVerified,
+                  ),
+                );
+              },
+            );
+          },
           child: const Text('WhatsApp'),
         ),
         const SizedBox(height: 12),
@@ -940,32 +948,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             backgroundColor: const Color(0xFF0088CC),
             foregroundColor: Colors.white,
           ),
-          onPressed: () => showOnboardingMessagingChannelSheet(
-            context: context,
-            l10n: l10n,
-            channel: 'telegram',
-            initialIdentity: _tgController.text.trim(),
-            onRequestOtp: (id) =>
-                controller.requestOtp(channel: 'telegram', identity: id),
-            onVerify: (id, code) async {
-              await controller.verifyOtp(
-                channel: 'telegram',
-                identity: id,
-                code: code,
-              );
-              _tgController.text = id;
-              controller.setMessaging(
-                OnboardingMessagingState(
-                  telegramId: id,
-                  telegramVerified: true,
-                  whatsAppId: _waController.text.trim().isEmpty
-                      ? null
-                      : _waController.text.trim(),
-                  whatsAppVerified: messaging.whatsAppVerified,
-                ),
-              );
-            },
-          ),
+          onPressed: () {
+            if (uid == null) return;
+            showOnboardingMessagingChannelSheet(
+              context: context,
+              l10n: l10n,
+              channel: 'telegram',
+              initialIdentity: _tgController.text.trim(),
+              firebaseUid: uid,
+              firestore: firestore,
+              onRequestOtp: (id) =>
+                  controller.requestOtp(channel: 'telegram', identity: id),
+              onTelegramLinked: (id) {
+                _tgController.text = id;
+                controller.setMessaging(
+                  OnboardingMessagingState(
+                    telegramId: id,
+                    telegramVerified: true,
+                    whatsAppId: _waController.text.trim().isEmpty
+                        ? null
+                        : _waController.text.trim(),
+                    whatsAppVerified: messaging.whatsAppVerified,
+                  ),
+                );
+              },
+            );
+          },
           child: const Text('Telegram'),
         ),
         const SizedBox(height: 12),

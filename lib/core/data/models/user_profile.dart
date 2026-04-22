@@ -140,9 +140,16 @@ class WhatsAppIntegration {
 /// Telegram channel row (`integrations.telegram`).
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
 class TelegramAppIntegration {
-  const TelegramAppIntegration({required this.username, this.verifiedAt});
+  const TelegramAppIntegration({
+    required this.username,
+    this.chatId,
+    this.verifiedAt,
+  });
 
   final String username;
+
+  /// Telegram `chat_id` (string) for bot messaging; server-written only.
+  final String? chatId;
 
   @FirestoreNullableUtcDateTimeConverter()
   final DateTime? verifiedAt;

@@ -77,8 +77,8 @@
 ### 7 — Messaging (WhatsApp / Telegram)
 
 - Still **in onboarding** for v1; offer **Remind me later** (skips both; no OTP this session).
-- Optional: link **WhatsApp** (phone + **OTP**) and/or **Telegram** (**OTP** — standard flow). At most **one** identity per channel per user ([`data-model.md`](data-model.md) §3.1).
-- **Backend:** Server-side OTP and persistence of verified identifiers; **not** auth providers ([`settings.md`](settings.md)).
+- Optional: link **WhatsApp** (phone + **OTP**) and/or **Telegram** (**magic link** to the bot — same flow as Settings; see [`references/telegram-bot-webhook.md`](references/telegram-bot-webhook.md)). At most **one** identity per channel per user ([`data-model.md`](data-model.md) §3.1).
+- **Backend:** Server-side OTP (**WhatsApp**) or signed-in magic link (**Telegram**); **not** auth providers ([`settings.md`](settings.md)).
 - **Same flows** as Settings later — keep copy and status labels consistent.
 
 ### 8 — Commit (loading)
@@ -121,7 +121,7 @@
 - [ ] Categories: **Fixed Expenses** + **Material `iconKey` map**.
 - [ ] Recurring income: **per income category**; non-recurring → budgets only.
 - [ ] Projected: income from **budgets**; fixed = **Fixed Expenses** only; variable = other expense budgets.
-- [ ] Messaging: **Remind me later** + **OTP**; server-trusted writes.
+- [ ] Messaging: **Remind me later** + **WhatsApp OTP** / **Telegram link**; server-trusted writes.
 - [ ] Commit: **idempotent**; loading then **`/dashboard`**.
 - [ ] **Semantics:** full title for screen readers; reduced motion for typewriter.
 
@@ -138,5 +138,6 @@
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | **§7 Messaging:** Telegram **magic-link only** (no OTP); WhatsApp still OTP; deep link / webhook reference unchanged. |
 | 2026-04-19 | **§2 Accounts:** Note **immutable currency** and **secured-account** (loan/mortgage) fields + education when collateral ships; link to planning doc. |
 | 2026-04-16 | **§8 / §5:** Commit payload includes **`profile.mainCurrency`** (first account ISO code); **`budgets`** on **`users/{uid}`**; app invalidates core Firestore stream providers when entering **completion** before **`/dashboard`**. |

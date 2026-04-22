@@ -83,6 +83,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Social / provider auth buttons** | Google, Apple per design system | Login |
 | **Email/password form** | Fields + submit | Login |
 | **Settings row / section** | Theme toggle; external service CTAs | Settings |
+| **Messaging connect bottom sheet** | `showOnboardingMessagingChannelSheet` — WhatsApp: phone + OTP. **Telegram:** `TelegramChannelLinkSheet` — phone (dial + national) **or** @username toggle, multi-step (**Next** → spinner + status → open Telegram → Firestore **`_telegramLink/state`** listener → linked ✓ → **Done**); phase content **vertically centered** in the sheet | Onboarding (messaging step), Settings |
 | **FinkoThemeModeToggle** | Three icon buttons (light / dark / system) for `ThemePreference` | Settings |
 | **Onboarding typewriter header** | Step title animation with reduced-motion + semantics-safe label | Onboarding |
 | **Onboarding wizard progress** | Global 9-step progress bar + nav controls | Onboarding |
@@ -105,6 +106,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-04-21** — **Messaging OTP bottom sheet** row: Telegram bot-start / deep-link branch + `url_launcher`.
 - **2026-04-18** — **Ledger-aware pull refresh** row: `ledgerAwareAppRefreshProvider` for shared `RefreshIndicator` behavior.
 - **2026-04-16** — **`FinkoThemeModeToggle`:** three-way theme control on `/settings`.
 - **2026-04-16** — **`FinkoPaperCard`:** with **`title == null`**, skip the internal title+`Column` wrapper so **`ListView` / `RefreshIndicator`** children get bounded vertical constraints (fixes `/transactions` viewport layout error). Titled cards unchanged.

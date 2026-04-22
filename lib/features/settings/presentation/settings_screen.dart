@@ -62,11 +62,15 @@ class SettingsScreen extends ConsumerWidget {
       );
       return;
     }
+    final uid = ref.read(authUidProvider);
+    if (uid == null) return;
     await showOnboardingMessagingChannelSheet(
       context: context,
       l10n: l10n,
       channel: 'whatsapp',
       initialIdentity: '',
+      firebaseUid: uid,
+      firestore: ref.read(firestoreProvider),
       onRequestOtp: (id) => ref
           .read(onboardingRepositoryProvider)
           .requestMessagingOtp(channel: 'whatsapp', identity: id),
@@ -100,22 +104,19 @@ class SettingsScreen extends ConsumerWidget {
       );
       return;
     }
+    final uid = ref.read(authUidProvider);
+    if (uid == null) return;
     await showOnboardingMessagingChannelSheet(
       context: context,
       l10n: l10n,
       channel: 'telegram',
       initialIdentity: '',
+      firebaseUid: uid,
+      firestore: ref.read(firestoreProvider),
       onRequestOtp: (id) => ref
           .read(onboardingRepositoryProvider)
           .requestMessagingOtp(channel: 'telegram', identity: id),
-      onVerify: (id, code) async {
-        await ref
-            .read(onboardingRepositoryProvider)
-            .verifyMessagingOtp(
-              channel: 'telegram',
-              identity: id,
-              otpCode: code,
-            );
+      onTelegramLinked: (_) {
         ref.invalidate(userProfileStreamProvider);
       },
     );
@@ -149,8 +150,8 @@ class SettingsScreen extends ConsumerWidget {
     if (uid == null) return;
     try {
       await ref
-          .read(userSettingsWriterProvider)
-          .clearMessagingIntegration(uid, channel);
+          .read(onboardingRepositoryProvider)
+          .disconnectMessagingIntegration(channel: channel);
       ref.invalidate(userProfileStreamProvider);
     } catch (_) {
       if (context.mounted) {

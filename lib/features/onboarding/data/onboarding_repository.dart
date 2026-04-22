@@ -2,6 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/firebase_functions_provider.dart';
+import '../domain/messaging_otp_request_result.dart';
 import '../domain/onboarding_models.dart';
 
 class OnboardingRepository {
@@ -15,14 +16,22 @@ class OnboardingRepository {
     await callable.call<Map<String, dynamic>>(draft.toCommitPayload());
   }
 
-  Future<void> requestMessagingOtp({
+  Future<MessagingOtpRequestResult> requestMessagingOtp({
     required String channel,
     required String identity,
   }) async {
     final callable = _functions.httpsCallable('requestMessagingOtp');
-    await callable.call<Map<String, dynamic>>(<String, dynamic>{
+    final res = await callable.call<Map<String, dynamic>>(<String, dynamic>{
       'channel': channel,
       'identity': identity.trim(),
+    });
+    return MessagingOtpRequestResult.fromCallableData(res.data);
+  }
+
+  Future<void> disconnectMessagingIntegration({required String channel}) async {
+    final callable = _functions.httpsCallable('disconnectMessagingIntegration');
+    await callable.call<Map<String, dynamic>>(<String, dynamic>{
+      'channel': channel,
     });
   }
 
