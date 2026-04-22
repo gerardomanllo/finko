@@ -73,7 +73,7 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | Key | Example value | Notes |
 |-----|----------------|-------|
 | `whatsapp` | `{ "phoneE164": "…", "verifiedAt": Timestamp }` | After server-side OTP. |
-| `telegram` | `{ "username": "…", "chatId": "…", "verifiedAt": Timestamp }` | **Magic link** via Telegram Bot: username is **server-trusted** from the linked chat when available; **`chatId`** is the Telegram numeric chat id as a **string** (avoids JSON precision loss). Written in the same **Firestore transaction** as **`_telegramLink/state`** in **`telegramWebhook`** (and **`requestMessagingOtp`** may **backfill** if legacy data had link state only). |
+| `telegram` | `{ "username": "…", "chatId": "…", "verifiedAt": Timestamp }` | **Magic link** via Telegram Bot: username is **server-trusted** from the linked chat when available; **`chatId`** is the Telegram numeric chat id as a **string** (avoids JSON precision loss). Written **only** in **`telegramWebhook`**’s **`consumeLinkTokenAndBindChat`** transaction together with **`_telegramLink/state`** (callable does not merge `integrations.telegram`). |
 
 **Telegram linking (server-only, not under `integrations`):**
 
@@ -365,6 +365,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | §3.1 **Telegram:** **`requestMessagingOtp`** does not write **`integrations.telegram`**; only the webhook transaction does (avoids racing **`consumeLinkTokenAndBindChat`**). |
 | 2026-04-21 | **Telegram:** **`integrations.telegram`** written in **`telegramWebhook`** transaction with **`_telegramLink/state`** (no OTP). |
 | 2026-04-22 | **`telegramLinkTokens`:** 24h TTL, transactional consume + bind in webhook. **`_telegramLink`:** client **read** (same `uid`) for link UI. |
 | 2026-04-21 | §2–§3.1: **Telegram** magic link + **`telegramWebhook`** — `telegramLinkTokens`, `users/{uid}/_telegramLink/state`, `integrations.telegram.chatId`; callables **`telegramWebhook`**, **`disconnectMessagingIntegration`**; revision log. See [`references/telegram-bot-webhook.md`](references/telegram-bot-webhook.md). |

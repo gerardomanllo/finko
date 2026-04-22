@@ -92,24 +92,9 @@ export const requestMessagingOtp = onCall({ region: "us-central1" }, async (requ
       );
     }
 
-    const userRef = db.doc(`users/${uid}`);
-    const userSnap = await userRef.get();
-    if (telegramIntegrationReady(userSnap.data() as Record<string, unknown> | undefined)) {
-      return { ok: true, messagingReady: true };
-    }
-
-    await userRef.set(
-      {
-        integrations: {
-          telegram: {
-            username: linkState.username || "",
-            chatId: linkState.chatId,
-            verifiedAt: FieldValue.serverTimestamp(),
-          },
-        },
-      },
-      { merge: true }
-    );
+    // `integrations.telegram` is written only in `consumeLinkTokenAndBindChat`
+    // (webhook transaction). Do not merge here — concurrent callable writes can
+    // race the webhook and corrupt or duplicate-update the profile.
     return { ok: true, messagingReady: true };
   }
 
