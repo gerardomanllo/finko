@@ -6,11 +6,6 @@ export const TELEGRAM_LINK_SUBCOLLECTION = "_telegramLink";
 
 export const TELEGRAM_LINK_STATE_DOC = "state";
 
-/** OTP challenge doc id for Telegram (per Firebase user). */
-export function telegramOtpChallengeId(uid: string): string {
-  return `telegram:${uid}`;
-}
-
 export const LINK_TOKEN_PREFIX = "link_";
 
 /** Deep-link token lifetime (Telegram users may switch apps slowly). */

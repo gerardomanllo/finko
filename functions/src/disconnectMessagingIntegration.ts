@@ -1,7 +1,6 @@
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { telegramOtpChallengeId } from "./telegram/constants";
 import { deleteTelegramLinkState } from "./telegram/telegramLinkState";
 
 function readChannel(value: unknown): "whatsapp" | "telegram" {
@@ -26,11 +25,19 @@ export const disconnectMessagingIntegration = onCall({ region: "us-central1" }, 
 
   if (channel === "telegram") {
     await deleteTelegramLinkState(db, uid);
-    await db.doc(`users/${uid}/_otpChallenges/${telegramOtpChallengeId(uid)}`).delete();
     await userRef.update({
       "integrations.telegram": FieldValue.delete(),
     });
     return { ok: true };
+  }
+
+  const data = userSnap.data() as Record<string, unknown> | undefined;
+  const integrations = data?.integrations as Record<string, unknown> | undefined;
+  const wa = integrations?.whatsapp as Record<string, unknown> | undefined;
+  const phoneE164 = typeof wa?.phoneE164 === "string" ? wa.phoneE164.trim() : "";
+  if (phoneE164) {
+    const challengeId = `whatsapp:${phoneE164.toLowerCase()}`;
+    await db.doc(`users/${uid}/_otpChallenges/${challengeId}`).delete();
   }
 
   await userRef.update({
