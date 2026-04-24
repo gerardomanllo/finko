@@ -16,6 +16,7 @@ enum OnboardingStep {
 }
 
 enum OnboardingAccountType {
+  cash,
   checking,
   savings,
   investment,
@@ -38,6 +39,8 @@ class OnboardingAccountDraft {
     required this.colorArgb,
     required this.startingBalanceMinor,
     required this.iconKey,
+    this.isSystem = false,
+    this.creditLimitMinor,
   });
 
   final String id;
@@ -50,6 +53,12 @@ class OnboardingAccountDraft {
   /// Material icon key for the account avatar (user-chosen; independent of [type]).
   final String iconKey;
 
+  /// System rows (e.g. Cash) cannot be removed.
+  final bool isSystem;
+
+  /// Total credit line for [OnboardingAccountType.creditCard] only (minor units, same [currency]).
+  final int? creditLimitMinor;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'name': name,
@@ -58,6 +67,8 @@ class OnboardingAccountDraft {
     'colorArgb': colorArgb,
     'startingBalanceMinor': startingBalanceMinor,
     'iconKey': iconKey,
+    if (isSystem) 'isSystem': true,
+    if (creditLimitMinor != null) 'creditLimitMinor': creditLimitMinor,
   };
 }
 
@@ -167,13 +178,14 @@ class OnboardingDraft {
     this.timezone = 'America/Mexico_City',
     this.themePreference = 'system',
     this.locale = 'es-MX',
+    this.mainCurrency = kDefaultMainCurrency,
     List<OnboardingAccountDraft>? accounts,
     List<OnboardingCategoryDraft>? categories,
     Map<String, OnboardingRecurringIncomeDraft>? recurringByCategory,
     Map<String, int>? budgetsMinorByCategory,
     OnboardingMessagingState? messaging,
     String? requestId,
-  }) : accounts = accounts ?? <OnboardingAccountDraft>[],
+  }) : accounts = accounts ?? <OnboardingAccountDraft>[kSystemCashAccountDraft],
        categories =
            categories ?? <OnboardingCategoryDraft>[kFixedExpensesCategory],
        recurringByCategory =
@@ -181,6 +193,22 @@ class OnboardingDraft {
        budgetsMinorByCategory = budgetsMinorByCategory ?? <String, int>{},
        messaging = messaging ?? const OnboardingMessagingState(),
        requestId = requestId ?? _newRequestId();
+
+  /// Deterministic id for the non-removable cash wallet row.
+  static const String kSystemCashAccountId = 'cash';
+
+  /// Default Cash row (name localized in UI via [syncSystemCashDisplayName]).
+  static const OnboardingAccountDraft kSystemCashAccountDraft =
+      OnboardingAccountDraft(
+        id: kSystemCashAccountId,
+        name: 'Cash',
+        type: OnboardingAccountType.cash,
+        currency: 'MXN',
+        colorArgb: 0xFF689F38,
+        startingBalanceMinor: 0,
+        iconKey: 'payments',
+        isSystem: true,
+      );
 
   static const OnboardingCategoryDraft kFixedExpensesCategory =
       OnboardingCategoryDraft(
@@ -195,6 +223,9 @@ class OnboardingDraft {
   final String timezone;
   final String themePreference;
   final String locale;
+
+  /// ISO 4217 main reporting currency (step 1 picker).
+  final String mainCurrency;
   final List<OnboardingAccountDraft> accounts;
   final List<OnboardingCategoryDraft> categories;
   final Map<String, OnboardingRecurringIncomeDraft> recurringByCategory;
@@ -232,11 +263,9 @@ class OnboardingDraft {
     return total;
   }
 
-  /// First account’s ISO currency, uppercased — matches what users set during
-  /// onboarding; **`commitOnboarding`** persists this as `users/{uid}.mainCurrency`.
+  /// Normalized ISO code for **`commitOnboarding`** `profile.mainCurrency`.
   String get profileMainCurrencyForCommit {
-    if (accounts.isEmpty) return kDefaultMainCurrency;
-    final code = accounts.first.currency.trim().toUpperCase();
+    final code = mainCurrency.trim().toUpperCase();
     return code.isEmpty ? kDefaultMainCurrency : code;
   }
 
@@ -255,6 +284,7 @@ class OnboardingDraft {
     String? timezone,
     String? themePreference,
     String? locale,
+    String? mainCurrency,
     List<OnboardingAccountDraft>? accounts,
     List<OnboardingCategoryDraft>? categories,
     Map<String, OnboardingRecurringIncomeDraft>? recurringByCategory,
@@ -267,6 +297,7 @@ class OnboardingDraft {
       timezone: timezone ?? this.timezone,
       themePreference: themePreference ?? this.themePreference,
       locale: locale ?? this.locale,
+      mainCurrency: mainCurrency ?? this.mainCurrency,
       accounts: accounts ?? this.accounts,
       categories: categories ?? this.categories,
       recurringByCategory: recurringByCategory ?? this.recurringByCategory,

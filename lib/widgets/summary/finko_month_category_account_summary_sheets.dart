@@ -224,6 +224,8 @@ OnboardingAccountDraft _accountDraftFromFinko(FinkoAccount a) {
     colorArgb: a.colorArgb ?? kOnboardingAccountColorPalette.first,
     startingBalanceMinor: 0,
     iconKey: a.iconKey,
+    isSystem: a.isSystem,
+    creditLimitMinor: a.creditLimitMinor,
   );
 }
 
@@ -244,6 +246,8 @@ FinkoAccount _finkoAccountFromDraft(
     updatedAt: previous.updatedAt,
     iconKey: d.iconKey,
     colorArgb: d.colorArgb,
+    creditLimitMinor: d.creditLimitMinor ?? previous.creditLimitMinor,
+    isSystem: previous.isSystem,
   );
 }
 

@@ -34,6 +34,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period; optional **selected** border + tap | Spending (row of vertical period cards) |
 | **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Legacy / reuse |
 | **Donut + side legend** | Thin ring + **legend on the right** (swatch, name, amount, %); **centered horizontally**; center: title + period subtitle + bold total. On **Spending**, each block (strip, accordion, donut, top list) is its **own** paper/`Card` with **cloud** vertical gutters | Spending breakdown (`FinkoDonutWithSideLegend`) |
+| **Onboarding projected savings chart** | Stacked column: **all expense** segments (fixed + variable) **sorted by amount** (largest at $0) → **savings** (top), blue shades by size; height fills the projected step (`chartTotalHeight`) | Onboarding projected step (`onboarding_projected_chart.dart`) |
 
 ## Core data (rollups)
 

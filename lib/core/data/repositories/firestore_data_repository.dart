@@ -531,7 +531,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
 
   @override
   Future<void> updateAccountMetadata(String uid, FinkoAccount account) async {
-    await _db.doc(FirestorePaths.accountDoc(uid, account.id)).update({
+    final payload = <String, dynamic>{
       'name': account.name,
       'type': account.type.wireName,
       'currency': account.currency,
@@ -539,7 +539,14 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       'iconKey': account.iconKey,
       'colorArgb': account.colorArgb ?? 0xFF607D8B,
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    };
+    if (account.creditLimitMinor != null) {
+      payload['creditLimitMinor'] = account.creditLimitMinor;
+    }
+    if (account.isSystem) {
+      payload['isSystem'] = true;
+    }
+    await _db.doc(FirestorePaths.accountDoc(uid, account.id)).update(payload);
   }
 
   @override
@@ -579,6 +586,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
     final ref = accountsCol.doc();
     final batch = _db.batch();
     final includeInNetCash =
+        type == FinkoAccountType.cash ||
         type == FinkoAccountType.checking ||
         type == FinkoAccountType.creditCard;
     batch.set(ref, {

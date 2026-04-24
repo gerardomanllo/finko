@@ -10,5 +10,7 @@ FinkoAccountType finkoAccountTypeFromOnboarding(OnboardingAccountType t) {
 }
 
 bool defaultIncludeInNetCashForFinkoType(FinkoAccountType t) {
-  return t == FinkoAccountType.checking || t == FinkoAccountType.creditCard;
+  return t == FinkoAccountType.cash ||
+      t == FinkoAccountType.checking ||
+      t == FinkoAccountType.creditCard;
 }

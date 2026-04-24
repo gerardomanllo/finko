@@ -65,6 +65,6 @@ class FinkoThemeModeToggle extends StatelessWidget {
   static String _label(AppLocalizations l10n, ThemePreference p) => switch (p) {
     ThemePreference.light => l10n.themeLight,
     ThemePreference.dark => l10n.themeDark,
-    ThemePreference.system => l10n.themeSystem,
+    ThemePreference.system => l10n.themeAutomatic,
   };
 }

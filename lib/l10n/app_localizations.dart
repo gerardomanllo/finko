@@ -188,6 +188,40 @@ abstract class AppLocalizations {
   /// **'Idioma'**
   String get onboardingLocaleLabel;
 
+  /// No description provided for @onboardingMainCurrencyLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda principal'**
+  String get onboardingMainCurrencyLabel;
+
+  /// No description provided for @onboardingAccountNameCash.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo'**
+  String get onboardingAccountNameCash;
+
+  /// No description provided for @onboardingCreditLimitLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Límite de crédito total'**
+  String get onboardingCreditLimitLabel;
+
+  /// No description provided for @onboardingProjectedSegmentLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} {percent}% - {amount}'**
+  String onboardingProjectedSegmentLine(
+    String name,
+    String percent,
+    String amount,
+  );
+
+  /// No description provided for @onboardingProjectedOverspendLine.
+  ///
+  /// In es, this message translates to:
+  /// **'SIN AHORRO - {amount} SOBRE INGRESOS'**
+  String onboardingProjectedOverspendLine(String amount);
+
   /// No description provided for @onboardingNext.
   ///
   /// In es, this message translates to:
@@ -1082,6 +1116,12 @@ abstract class AppLocalizations {
   /// **'Sistema'**
   String get themeSystem;
 
+  /// No description provided for @themeAutomatic.
+  ///
+  /// In es, this message translates to:
+  /// **'Automático'**
+  String get themeAutomatic;
+
   /// No description provided for @environmentBanner.
   ///
   /// In es, this message translates to:
@@ -1527,6 +1567,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Debito'**
   String get accountTypeChecking;
+
+  /// No description provided for @accountTypeCash.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo'**
+  String get accountTypeCash;
 
   /// No description provided for @accountTypeCreditCard.
   ///

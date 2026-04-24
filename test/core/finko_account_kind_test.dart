@@ -25,6 +25,7 @@ void main() {
     expect(isLiabilityAccountType(FinkoAccountType.loan), isTrue);
     expect(isLiabilityAccountType(FinkoAccountType.mortgage), isTrue);
     expect(isLiabilityAccountType(FinkoAccountType.checking), isFalse);
+    expect(isLiabilityAccountType(FinkoAccountType.cash), isFalse);
   });
 
   test('netWorthFromAccountsMinor subtracts liability balances', () {

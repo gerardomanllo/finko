@@ -5,6 +5,41 @@ import '../../../core/ui/finko_modal_sheet_extent.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/onboarding_models.dart';
 import 'onboarding_category_icons.dart';
+import 'onboarding_icon_labels.dart';
+
+double _onboardingCategoryDropdownItemMaxWidth(BuildContext context) {
+  return (MediaQuery.sizeOf(context).width - 64).clamp(200.0, 560.0);
+}
+
+/// See account editor: [ListTile] in dropdowns breaks the collapsed "selected" row
+/// (infinite width + ~24px height).
+Widget _onboardingCategoryIconMenuRow(
+  BuildContext context,
+  IconData icon,
+  String iconKey,
+) {
+  final locale = Localizations.localeOf(context);
+  return ConstrainedBox(
+    constraints: BoxConstraints(
+      maxWidth: _onboardingCategoryDropdownItemMaxWidth(context),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Icon(icon, size: 22),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            onboardingCategoryIconLabel(iconKey, locale),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 /// Add/edit category in a bottom sheet (parity with accounts).
 Future<void> showOnboardingCategoryEditor({
@@ -140,41 +175,37 @@ class _OnboardingCategoryEditorSheetState
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    height: 160,
-                    child: GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                          ),
-                      itemCount: kOnboardingCategoryIconMap.length,
-                      itemBuilder: (context, i) {
-                        final key = kOnboardingCategoryIconMap.keys.elementAt(
-                          i,
-                        );
-                        final selected = _iconKey == key;
-                        return InkWell(
-                          onTap: () => setState(() => _iconKey = key),
-                          borderRadius: BorderRadius.circular(8),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: selected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(
-                                        context,
-                                      ).colorScheme.outlineVariant,
-                                width: selected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(onboardingIconForKey(key)),
-                          ),
-                        );
-                      },
+                  DropdownButtonFormField<String>(
+                    key: ValueKey<String>(_iconKey),
+                    initialValue:
+                        kOnboardingCategoryIconMap.containsKey(_iconKey)
+                        ? _iconKey
+                        : kOnboardingCategoryIconMap.keys.first,
+                    decoration: InputDecoration(
+                      labelText: l10n.onboardingPickIcon,
                     ),
+                    isExpanded: true,
+                    selectedItemBuilder: (BuildContext c) {
+                      return [
+                        for (final e in kOnboardingCategoryIconMap.entries)
+                          _onboardingCategoryIconMenuRow(c, e.value, e.key),
+                      ];
+                    },
+                    items: [
+                      for (final e in kOnboardingCategoryIconMap.entries)
+                        DropdownMenuItem<String>(
+                          value: e.key,
+                          child: _onboardingCategoryIconMenuRow(
+                            context,
+                            e.value,
+                            e.key,
+                          ),
+                        ),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() => _iconKey = v);
+                    },
                   ),
                   const SizedBox(height: 24),
                   if (widget.onDelete != null &&

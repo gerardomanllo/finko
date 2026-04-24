@@ -4,7 +4,7 @@ import 'package:finko/features/onboarding/application/onboarding_controller.dart
 import 'package:finko/features/onboarding/domain/onboarding_models.dart';
 
 void main() {
-  test('cannot advance from accounts step without accounts', () async {
+  test('can advance from accounts step with default system cash', () async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -14,6 +14,7 @@ void main() {
       timezone: 'America/Mexico_City',
       themePreference: 'system',
       locale: 'es',
+      mainCurrency: 'MXN',
     );
     await controller.next();
     expect(
@@ -22,10 +23,117 @@ void main() {
     );
 
     final ok = await controller.next();
-    expect(ok, isFalse);
+    expect(ok, isTrue);
     expect(
-      container.read(onboardingControllerProvider).validationCode,
-      'accountsMinOne',
+      container.read(onboardingControllerProvider).step,
+      OnboardingStep.categories,
+    );
+  });
+
+  test('system cash account cannot be removed', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final controller = container.read(onboardingControllerProvider.notifier);
+    final before = container.read(onboardingControllerProvider).draft.accounts;
+    expect(
+      before.any((a) => a.id == OnboardingDraft.kSystemCashAccountId),
+      isTrue,
+    );
+
+    controller.removeAccount(OnboardingDraft.kSystemCashAccountId);
+    final after = container.read(onboardingControllerProvider).draft.accounts;
+    expect(after.length, before.length);
+  });
+
+  test(
+    'budgets step seeds income category from recurring in one state update',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final controller = container.read(onboardingControllerProvider.notifier);
+      controller.updateProfile(
+        displayName: 'Test User',
+        timezone: 'America/Mexico_City',
+        themePreference: 'system',
+        locale: 'es',
+        mainCurrency: 'MXN',
+      );
+      await controller.next(); // accounts
+      await controller.next(); // categories
+
+      controller.addSuggestedCategory(
+        id: 'salary',
+        name: 'Salary',
+        kind: OnboardingCategoryKind.income,
+        iconKey: 'work',
+      );
+      await controller.next(); // recurringIncome
+      controller.setRecurring(
+        OnboardingRecurringIncomeDraft(
+          categoryId: 'salary',
+          isRecurring: true,
+          amountMinor: 25_000,
+          accountId: OnboardingDraft.kSystemCashAccountId,
+          daysOfMonth: const [1],
+          cadence: OnboardingCadence.monthly,
+        ),
+      );
+
+      await controller.next(); // budgets
+
+      final state = container.read(onboardingControllerProvider);
+      expect(state.step, OnboardingStep.budgets);
+      expect(state.draft.budgetsMinorByCategory['salary'], 25_000);
+    },
+  );
+
+  test('setRecurring overwrites income budget whenever recurring changes', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final controller = container.read(onboardingControllerProvider.notifier);
+    controller.addSuggestedCategory(
+      id: 'salary',
+      name: 'Salary',
+      kind: OnboardingCategoryKind.income,
+      iconKey: 'work',
+    );
+    controller.setRecurring(
+      OnboardingRecurringIncomeDraft(
+        categoryId: 'salary',
+        isRecurring: true,
+        amountMinor: 10_000,
+        accountId: OnboardingDraft.kSystemCashAccountId,
+        daysOfMonth: const [1],
+        cadence: OnboardingCadence.monthly,
+      ),
+    );
+    expect(
+      container
+          .read(onboardingControllerProvider)
+          .draft
+          .budgetsMinorByCategory['salary'],
+      10_000,
+    );
+    controller.setBudget('salary', 999_999);
+    controller.setRecurring(
+      OnboardingRecurringIncomeDraft(
+        categoryId: 'salary',
+        isRecurring: true,
+        amountMinor: 20_000,
+        accountId: OnboardingDraft.kSystemCashAccountId,
+        daysOfMonth: const [1],
+        cadence: OnboardingCadence.monthly,
+      ),
+    );
+    expect(
+      container
+          .read(onboardingControllerProvider)
+          .draft
+          .budgetsMinorByCategory['salary'],
+      20_000,
     );
   });
 }

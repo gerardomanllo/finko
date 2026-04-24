@@ -54,6 +54,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingLocaleLabel => 'Language';
 
   @override
+  String get onboardingMainCurrencyLabel => 'Main currency';
+
+  @override
+  String get onboardingAccountNameCash => 'Cash';
+
+  @override
+  String get onboardingCreditLimitLabel => 'Total credit line';
+
+  @override
+  String onboardingProjectedSegmentLine(
+    String name,
+    String percent,
+    String amount,
+  ) {
+    return '$name $percent% - $amount';
+  }
+
+  @override
+  String onboardingProjectedOverspendLine(String amount) {
+    return 'NO SAVINGS - $amount OVER INCOME';
+  }
+
+  @override
   String get onboardingNext => 'Next';
 
   @override
@@ -542,6 +565,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
+  String get themeAutomatic => 'Automatic';
+
+  @override
   String environmentBanner(String env) {
     return '[$env]';
   }
@@ -790,6 +816,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountTypeChecking => 'Checking';
+
+  @override
+  String get accountTypeCash => 'Cash';
 
   @override
   String get accountTypeCreditCard => 'Credit cards';

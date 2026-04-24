@@ -15,6 +15,23 @@
   "onboardingTimezoneLabel": "Time zone",
   "onboardingThemeLabel": "Theme",
   "onboardingLocaleLabel": "Language",
+  "onboardingMainCurrencyLabel": "Main currency",
+  "onboardingAccountNameCash": "Cash",
+  "onboardingCreditLimitLabel": "Total credit line",
+  "onboardingProjectedSegmentLine": "{name} {percent}% - {amount}",
+  "@onboardingProjectedSegmentLine": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "percent": {"type": "String"},
+      "amount": {"type": "String"}
+    }
+  },
+  "onboardingProjectedOverspendLine": "NO SAVINGS - {amount} OVER INCOME",
+  "@onboardingProjectedOverspendLine": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
   "onboardingNext": "Next",
   "onboardingBack": "Back",
   "onboardingCommit": "Finish onboarding",
@@ -191,6 +208,7 @@
   "themeLight": "Light",
   "themeDark": "Dark",
   "themeSystem": "System",
+  "themeAutomatic": "Automatic",
   "environmentBanner": "[{env}]",
   "@environmentBanner": {
     "placeholders": {
@@ -323,6 +341,7 @@
   "metricDeltaStubUp": "+2.1%",
   "metricDeltaStubDown": "-1.0%",
   "accountTypeChecking": "Checking",
+  "accountTypeCash": "Cash",
   "accountTypeCreditCard": "Credit cards",
   "accountTypeSavings": "Savings",
   "accountTypeInvestment": "Investments",

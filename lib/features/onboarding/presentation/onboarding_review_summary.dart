@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/data/models/user_profile.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/onboarding_timezones.dart';
@@ -36,6 +35,7 @@ String _themeChipLabel(AppLocalizations l10n, String preference) {
   return switch (preference) {
     'light' => l10n.themeLight,
     'dark' => l10n.themeDark,
+    'system' => l10n.themeAutomatic,
     _ => l10n.themeSystem,
   };
 }
@@ -54,7 +54,7 @@ Widget buildOnboardingReviewSummary(
   String localeTag,
 ) {
   final theme = Theme.of(context);
-  final m = kDefaultMainCurrency;
+  final m = draft.profileMainCurrencyForCommit;
   final name = draft.displayName.trim().isEmpty
       ? '—'
       : draft.displayName.trim();
@@ -104,6 +104,10 @@ Widget buildOnboardingReviewSummary(
             label: Text(_localeChipLabel(l10n, draft.locale)),
             visualDensity: VisualDensity.compact,
           ),
+          Chip(
+            label: Text(draft.profileMainCurrencyForCommit),
+            visualDensity: VisualDensity.compact,
+          ),
         ],
       ),
       const SizedBox(height: 20),
@@ -116,10 +120,18 @@ Widget buildOnboardingReviewSummary(
         draft.accounts.isEmpty
             ? '—'
             : draft.accounts
-                  .map(
-                    (a) =>
-                        '${a.name} · ${a.currency} · ${accountTypeLabel(l10n, a.type)}',
-                  )
+                  .map((a) {
+                    final nm = a.id == OnboardingDraft.kSystemCashAccountId
+                        ? l10n.onboardingAccountNameCash
+                        : a.name;
+                    final limit =
+                        a.creditLimitMinor != null &&
+                            a.creditLimitMinor! > 0 &&
+                            a.type == OnboardingAccountType.creditCard
+                        ? ' · ${l10n.onboardingCreditLimitLabel}: ${formatMinorUnits(a.creditLimitMinor!, a.currency, localeTag)}'
+                        : '';
+                    return '$nm · ${a.currency} · ${accountTypeLabel(l10n, a.type)}$limit';
+                  })
                   .join('\n'),
         style: theme.textTheme.bodyMedium,
       ),

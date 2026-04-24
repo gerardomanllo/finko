@@ -133,27 +133,37 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
     const includeInNetCash =
       typeof account.includeInNetCash === "boolean"
         ? account.includeInNetCash
-        : accountType === "checking" || accountType === "creditCard";
-    batch.set(
-      accountRef,
-      {
-        name: mustString(account.name, "account.name"),
-        type: accountType,
-        currency: mustString(account.currency, "account.currency"),
-        includeInNetCash,
-        colorArgb:
-          typeof account.colorArgb === "number" ? account.colorArgb : 0xFF607D8B,
-        iconKey:
-          typeof account.iconKey === "string" && account.iconKey.trim().length > 0
-            ? account.iconKey.trim()
-            : "account_balance",
-        balanceMinor: 0,
-        sortOrder: typeof account.sortOrder === "number" ? account.sortOrder : 0,
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
+        : accountType === "cash" ||
+          accountType === "checking" ||
+          accountType === "creditCard";
+    const creditLimitMinor =
+      typeof account.creditLimitMinor === "number" && Number.isFinite(account.creditLimitMinor)
+        ? Math.trunc(account.creditLimitMinor as number)
+        : null;
+    const isSystem = account.isSystem === true;
+    const accountDoc: Record<string, unknown> = {
+      name: mustString(account.name, "account.name"),
+      type: accountType,
+      currency: mustString(account.currency, "account.currency"),
+      includeInNetCash,
+      colorArgb:
+        typeof account.colorArgb === "number" ? account.colorArgb : 0xFF607D8B,
+      iconKey:
+        typeof account.iconKey === "string" && account.iconKey.trim().length > 0
+          ? account.iconKey.trim()
+          : "account_balance",
+      balanceMinor: 0,
+      sortOrder: typeof account.sortOrder === "number" ? account.sortOrder : 0,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (isSystem) {
+      accountDoc.isSystem = true;
+    }
+    if (accountType === "creditCard" && creditLimitMinor != null && creditLimitMinor > 0) {
+      accountDoc.creditLimitMinor = creditLimitMinor;
+    }
+    batch.set(accountRef, accountDoc, { merge: true });
 
     const start = typeof account.startingBalanceMinor === "number" ? account.startingBalanceMinor : 0;
     if (start !== 0) {

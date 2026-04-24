@@ -7,15 +7,17 @@ void main() {
     () {
       final draft = OnboardingDraft(
         displayName: '  Ada  ',
+        mainCurrency: 'USD',
         accounts: const [
           OnboardingAccountDraft(
             id: 'a1',
             name: 'Checking',
             type: OnboardingAccountType.checking,
-            currency: 'usd',
+            currency: 'eur',
             colorArgb: 0,
             startingBalanceMinor: 0,
             iconKey: 'account_balance',
+            isSystem: false,
           ),
         ],
         categories: const [

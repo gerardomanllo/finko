@@ -27,6 +27,7 @@ bool isLiabilityAccountType(FinkoAccountType type) {
     FinkoAccountType.creditCard ||
     FinkoAccountType.loan ||
     FinkoAccountType.mortgage => true,
+    FinkoAccountType.cash ||
     FinkoAccountType.checking ||
     FinkoAccountType.savings ||
     FinkoAccountType.investment => false,

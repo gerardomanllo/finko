@@ -21,6 +21,7 @@ class OnboardingController extends Notifier<OnboardingState> {
     required String timezone,
     required String themePreference,
     required String locale,
+    required String mainCurrency,
   }) {
     state = state.copyWith(
       draft: state.draft.copyWith(
@@ -28,7 +29,32 @@ class OnboardingController extends Notifier<OnboardingState> {
         timezone: timezone,
         themePreference: themePreference,
         locale: locale,
+        mainCurrency: mainCurrency,
       ),
+      clearValidation: true,
+    );
+  }
+
+  /// Localized display name for the system Cash row (persisted on commit).
+  void syncSystemCashDisplayName(String localizedName) {
+    final accounts = state.draft.accounts.map((a) {
+      if (a.id == OnboardingDraft.kSystemCashAccountId && a.isSystem) {
+        return OnboardingAccountDraft(
+          id: a.id,
+          name: localizedName,
+          type: a.type,
+          currency: a.currency,
+          colorArgb: a.colorArgb,
+          startingBalanceMinor: a.startingBalanceMinor,
+          iconKey: a.iconKey,
+          isSystem: a.isSystem,
+          creditLimitMinor: a.creditLimitMinor,
+        );
+      }
+      return a;
+    }).toList();
+    state = state.copyWith(
+      draft: state.draft.copyWith(accounts: accounts),
       clearValidation: true,
     );
   }
@@ -72,6 +98,9 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   void removeAccount(String accountId) {
+    final match = state.draft.accounts.where((a) => a.id == accountId).toList();
+    if (match.isEmpty || match.first.isSystem) return;
+
     final next = state.draft.accounts.where((a) => a.id != accountId).toList();
     final recurring = {...state.draft.recurringByCategory};
     for (final entry in recurring.entries.toList()) {
@@ -149,14 +178,40 @@ class OnboardingController extends Notifier<OnboardingState> {
   }
 
   void setRecurring(OnboardingRecurringIncomeDraft recurring) {
-    final next = {
+    final nextRecurring = {
       ...state.draft.recurringByCategory,
       recurring.categoryId: recurring,
     };
+    final draft = state.draft.copyWith(recurringByCategory: nextRecurring);
+    var budgets = {...draft.budgetsMinorByCategory};
+    final synced = _incomeBudgetMinorFromRecurringForDraft(
+      draft,
+      recurring.categoryId,
+    );
+    if (synced != null) {
+      budgets[recurring.categoryId] = synced;
+    }
     state = state.copyWith(
-      draft: state.draft.copyWith(recurringByCategory: next),
+      draft: draft.copyWith(budgetsMinorByCategory: budgets),
       clearValidation: true,
     );
+  }
+
+  /// When recurring is on with a positive amount, income category budget = monthly minor equivalent.
+  static int? _incomeBudgetMinorFromRecurringForDraft(
+    OnboardingDraft draft,
+    String categoryId,
+  ) {
+    final isIncome = draft.categories.any(
+      (c) => c.id == categoryId && c.kind == OnboardingCategoryKind.income,
+    );
+    if (!isIncome) return null;
+    final r = draft.recurringByCategory[categoryId];
+    if (r == null) return null;
+    if (r.isRecurring && r.amountMinor > 0) {
+      return _monthlyMinorFromRecurring(r);
+    }
+    return null;
   }
 
   /// Ensures every income category has a recurring draft (default: not recurring).
@@ -191,22 +246,35 @@ class OnboardingController extends Notifier<OnboardingState> {
     );
   }
 
-  /// Prefills income category budgets from recurring amounts when the budget is still zero.
-  void seedIncomeBudgetsFromRecurring() {
-    final budgets = {...state.draft.budgetsMinorByCategory};
-    for (final c in state.draft.categories.where(
+  static int _monthlyMinorFromRecurring(OnboardingRecurringIncomeDraft r) {
+    final base = r.amountMinor;
+    return switch (r.cadence) {
+      OnboardingCadence.monthly => base,
+      OnboardingCadence.biweekly => base * 2,
+      OnboardingCadence.weekly => base * 4,
+    };
+  }
+
+  static OnboardingDraft _draftWithBudgetsStepPrepared(OnboardingDraft draft) {
+    final budgets = {...draft.budgetsMinorByCategory};
+    for (final c in draft.categories) {
+      budgets.putIfAbsent(c.id, () => 0);
+    }
+    for (final c in draft.categories.where(
       (x) => x.kind == OnboardingCategoryKind.income,
     )) {
-      final r = state.draft.recurringByCategory[c.id];
+      final r = draft.recurringByCategory[c.id];
       if (r != null && r.isRecurring && r.amountMinor > 0) {
-        final cur = budgets[c.id] ?? 0;
-        if (cur == 0) {
-          budgets[c.id] = r.amountMinor;
-        }
+        budgets[c.id] = _monthlyMinorFromRecurring(r);
       }
     }
+    return draft.copyWith(budgetsMinorByCategory: budgets);
+  }
+
+  /// Re-applies income category budgets from recurring (monthly equivalent per cadence).
+  void seedIncomeBudgetsFromRecurring() {
     state = state.copyWith(
-      draft: state.draft.copyWith(budgetsMinorByCategory: budgets),
+      draft: _draftWithBudgetsStepPrepared(state.draft),
       clearValidation: true,
     );
   }
@@ -275,14 +343,22 @@ class OnboardingController extends Notifier<OnboardingState> {
     }
 
     final nextStep = OnboardingStep.values[state.step.index + 1];
+
+    if (nextStep == OnboardingStep.budgets) {
+      // Single state update so listeners do not see "budgets step" before seeded
+      // budgets (Riverpod can notify between assignments and lock TextControllers at 0).
+      state = state.copyWith(
+        step: nextStep,
+        draft: _draftWithBudgetsStepPrepared(state.draft),
+        clearValidation: true,
+      );
+      return true;
+    }
+
     state = state.copyWith(step: nextStep, clearValidation: true);
 
     if (nextStep == OnboardingStep.recurringIncome) {
       ensureRecurringDraftsForIncomeCategories();
-    }
-    if (nextStep == OnboardingStep.budgets) {
-      ensureBudgetEntriesForAllCategories();
-      seedIncomeBudgetsFromRecurring();
     }
     return true;
   }

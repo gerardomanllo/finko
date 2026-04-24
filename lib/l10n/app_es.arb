@@ -15,6 +15,23 @@
   "onboardingTimezoneLabel": "Zona horaria",
   "onboardingThemeLabel": "Tema",
   "onboardingLocaleLabel": "Idioma",
+  "onboardingMainCurrencyLabel": "Moneda principal",
+  "onboardingAccountNameCash": "Efectivo",
+  "onboardingCreditLimitLabel": "Límite de crédito total",
+  "onboardingProjectedSegmentLine": "{name} {percent}% - {amount}",
+  "@onboardingProjectedSegmentLine": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "percent": {"type": "String"},
+      "amount": {"type": "String"}
+    }
+  },
+  "onboardingProjectedOverspendLine": "SIN AHORRO - {amount} SOBRE INGRESOS",
+  "@onboardingProjectedOverspendLine": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
   "onboardingNext": "Siguiente",
   "onboardingBack": "Atrás",
   "onboardingCommit": "Finalizar incorporación",
@@ -191,6 +208,7 @@
   "themeLight": "Claro",
   "themeDark": "Oscuro",
   "themeSystem": "Sistema",
+  "themeAutomatic": "Automático",
   "environmentBanner": "[{env}]",
   "@environmentBanner": {
     "placeholders": {
@@ -323,6 +341,7 @@
   "metricDeltaStubUp": "+2,1 %",
   "metricDeltaStubDown": "-1,0 %",
   "accountTypeChecking": "Debito",
+  "accountTypeCash": "Efectivo",
   "accountTypeCreditCard": "Tarjetas de crédito",
   "accountTypeSavings": "Ahorros",
   "accountTypeInvestment": "Inversiones",

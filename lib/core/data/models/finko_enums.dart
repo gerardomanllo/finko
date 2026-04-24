@@ -55,6 +55,7 @@ enum LedgerTransactionKind {
 
 /// [`docs/data-model.md` §5] — canonical account types (labels live in l10n).
 enum FinkoAccountType {
+  cash,
   checking,
   savings,
   investment,
@@ -64,6 +65,8 @@ enum FinkoAccountType {
 
   static FinkoAccountType? tryParse(String? raw) {
     switch (raw) {
+      case 'cash':
+        return FinkoAccountType.cash;
       case 'checking':
         return FinkoAccountType.checking;
       case 'savings':
@@ -82,6 +85,7 @@ enum FinkoAccountType {
   }
 
   String get wireName => switch (this) {
+    FinkoAccountType.cash => 'cash',
     FinkoAccountType.checking => 'checking',
     FinkoAccountType.savings => 'savings',
     FinkoAccountType.investment => 'investment',

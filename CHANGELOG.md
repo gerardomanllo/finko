@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Onboarding:** **Main currency** picker on profile; always-on **Cash** account (`type: cash`, localized name, editable currency and **starting balance**, not deletable); **credit card total credit line**; **Automatic** theme label for system preference; **stacked projected savings** chart (fills step height; blue expense bands; savings on top in green/red); expanded **color/icon dropdowns** (overlay-safe rows); **Remind me later** advances the flow; recurring income **prefills** zero income budgets using monthly/biweekly/weekly multipliers (single state update when opening budgets so fields stay in sync). Firestore accounts may include **`creditLimitMinor`**, **`isSystem`**, and **`cash`** type (see `docs/data-model.md`).
+
 - **Telegram messaging:** Cloud Function **`telegramWebhook`** (Telegram `secret_token` + `/start link_<token>`) binds **`chat_id`** and writes **`integrations.telegram`** in one transaction; **no Telegram OTP**. Flutter link sheet uses **`tg://` / `t.me`** when **`needsBotStart`** is returned; **`disconnectMessagingIntegration`** clears link state and profile integration. Firestore **`telegramLinkTokens`** + **`users/{uid}/_telegramLink`** (rules: client deny-all on token writes).
 
 ### Changed
+
+- **Onboarding — projected savings chart:** **all** expense rows (fixed + each variable) are **sorted by budget** so the **largest** sits on the **$0** axis and the stack rises to **projected savings** at the top (expected income); blue shades by stack position.
+
+- **Onboarding:** **Recurring income** edits (amount or cadence) **re-sync** the matching **income category budget** to the monthly-equivalent minor amount, not only on the first visit to the budgets step.
+
+- **Onboarding — color / icon pickers:** the account **color** dropdown shows **named colors** (EN/ES, e.g. "Sky blue" / "Azul cielo") instead of hex codes; account and category **icon** dropdowns show **localized labels** (EN/ES, e.g. "Wallet" / "Cartera") instead of raw internal keys. The saved ARGB / icon key are unchanged.
 
 - **Telegram linking UX:** onboarding/settings sheet uses a **multi-step** flow (phone dial + national number **or** @username, **Next**, progress copy, **Open Telegram**, real-time **`_telegramLink/state`** listener, success checkmark, then OTP). **`kDebugMode`** shows a scrollable **debug trace**; Firestore rules allow **read** of `users/{uid}/_telegramLink` for the owner.
 

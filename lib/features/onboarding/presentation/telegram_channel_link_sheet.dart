@@ -12,13 +12,7 @@ import '../domain/messaging_otp_request_result.dart';
 
 enum _TelegramLinkMode { phone, username }
 
-enum _TelegramFlowPhase {
-  form,
-  preparing,
-  awaitingBot,
-  linkedSuccess,
-  failed,
-}
+enum _TelegramFlowPhase { form, preparing, awaitingBot, linkedSuccess, failed }
 
 /// Dial code → short label (EN; labels are for debug/dropdown only).
 const List<(String code, String label)> _kDialCodes = [
@@ -352,10 +346,7 @@ class _TelegramChannelLinkSheetState extends State<TelegramChannelLinkSheet> {
         Uri(
           scheme: 'tg',
           host: 'resolve',
-          queryParameters: <String, String>{
-            'domain': domain,
-            'start': start,
-          },
+          queryParameters: <String, String>{'domain': domain, 'start': start},
         ),
         Uri(
           scheme: 'https',
@@ -409,14 +400,19 @@ class _TelegramChannelLinkSheetState extends State<TelegramChannelLinkSheet> {
               builder: (context, constraints) {
                 return SingleChildScrollView(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         switch (_phase) {
-                          _TelegramFlowPhase.form =>
-                            _buildForm(context, l10n, brand),
+                          _TelegramFlowPhase.form => _buildForm(
+                            context,
+                            l10n,
+                            brand,
+                          ),
                           _TelegramFlowPhase.preparing => _buildPreparing(
                             context,
                             l10n,
@@ -427,13 +423,11 @@ class _TelegramChannelLinkSheetState extends State<TelegramChannelLinkSheet> {
                             brand,
                           ),
                           _TelegramFlowPhase.linkedSuccess =>
-                            _buildLinkedSuccess(
-                              context,
-                              l10n,
-                              brand,
-                            ),
-                          _TelegramFlowPhase.failed =>
-                            _buildFailed(context, l10n),
+                            _buildLinkedSuccess(context, l10n, brand),
+                          _TelegramFlowPhase.failed => _buildFailed(
+                            context,
+                            l10n,
+                          ),
                         },
                       ],
                     ),

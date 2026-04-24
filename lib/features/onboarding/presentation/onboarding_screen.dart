@@ -98,6 +98,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _timezone = 'America/Mexico_City';
   String _themeChoice = 'system';
   String _localeChoice = 'es-MX';
+  String _mainCurrency = kDefaultMainCurrency;
 
   final Map<String, TextEditingController> _budgetControllers = {};
 
@@ -118,6 +119,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _timezone = draft.timezone;
     _themeChoice = draft.themePreference;
     _localeChoice = _bcpLocaleFromDraft(draft.locale);
+    _mainCurrency = draft.mainCurrency;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -153,8 +155,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       final existing = _budgetControllers[cat.id];
       if (existing == null) {
         _budgetControllers[cat.id] = TextEditingController(text: text);
-      } else if (!_budgetsControllersReady) {
-        existing.text = text;
+      } else {
+        final parsed = parseMajorToMinor(existing.text) ?? 0;
+        if (!_budgetsControllersReady || parsed != minor) {
+          existing.text = text;
+        }
       }
     }
     _budgetsControllersReady = true;
@@ -170,6 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       timezone: _timezone,
       themePreference: _themeChoice,
       locale: _localeChoice,
+      mainCurrency: _mainCurrency,
     );
     controller.setMessaging(
       OnboardingMessagingState(
@@ -203,6 +209,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         controller.syncFixedExpensesDisplayName(
           l10n.onboardingCategoryFixedExpenses,
         );
+      }
+      if (next == OnboardingStep.accounts && mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref
+              .read(onboardingControllerProvider.notifier)
+              .syncSystemCashDisplayName(l10n.onboardingAccountNameCash);
+        });
       }
       if (prev == OnboardingStep.budgets && next != OnboardingStep.budgets) {
         _disposeBudgetControllers();
@@ -365,12 +379,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  _buildStepBody(context, state, l10n, localeTag, controller),
-                ],
-              ),
+              child: state.step == OnboardingStep.projectedSavings
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                      child: _buildProjectedStep(
+                        context,
+                        l10n,
+                        state.draft,
+                        localeTag,
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        _buildStepBody(
+                          context,
+                          state,
+                          l10n,
+                          localeTag,
+                          controller,
+                        ),
+                      ],
+                    ),
             ),
             if (showNav)
               Padding(
@@ -455,6 +485,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             timezone: _timezone,
             themePreference: _themeChoice,
             locale: _localeChoice,
+            mainCurrency: _mainCurrency,
           ),
         ),
         const SizedBox(height: 12),
@@ -477,6 +508,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               timezone: _timezone,
               themePreference: _themeChoice,
               locale: _localeChoice,
+              mainCurrency: _mainCurrency,
             );
           },
         ),
@@ -488,7 +520,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           items: [
             DropdownMenuItem(value: 'light', child: Text(l10n.themeLight)),
             DropdownMenuItem(value: 'dark', child: Text(l10n.themeDark)),
-            DropdownMenuItem(value: 'system', child: Text(l10n.themeSystem)),
+            DropdownMenuItem(value: 'system', child: Text(l10n.themeAutomatic)),
           ],
           onChanged: (v) {
             if (v == null) return;
@@ -499,6 +531,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               timezone: _timezone,
               themePreference: _themeChoice,
               locale: _localeChoice,
+              mainCurrency: _mainCurrency,
             );
           },
         ),
@@ -528,6 +561,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               timezone: _timezone,
               themePreference: _themeChoice,
               locale: _localeChoice,
+              mainCurrency: _mainCurrency,
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          key: ValueKey<String>(_mainCurrency),
+          initialValue: _mainCurrency,
+          decoration: InputDecoration(
+            labelText: l10n.onboardingMainCurrencyLabel,
+          ),
+          items: [
+            for (final c in kOnboardingCurrencies)
+              DropdownMenuItem<String>(value: c, child: Text(c)),
+          ],
+          onChanged: (v) {
+            if (v == null) return;
+            setState(() => _mainCurrency = v);
+            controller.updateProfile(
+              displayName: _nameController.text,
+              timezone: _timezone,
+              themePreference: _themeChoice,
+              locale: _localeChoice,
+              mainCurrency: _mainCurrency,
             );
           },
         ),
@@ -551,6 +608,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             a.currency,
             localeTag,
           );
+          final displayName = a.id == OnboardingDraft.kSystemCashAccountId
+              ? l10n.onboardingAccountNameCash
+              : a.name;
           return InkWell(
             onTap: () => showOnboardingAccountEditor(
               context: context,
@@ -573,7 +633,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          a.name,
+                          displayName,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 2),
@@ -583,10 +643,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => controller.removeAccount(a.id),
-                  ),
+                  if (!a.isSystem)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () => controller.removeAccount(a.id),
+                    ),
                 ],
               ),
             ),
@@ -817,7 +878,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     category.id == OnboardingDraft.kFixedExpensesCategory.id
                     ? l10n.onboardingCategoryFixedExpenses
                     : category.name,
-                currencyCode: kDefaultMainCurrency,
+                currencyCode: draft.profileMainCurrencyForCommit,
               ),
               onChanged: (v) {
                 final minor = parseMajorToMinor(v) ?? 0;
@@ -835,42 +896,64 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingDraft draft,
     String localeTag,
   ) {
-    final m = kDefaultMainCurrency;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          l10n.onboardingProjectedChartTitle,
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        OnboardingProjectedChart(
-          expectedIncomeMinor: draft.expectedIncomeMinor,
-          fixedExpensesMinor: draft.fixedExpensesMinor,
-          variableExpensesMinor: draft.variableExpensesMinor,
-          projectedSavingsMinor: draft.projectedSavingsMinor,
-          currencyCode: m,
-          localeTag: localeTag,
-          incomeLabel: l10n.onboardingExpectedIncome,
-          fixedLabel: l10n.onboardingFixedExpenses,
-          variableLabel: l10n.onboardingVariableExpenses,
-          netLabel: l10n.onboardingProjectedSavings,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          '${l10n.onboardingExpectedIncome}: ${formatMinorUnits(draft.expectedIncomeMinor, m, localeTag)}',
-        ),
-        Text(
-          '${l10n.onboardingFixedExpenses}: ${formatMinorUnits(draft.fixedExpensesMinor, m, localeTag)}',
-        ),
-        Text(
-          '${l10n.onboardingVariableExpenses}: ${formatMinorUnits(draft.variableExpensesMinor, m, localeTag)}',
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${l10n.onboardingProjectedSavings}: ${formatMinorUnits(draft.projectedSavingsMinor, m, localeTag)}',
-        ),
-      ],
+    final m = draft.profileMainCurrencyForCommit;
+    final variableSegments = <OnboardingProjectedVariableSegment>[];
+    for (final c in draft.categories) {
+      if (c.kind == OnboardingCategoryKind.expense &&
+          c.id != OnboardingDraft.kFixedExpensesCategory.id) {
+        variableSegments.add(
+          OnboardingProjectedVariableSegment(
+            label: c.name,
+            amountMinor: draft.budgetsMinorByCategory[c.id] ?? 0,
+          ),
+        );
+      }
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.onboardingProjectedChartTitle,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, inner) {
+                  return OnboardingProjectedChart(
+                    chartTotalHeight: inner.maxHeight,
+                    expectedIncomeMinor: draft.expectedIncomeMinor,
+                    fixedExpensesMinor: draft.fixedExpensesMinor,
+                    variableSegments: variableSegments,
+                    projectedSavingsMinor: draft.projectedSavingsMinor,
+                    currencyCode: m,
+                    localeTag: localeTag,
+                    l10n: l10n,
+                    fixedLabel: l10n.onboardingFixedExpenses,
+                    savingsLabel: l10n.onboardingProjectedSavings,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${l10n.onboardingExpectedIncome}: ${formatMinorUnits(draft.expectedIncomeMinor, m, localeTag)}',
+            ),
+            Text(
+              '${l10n.onboardingFixedExpenses}: ${formatMinorUnits(draft.fixedExpensesMinor, m, localeTag)}',
+            ),
+            Text(
+              '${l10n.onboardingVariableExpenses}: ${formatMinorUnits(draft.variableExpensesMinor, m, localeTag)}',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${l10n.onboardingProjectedSavings}: ${formatMinorUnits(draft.projectedSavingsMinor, m, localeTag)}',
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -978,11 +1061,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 12),
         TextButton(
-          onPressed: () {
+          onPressed: () async {
             _waController.clear();
             _tgController.clear();
             _otpController.clear();
             controller.setMessaging(const OnboardingMessagingState());
+            final st = ref.read(onboardingControllerProvider);
+            await _onPrimaryPressed(st, l10n);
           },
           child: Text(l10n.onboardingRemindMeLater),
         ),
@@ -1095,7 +1180,7 @@ class _RecurringIncomeTileState extends State<_RecurringIncomeTile> {
                 decoration: onboardingMoneyDecoration(
                   context: context,
                   labelText: l10n.onboardingRecurringAmountLabel,
-                  currencyCode: kDefaultMainCurrency,
+                  currencyCode: draft.profileMainCurrencyForCommit,
                 ),
                 onChanged: (t) {
                   final minor = parseMajorToMinor(t) ?? 0;

@@ -15,6 +15,7 @@ import '../../onboarding/presentation/onboarding_account_editor.dart';
 import '../../onboarding/presentation/onboarding_account_icons.dart';
 
 const List<FinkoAccountType> _kAccountTypeSectionOrder = <FinkoAccountType>[
+  FinkoAccountType.cash,
   FinkoAccountType.checking,
   FinkoAccountType.creditCard,
   FinkoAccountType.savings,

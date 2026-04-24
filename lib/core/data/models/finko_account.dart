@@ -22,6 +22,8 @@ class FinkoAccount {
     required this.updatedAt,
     this.iconKey = 'account_balance',
     this.colorArgb,
+    this.creditLimitMinor,
+    this.isSystem = false,
   });
 
   @JsonKey(includeToJson: false)
@@ -48,6 +50,13 @@ class FinkoAccount {
 
   /// Optional ARGB tint; persisted from onboarding.
   final int? colorArgb;
+
+  /// Credit cards: total line in account [currency] (minor units). Omitted when not applicable.
+  final int? creditLimitMinor;
+
+  /// Reserved system rows (e.g. Cash) — clients should not delete.
+  @JsonKey(defaultValue: false)
+  final bool isSystem;
 
   factory FinkoAccount.fromJson(Map<String, dynamic> json) =>
       _$FinkoAccountFromJson(json);
@@ -76,12 +85,17 @@ class FinkoAccount {
     final includeRaw = data['includeInNetCash'];
     final includeInNetCash = includeRaw is bool
         ? includeRaw
-        : (type == FinkoAccountType.checking ||
+        : (type == FinkoAccountType.cash ||
+              type == FinkoAccountType.checking ||
               type == FinkoAccountType.creditCard);
 
     final rawIcon = (data['iconKey'] as String?)?.trim();
     final rawColor = data['colorArgb'];
     final colorArgb = rawColor is num ? rawColor.toInt() : null;
+    final rawLimit = data['creditLimitMinor'];
+    final creditLimitMinor = rawLimit is num ? rawLimit.toInt() : null;
+    final isSystemRaw = data['isSystem'];
+    final isSystem = isSystemRaw is bool ? isSystemRaw : false;
 
     return FinkoAccount(
       id: id,
@@ -104,6 +118,8 @@ class FinkoAccount {
           ? rawIcon
           : 'account_balance',
       colorArgb: colorArgb,
+      creditLimitMinor: creditLimitMinor,
+      isSystem: isSystem,
     );
   }
 

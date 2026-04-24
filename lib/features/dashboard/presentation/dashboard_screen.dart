@@ -44,6 +44,7 @@ class DashboardScreen extends ConsumerWidget {
 
   static String _accountTypeLabel(AppLocalizations l10n, FinkoAccountType t) {
     return switch (t) {
+      FinkoAccountType.cash => l10n.accountTypeCash,
       FinkoAccountType.checking => l10n.accountTypeChecking,
       FinkoAccountType.creditCard => l10n.accountTypeCreditCard,
       FinkoAccountType.savings => l10n.accountTypeSavings,

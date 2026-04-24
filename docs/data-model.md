@@ -159,7 +159,7 @@ Implementation lives in **`functions/src/index.ts`** + **`functions/src/aggregat
 
 ### 4.2 Net worth vs net cash (definitions)
 
-**Asset vs liability:** Account types **`checking`**, **`savings`**, **`investment`** are **assets** (positive balance = money held). Types **`creditCard`**, **`loan`**, **`mortgage`** are **liabilities** (positive balance = **amount owed**). Ledger aggregation applies direction to balances accordingly (see [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md) §4).
+**Asset vs liability:** Account types **`cash`**, **`checking`**, **`savings`**, **`investment`** are **assets** (positive balance = money held). Types **`creditCard`**, **`loan`**, **`mortgage`** are **liabilities** (positive balance = **amount owed**). Ledger aggregation applies direction to balances accordingly (see [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md) §4).
 
 | Metric | Definition |
 |--------|------------|
@@ -191,6 +191,7 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 
 | Value | Typical English label |
 |-------|------------------------|
+| `cash` | Cash |
 | `checking` | Checking |
 | `savings` | Savings |
 | `investment` | Investment |
@@ -201,15 +202,17 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | Field | Type | Notes |
 |-------|------|--------|
 | `name` | `string` | |
-| `type` | `string` | One of **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`**. |
+| `type` | `string` | One of **`cash`**, **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`**. |
 | `currency` | `string` | ISO 4217 per account. |
 | `balanceMinor` | `int` | In **account currency** (denormalized). **Assets:** positive = money in the account. **Liabilities** (`creditCard`, `loan`, `mortgage`): positive = amount owed. |
 | `balanceMinorMain` | `int?` | Optional denormalized balance in **mainCurrency** for dashboard (maintained by Functions using rates). Same sign convention as `balanceMinor`. |
-| `includeInNetCash` | `bool` | **Net cash** (liquid) rollup—e.g. checking, credit cards when true. |
+| `includeInNetCash` | `bool` | **Net cash** (liquid) rollup—defaults true for **`cash`**, **`checking`**, **`creditCard`** on onboarding commit. |
 | `sortOrder` | `int` | |
 | `createdAt` / `updatedAt` | `Timestamp` | UTC. |
 | `iconKey` | `string` | UI key into the fixed Material map (default **`account_balance`** if omitted in older rows). |
 | `colorArgb` | `int?` | Optional UI tint (ARGB); onboarding writes a palette value. |
+| `creditLimitMinor` | `int?` | **Credit cards only:** total credit line in **account `currency`** (minor units). |
+| `isSystem` | `bool?` | When **`true`**, reserved system row (e.g. onboarding **Cash** wallet); clients must not delete. |
 
 **Net worth** and **net cash** use the signed definitions in §4.2 (not a naive sum of raw `balanceMinor` across mixed asset/liability accounts).
 
@@ -356,7 +359,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 | Upcoming transfers | **One** upcoming doc per scheduled transfer — **`kind: transfer`**, **`fromAccountId`** / **`toAccountId`**; materializer emits **two** `transactions` (§4.3). |
 | Indexes | **`firestore.indexes.json`** — define when queries are fixed (TBD). |
 | Onboarding gate | **`onboardingCompleted`** on `users/{uid}`; set **`true`** only after successful server-side commit; gate **not** device-local ([`onboarding.md`](onboarding.md)). |
-| Account `type` | Canonical enum **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`**; localized labels only in app l10n. |
+| Account `type` | Canonical enum **`cash`**, **`checking`**, **`savings`**, **`investment`**, **`creditCard`**, **`loan`**, **`mortgage`**; localized labels only in app l10n. |
 | Opening balance | Prefer **`transactions`** with **`type: adjustment`** so balances and aggregates stay ledger-driven. |
 
 ---
@@ -365,6 +368,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-04-21 | §5: Account type **`cash`** (physical wallet); optional **`creditLimitMinor`** (credit cards); optional **`isSystem`** for non-deletable rows (onboarding Cash). §4.2: **`cash`** is an **asset**. |
 | 2026-04-21 | §3.1 **Telegram:** **`requestMessagingOtp`** does not write **`integrations.telegram`**; only the webhook transaction does (avoids racing **`consumeLinkTokenAndBindChat`**). |
 | 2026-04-21 | **Telegram:** **`integrations.telegram`** written in **`telegramWebhook`** transaction with **`_telegramLink/state`** (no OTP). |
 | 2026-04-22 | **`telegramLinkTokens`:** 24h TTL, transactional consume + bind in webhook. **`_telegramLink`:** client **read** (same `uid`) for link UI. |

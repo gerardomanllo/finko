@@ -37,6 +37,14 @@ class FinkoCashFlowAccountsAccordion extends StatelessWidget {
       child: Column(
         children: [
           _ExpandableTypeSection(
+            title: accountTypeLabel(FinkoAccountType.cash),
+            accounts: _ofType(FinkoAccountType.cash),
+            mainCurrencyCode: mainCurrencyCode,
+            formatMoney: formatMoney,
+            formatMoneyWithCode: formatMoneyWithCode,
+            icon: Icons.payments_outlined,
+          ),
+          _ExpandableTypeSection(
             title: accountTypeLabel(FinkoAccountType.checking),
             accounts: _ofType(FinkoAccountType.checking),
             mainCurrencyCode: mainCurrencyCode,
