@@ -1,0 +1,308 @@
+# Known bugs (living doc)
+
+Triaged items from the **Finko (Responses)** Google Form → Sheet (**tab `responses`**), excluding rows whose **Status** is **`Done`** or **`Not a bug`**.
+
+| Source | Spreadsheet `responses` tab; sync with MCP per [`references/google-sheets-bug-mcp.md`](references/google-sheets-bug-mcp.md) |
+|--------|-------------------------------------------------------------------------------------------------------------------------------|
+
+## How to use this doc
+
+1. **Sheet is canonical for reporter input** (timestamps, screenshots, raw Spanish copy). This file adds **engineering context**: where we think the bug lives, whether we **agreed on a fix**, and if it is **ready to implement**.
+2. When the sheet **Status** changes to `Done` or `Not a bug`, **remove** that bug’s section here (or move to a “Resolved” appendix if you want history—today we keep only open items).
+3. When new rows appear in the sheet with other statuses (`To-do`, `Backlog`, etc.), **add** a new `KB-xxx` block using the template below.
+4. **`Discussed fix`** — Has the team (or you + agent) talked through expected behavior and approach? (`No` / `In progress` / `Yes`)
+5. **`Ready to fix`** — Is there enough clarity to open a PR without more product/design input? (`No` until scope and acceptance are clear.)
+
+## Team answers (sync)
+
+Captured **2026-04-27** when tightening priority 4–5 items:
+
+| Question | Answer |
+|----------|--------|
+| **KB-001** MVP | **Create a new recurring rule from this transaction** (cadence UX aligned with onboarding income: monthly / twice-monthly / weekly + days). |
+| **KB-008** surface | Reporter / expectation aligns with **Recurring** screen lists — **not** the Dashboard strip (those already merge extra sources). |
+| **KB-002** repro | **Month** pill on Spending (not Week). |
+| **KB-003** evidence | **Two real `transactions` rows** in Firestore on the duplicate day — not UI-only phantom. |
+
+## Index (open items)
+
+Search this file for **`KB-00N`** to jump to a bug.
+
+| ID | Sheet row | Status (sheet) | Priority | Area (sheet) | Title |
+|----|-----------|------------------|----------|--------------|--------|
+| KB-001 | 5 | To-do | 5 | Transacciones | Recurring transaction UI |
+| KB-002 | 6 | To-do | 5 | Gastos | Variable spend: strip vs chart |
+| KB-003 | 7 | To-do | 5 | Home | Double recurring / 20k |
+| KB-004 | 8 | Backlog | 4 | Onboarding | Fixed expenses vs category budgets |
+| KB-005 | 9 | Backlog | 4 | TODOS | Floating menu |
+| KB-006 | 12 | Backlog | 4 | Transacciones | `$` beside amount |
+| KB-007 | 13 | Backlog | 4 | Home | Net worth vs accounts |
+| KB-008 | 14 | Backlog | 4 | recurrente | Future tx not in Próximas |
+| KB-009 | 15 | Backlog | 3 | home / global | Transaction list icons |
+| KB-010 | 20 | Backlog | 3 | Home | Credit card strip + income card |
+| KB-011 | 21 | Backlog | 3 | Transacciones | “Nota” vs descripción copy |
+| KB-012 | 23 | Backlog | 2 | TODO | iOS-style scrolls / pickers |
+| KB-013 | 24 | Backlog | 1 | Home | Profile entry placement |
+
+---
+
+### KB-001 — Recurring transaction UI
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 5 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | To-do |
+| **Tipo** | Bug |
+| **Reporter summary** | Cannot mark a transaction as recurring; wants cadence (every x weeks, day of month, duration or indefinite). |
+| **Discussed fix** | **Yes** (2026-04-27) — MVP: **create a new recurring rule from this transaction**, with cadence controls **aligned with onboarding recurring income** (monthly / twice-monthly / weekly + days of month / weekday). |
+| **Ready to fix** | **No** — still need: which ledger rows may seed a rule (expense-only first? transfers excluded?); default **name/memo**; first **`upcomingTransactions`** row date (tx date vs next schedule boundary); “indefinite” = `active: true` with no end field (confirm vs data model). |
+| **Likely code / product area** | [`lib/widgets/transactions/ledger_transaction_editor_sheet.dart`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart) (no recurrence UI today); new/extended Callable or client batch mirroring [`functions/src/onboardingCommit.ts`](../functions/src/onboardingCommit.ts) recurring + upcoming seed pattern; [`docs/data-model.md`](data-model.md) §8–9. |
+
+**Acceptance (from sheet):** Poder configurar recurrencia (intervalos, día del mes, duración o indefinido).
+
+**Engineering notes**
+
+- Today **recurrence** is created from **onboarding** income tiles and lives under `users/{uid}/recurring` + `upcomingTransactions`; the **transaction editor** only posts ledger rows ([`LedgerTransactionEditorSheet`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart)).
+- **Open questions:** Should “create from tx” also attach **`categoryId` / `accountId` / `amountMinor` / `currency`** from the row? If the tx is **edited** after the rule exists, do we unlink?
+
+---
+
+### KB-002 — Gastos / variable spend strip vs chart
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 6 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | To-do |
+| **Tipo** | Bug |
+| **Reporter summary** | On Apple/Web in Gastos: variable spend not shown in the **top** section; **lower** chart does show it. |
+| **Discussed fix** | **In progress** — reproduce on **Month** pill ([Team answers](#team-answers-sync)). |
+| **Ready to fix** | **No** — confirm with live `monthlyTotals` whether mismatch is aggregate lag, category-key split, or layout/scroll. |
+| **Likely code / product area** | [`lib/features/spending/presentation/spending_screen.dart`](../lib/features/spending/presentation/spending_screen.dart) (`_SpendingPeriodDetailColumn`); [`lib/features/spending/presentation/spending_providers.dart`](../lib/features/spending/presentation/spending_providers.dart) (`spendingMergedMonthlyRollupProvider`, `spendingPeriodIncomeExpenseProvider`); [`lib/core/spending/fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart). |
+
+**Acceptance (from sheet):** Que el gasto y la transacción se reflejen arriba también.
+
+**Engineering notes**
+
+- **Month** view: top accordion uses **`merged.expenseMinorMain`** + **`splitFixedVariableExpense`**; the donut uses the **same** `merged` map via `positiveExpenseByCategoryId` — see `useTxDonut == false` branch (~lines 274–348 vs 333+).
+- **Variable** in the accordion is the **residual** after spend attributed to category id **`fixed-expenses`** only (`kFixedExpensesCategoryId` in [`fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart)). The donut shows **top categories** by positive expense slice — they can disagree with “variable” if almost all spend is bucketed as fixed in `byCategoryMinorMain`, or if **`monthlyTotals`** keys for `fixed-expenses` don’t match onboarding’s reserved id.
+- **Hypotheses to verify:** (1) aggregates classify too much into **`fixed-expenses`** so residual variable → 0 while per-category donut still shows slices; (2) **stale `monthlyTotals`** vs transaction stream for the selected month; (3) **Web/iOS layout** (e.g. accordion clipped) — less likely if numbers are exactly zero.
+
+**Open questions:** After pull-to-refresh, does variable still read `0`? Screenshot month label vs `monthlyTotals` doc id?
+
+---
+
+### KB-003 — Home / double recurring “20k”
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 7 |
+| **Submitted** | 2026-04-22 |
+| **Status (sheet)** | To-do |
+| **Tipo** | Bug |
+| **Reporter summary** | Sees ~20k recurring unexpectedly; recurring monthly on 30th, charged twice on the 22nd. |
+| **Discussed fix** | **In progress** — **two real `transactions` rows** on the duplicate day ([Team answers](#team-answers-sync)); not a UI-only double draw. |
+| **Ready to fix** | **No** — trace why two posts (duplicate `upcomingTransactions`, double materialize, schedule shift off 30th, or client retry). |
+| **Likely code / product area** | [`functions/src/materialize.ts`](../functions/src/materialize.ts) (`materializeDueUpcoming`); [`functions/src/scheduleNext.ts`](../functions/src/scheduleNext.ts) (`computeNextTransactionDate`, EOM / day-31 rules); client [`lib/core/upcoming/materialize_upcoming_service.dart`](../lib/core/upcoming/materialize_upcoming_service.dart) + any duplicate triggers. |
+
+**Acceptance (from sheet):** Clarify correct posting dates; no duplicate charges on wrong day.
+
+**Engineering notes**
+
+- Treat as **data / idempotency** bug: same rule must not emit two ledger postings for the same logical occurrence.
+- **Next step:** In Firestore for affected `uid`, list `transactions` on **2026-04-22** (filter memo/category/recurring metadata), and `upcomingTransactions` / `recurring` for the same **`recurringRuleId`** around that window.
+
+---
+
+### KB-004 — Onboarding / fixed expenses vs category budgets
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 8 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Feature |
+| **Reporter summary** | “Fixed expenses” budget duplicates budgets already set on individual categories (services, therapy); projected chart double-counts. Wants either stricter definition of “fixed” or multi-select of which categories count as fixed. |
+| **Discussed fix** | No |
+| **Ready to fix** | No — product decision: today’s spec is **one** system bucket **`Fixed Expenses`** for fixed + **other** expense categories for variable ([`onboarding.md`](onboarding.md) step 5–6, [`onboarding_projected_chart.dart`](../lib/features/onboarding/presentation/onboarding_projected_chart.dart)). |
+| **Likely code / product area** | Onboarding budgets + projected chart; possibly [`docs/budgets.md`](budgets.md) if we expand the model. |
+
+**Open questions:** Allow **multi-select “which categories are fixed”** (changes chart + spending split), or **education only** (don’t double-fill Fixed Expenses + per-category budgets)?
+
+---
+
+### KB-005 — Global / floating menu
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 9 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Feature |
+| **Reporter summary** | Menu should be floating and round (FAB-style). |
+| **Discussed fix** | No |
+| **Ready to fix** | No — needs design reference (shell: bottom nav + drawer per [`shell-navigation.md`](shell-navigation.md)). |
+| **Likely code / product area** | Shell scaffold / `NavigationBar` / FAB placement — TBD. |
+
+**Open questions:** FAB replaces **center** tab, or secondary FAB above nav? **Web** same as mobile?
+
+---
+
+### KB-006 — Transacciones / currency `$` beside amount
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 12 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Correccion |
+| **Reporter summary** | Show `$` (or currency symbol) next to amount field for clarity. |
+| **Discussed fix** | No |
+| **Ready to fix** | **Partial** — small UI change once rule is chosen: always **`mainCurrency`** symbol vs **account currency** symbol vs **ISO code** from `intl`/existing formatters. |
+| **Likely code / product area** | [`lib/widgets/transactions/ledger_transaction_editor_sheet.dart`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart) amount field; reuse [`lib/core/formatting/money_format.dart`](../lib/core/formatting/money_format.dart) / `formatMinorUnitsWithCode`. |
+
+**Open questions:** Reporter asked for **`$`** — for **MXN** do we show **`MXN`**, **`$`**, or **`$` + “MX”`** per locale?
+
+---
+
+### KB-007 — Home / net worth vs accounts
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 13 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Bug |
+| **Reporter summary** | Net worth total does not match expectation from accounts list. |
+| **Discussed fix** | No |
+| **Ready to fix** | No — decide after confirming whether headline is “wrong” or **accounts list interpretation** differs from product definition. |
+| **Likely code / product area** | [`lib/features/dashboard/presentation/dashboard_screen.dart`](../lib/features/dashboard/presentation/dashboard_screen.dart) (~lines 139–144); `netWorthFromAccountsMinor` vs sparkline; [`docs/data-model.md`](data-model.md) §4.2 signed net worth. |
+
+**Acceptance (from sheet):** Explanation in UI (tutorial or info icon).
+
+**Engineering notes**
+
+- Dashboard **headline** uses **`netWorthSparklineSeriesProvider`’s last point** when any sparkline point is non-zero; **otherwise** it uses **`netWorthFromAccountsMinor(accounts)`**. If sparkline series is **stale or differently defined** than live account balances, the big number can disagree with the **accounts accordion** below (still sum of accounts).
+- **Hypothesis:** Mismatch is often **sparkline path vs accounts path**, not raw arithmetic on the accordion.
+- **Open questions:** If sparkline is disabled or empty, does headline match sum of accounts? Do we want headline to **always** equal `netWorthFromAccounts` and move history to a secondary widget?
+
+---
+
+### KB-008 — recurrente / future tx not in Próximas
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 14 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Bug |
+| **Reporter summary** | Future-dated transaction (intended to add recurrence) does not appear under Próximas. |
+| **Discussed fix** | **Yes** (2026-04-27) — expectation is **Recurring** screen lists ([Team answers](#team-answers-sync)), not only Dashboard. |
+| **Ready to fix** | **Yes (engineering)** — behavior gap is understood: **Dashboard** uses [`dashboardUpcomingStripProvider`](../lib/core/data/providers/finko_stream_providers.dart) which **merges** `upcomingTransactions` + recurring previews + **future-dated ledger** rows (`futureDatedLedgerTransactionsStreamProvider`); **Recurring** screen uses **only** [`upcomingTransactionsStreamProvider`](../lib/core/data/providers/finko_stream_providers.dart) for calendar + “Due soon” lists, so **posted future `transactions/`** never appear there. |
+| **Likely code / product area** | [`lib/features/recurring/presentation/recurring_screen.dart`](../lib/features/recurring/presentation/recurring_screen.dart); refactor to shared provider or duplicate `mergeDashboardUpcoming` filtering for list sections (respect existing 0–7 / 8–15 day filters). |
+
+**Engineering notes**
+
+- Firestore query for ledger futures: [`watchLedgerTransactionsAfterDate`](../lib/core/data/repositories/firestore_data_repository.dart) uses **`transactionDate` > today** (strict), so **today-dated** futures intentionally excluded from that merge path.
+
+**Open questions:** Should **Recurring** calendar marks include ledger-only futures, or only **`upcomingTransactions`** docs (product clarity)?
+
+---
+
+### KB-009 — Transactions / category icons
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 15 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Feature |
+| **Reporter summary** | Use category icons more clearly on transaction rows (wherever lists appear). |
+| **Discussed fix** | No |
+| **Ready to fix** | No — list screens to touch. |
+
+---
+
+### KB-010 — Home / credit card strip + income card
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 20 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Correccion |
+| **Reporter summary** | Credit cards shown as accumulated spend; wants chart similar to patrimonio; suggests an income card. |
+| **Discussed fix** | No |
+| **Ready to fix** | No — dashboard layout / metrics definition. |
+
+---
+
+### KB-011 — Transacciones / “Nota” vs descripción copy
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 21 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Correccion |
+| **Reporter summary** | Rename “nota” to context-specific strings (gasto vs ingreso). |
+| **Discussed fix** | No |
+| **Ready to fix** | No — l10n + field labels only once copy is approved. |
+| **Likely code / product area** | Transaction editor ARBs — TBD. |
+
+---
+
+### KB-012 — TODO / iOS-style scrolls
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 23 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Feature |
+| **Reporter summary** | iOS-like wheel scrolls for calendar and pickers (“app fina”). |
+| **Discussed fix** | No |
+| **Ready to fix** | No — large UX scope; may defer. |
+
+---
+
+### KB-013 — Home / profile entry placement
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | 24 |
+| **Submitted** | 2026-04-21 |
+| **Status (sheet)** | Backlog |
+| **Tipo** | Correccion |
+| **Reporter summary** | Remove prominent text; move account access to top-right (profile icon only?). |
+| **Discussed fix** | No |
+| **Ready to fix** | No — home header layout. |
+
+---
+
+## Template for new bugs (copy below the index)
+
+```markdown
+### KB-0NN — Short title
+
+| Field | Value |
+|-------|--------|
+| **Sheet row** | (1-based row in `responses` tab) |
+| **Submitted** | YYYY-MM-DD |
+| **Status (sheet)** | To-do / Backlog / … |
+| **Tipo** | Bug / Feature / Correccion |
+| **Reporter summary** | One paragraph from the form + link to Screenshots column in sheet if needed. |
+| **Discussed fix** | No / In progress / Yes — (date, who, notes) |
+| **Ready to fix** | No / Yes — link PR or branch when started |
+| **Likely code / product area** | e.g. `lib/features/transactions/...` |
+
+**Acceptance (from sheet):** …
+```
+
+## Revision log
+
+| Date | Change |
+|------|--------|
+| 2026-04-27 | **Tighten P4–P5:** Team answers block (KB-001 create-rule MVP, KB-008 Recurring screen, KB-002 Month, KB-003 two real txs). Expanded **KB-001–KB-008** with code pointers, hypotheses, open questions; KB-007 net worth sparkline vs accounts path; KB-008 ready-to-fix **Yes (engineering)** with provider merge explanation. |
+| 2026-04-27 | Initial doc: 13 open items from **Finko (Responses)** `responses` tab (rows with Status ≠ Done / Not a bug). Added discussion + ready-to-fix fields. |

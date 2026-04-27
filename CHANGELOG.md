@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Docs:** [`docs/references/google-sheets-bug-mcp.md`](docs/references/google-sheets-bug-mcp.md) — connect Cursor MCP to Google Form bug responses via **[xing5/mcp-google-sheets](https://github.com/xing5/mcp-google-sheets)** (`uvx`), service account + Drive folder, optional tool filtering.
+
+- **Docs:** [`docs/KNOWN_BUGS.md`](docs/KNOWN_BUGS.md) — living triage list for open **Finko (Responses)** sheet rows (Status ≠ Done / Not a bug), with **Discussed fix** and **Ready to fix** fields.
+
 - **Onboarding:** **Main currency** picker on profile; always-on **Cash** account (`type: cash`, localized name, editable currency and **starting balance**, not deletable); **credit card total credit line**; **Automatic** theme label for system preference; **stacked projected savings** chart (fills step height; blue expense bands; savings on top in green/red); expanded **color/icon dropdowns** (overlay-safe rows); **Remind me later** advances the flow; recurring income **prefills** zero income budgets using monthly/biweekly/weekly multipliers (single state update when opening budgets so fields stay in sync). Firestore accounts may include **`creditLimitMinor`**, **`isSystem`**, and **`cash`** type (see `docs/data-model.md`).
 
 - **Telegram messaging:** Cloud Function **`telegramWebhook`** (Telegram `secret_token` + `/start link_<token>`) binds **`chat_id`** and writes **`integrations.telegram`** in one transaction; **no Telegram OTP**. Flutter link sheet uses **`tg://` / `t.me`** when **`needsBotStart`** is returned; **`disconnectMessagingIntegration`** clears link state and profile integration. Firestore **`telegramLinkTokens`** + **`users/{uid}/_telegramLink`** (rules: client deny-all on token writes).

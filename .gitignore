@@ -80,3 +80,6 @@ app.*.map.json
 /android/app/release
 /android/build/
 /android/app/build/
+
+# Cursor MCP
+.cursor/sheets-mcp/
