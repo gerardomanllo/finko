@@ -100,7 +100,9 @@ final upcomingTransactionsStreamProvider =
           .watchUpcomingFromDate(uid, from, limit: 50);
     });
 
-/// Future-dated **`transactions/`** rows (editor-created), strictly after profile today.
+/// Future-dated **`transactions/`** rows (editor-created), strictly **after** profile today.
+///
+/// Dashboard próximos strip — see [mergeUpcomingForUi] with `includeDueToday: false`.
 final futureDatedLedgerTransactionsStreamProvider =
     StreamProvider<List<LedgerTransaction>>((ref) async* {
       final uid = ref.watch(authUidProvider);
@@ -112,6 +114,26 @@ final futureDatedLedgerTransactionsStreamProvider =
       yield* ref
           .watch(firestoreDataRepositoryProvider)
           .watchLedgerTransactionsAfterDate(uid, today, limit: 40);
+    });
+
+/// Ledger rows with `transactionDate` **on or after** profile today (same limit).
+///
+/// Used for [recurringMergedUpcomingProvider] so today’s future-dated ledger previews
+/// are not dropped by the Firestore `isGreaterThan` query.
+final ledgerFromTodayForUpcomingMergeStreamProvider =
+    StreamProvider<List<LedgerTransaction>>((ref) async* {
+      final uid = ref.watch(authUidProvider);
+      if (uid == null) {
+        yield <LedgerTransaction>[];
+        return;
+      }
+      final today = ref.watch(todayYyyyMmDdProvider);
+      yield* ref.watch(firestoreDataRepositoryProvider).watchLedgerTransactionsAfterDate(
+            uid,
+            today,
+            limit: 40,
+            inclusiveFrom: true,
+          );
     });
 
 /// Upcoming strip for dashboard: scheduled rows **after** today plus recurring
@@ -129,11 +151,12 @@ final dashboardUpcomingStripProvider =
                       .watch(futureDatedLedgerTransactionsStreamProvider)
                       .when(
                         data: (ledgerFuture) => AsyncValue.data(
-                          mergeDashboardUpcoming(
+                          mergeUpcomingForUi(
                             upcomingList,
                             rules,
                             today,
                             ledgerFuture: ledgerFuture,
+                            includeDueToday: false,
                           ),
                         ),
                         loading: () => const AsyncValue.loading(),
@@ -147,14 +170,60 @@ final dashboardUpcomingStripProvider =
           );
     });
 
-List<UpcomingTransaction> mergeDashboardUpcoming(
+/// Recurring screen: same merge as [dashboardUpcomingStripProvider] but **includes
+/// rows due today** (matches calendar / Due soon `days >= 0`), plus future-dated
+/// ledger previews — see KB-008 / `docs/data-contract.md`.
+final recurringMergedUpcomingProvider =
+    Provider<AsyncValue<List<UpcomingTransaction>>>((ref) {
+      final today = ref.watch(todayYyyyMmDdProvider);
+      return ref
+          .watch(upcomingTransactionsStreamProvider)
+          .when(
+            data: (upcomingList) => ref
+                .watch(recurringRulesStreamProvider)
+                .when(
+                  data: (rules) => ref
+                      .watch(ledgerFromTodayForUpcomingMergeStreamProvider)
+                      .when(
+                        data: (ledgerFuture) => AsyncValue.data(
+                          mergeUpcomingForUi(
+                            upcomingList,
+                            rules,
+                            today,
+                            ledgerFuture: ledgerFuture,
+                            includeDueToday: true,
+                          ),
+                        ),
+                        loading: () => const AsyncValue.loading(),
+                        error: AsyncValue.error,
+                      ),
+                  loading: () => const AsyncValue.loading(),
+                  error: AsyncValue.error,
+                ),
+            loading: () => const AsyncValue.loading(),
+            error: AsyncValue.error,
+          );
+    });
+
+/// Merges Firestore `upcomingTransactions`, synthetic previews from [RecurringRule]s,
+/// and future-dated ledger rows for UI.
+///
+/// [includeDueToday] — **`false`**: dashboard strip (strictly **after** today for
+/// schedule rows; ledger previews only **after** today). **`true`**: Recurring
+/// screen (today and future for schedule rows **and** ledger previews).
+List<UpcomingTransaction> mergeUpcomingForUi(
   List<UpcomingTransaction> upcoming,
   List<RecurringRule> rules,
   String todayYyyyMmDd, {
   List<LedgerTransaction> ledgerFuture = const [],
+  required bool includeDueToday,
 }) {
   final out = upcoming
-      .where((u) => u.transactionDate.compareTo(todayYyyyMmDd) > 0)
+      .where(
+        (u) => includeDueToday
+            ? u.transactionDate.compareTo(todayYyyyMmDd) >= 0
+            : u.transactionDate.compareTo(todayYyyyMmDd) > 0,
+      )
       .toList();
 
   final covered = <String>{};
@@ -167,7 +236,10 @@ List<UpcomingTransaction> mergeDashboardUpcoming(
   final now = DateTime.now();
   for (final rule in rules) {
     if (!rule.active) continue;
-    if (rule.nextTransactionDate.compareTo(todayYyyyMmDd) <= 0) continue;
+    final ruleOk = includeDueToday
+        ? rule.nextTransactionDate.compareTo(todayYyyyMmDd) >= 0
+        : rule.nextTransactionDate.compareTo(todayYyyyMmDd) > 0;
+    if (!ruleOk) continue;
     final key = '${rule.id}|${rule.nextTransactionDate}';
     if (covered.contains(key)) continue;
     out.add(UpcomingTransaction.fromRecurringRulePreview(rule, now: now));
@@ -175,7 +247,10 @@ List<UpcomingTransaction> mergeDashboardUpcoming(
   }
 
   for (final t in ledgerFuture) {
-    if (t.transactionDate.compareTo(todayYyyyMmDd) <= 0) continue;
+    final skipLedgerRow = includeDueToday
+        ? t.transactionDate.compareTo(todayYyyyMmDd) < 0
+        : t.transactionDate.compareTo(todayYyyyMmDd) <= 0;
+    if (skipLedgerRow) continue;
     if (t.type == LedgerTransactionKind.transferLeg &&
         t.direction == MoneyDirection.in_) {
       continue;

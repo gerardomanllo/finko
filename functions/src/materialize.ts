@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
@@ -7,6 +6,20 @@ import { computeNextTransactionDate, resolveAsOfYmd } from "./scheduleNext";
 
 const LEDGER_TRANSFER_CATEGORY_ID = "ledger-transfer";
 const FALLBACK_CATEGORY_ID = "fixed-expenses";
+
+/** Stable ids so concurrent / retried materialization cannot create duplicate legs. */
+function materializedStandardTxId(upcomingId: string, transactionDateYyyyMmDd: string): string {
+  const d = transactionDateYyyyMmDd.replace(/-/g, "");
+  return `mat_${upcomingId}_${d}`;
+}
+
+function materializedTransferLegIds(
+  upcomingId: string,
+  transactionDateYyyyMmDd: string
+): { outId: string; inId: string } {
+  const d = transactionDateYyyyMmDd.replace(/-/g, "");
+  return { outId: `mat_${upcomingId}_${d}_out`, inId: `mat_${upcomingId}_${d}_in` };
+}
 
 export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (request) => {
   const db = getFirestore();
@@ -52,7 +65,10 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
     const recurringRuleId = typeof u.recurringRuleId === "string" ? u.recurringRuleId : undefined;
 
     if (kind === "standard") {
-      const txRef = db.collection(`users/${uid}/transactions`).doc();
+      const ymdStd = u.transactionDate as string;
+      const txRef = db
+        .collection(`users/${uid}/transactions`)
+        .doc(materializedStandardTxId(upcomingId, ymdStd));
       batch.set(txRef, {
         transactionDate: u.transactionDate,
         loadedAt: FieldValue.serverTimestamp(),
@@ -74,9 +90,11 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
     } else if (kind === "transfer") {
       const fromId = u.fromAccountId as string;
       const toId = u.toAccountId as string;
-      const gid = u.transferGroupId ?? randomUUID();
-      const outRef = db.collection(`users/${uid}/transactions`).doc();
-      const inRef = db.collection(`users/${uid}/transactions`).doc();
+      const ymdTr = u.transactionDate as string;
+      const { outId, inId } = materializedTransferLegIds(upcomingId, ymdTr);
+      const gid = u.transferGroupId ?? `matgrp_${upcomingId}_${ymdTr.replace(/-/g, "")}`;
+      const outRef = db.collection(`users/${uid}/transactions`).doc(outId);
+      const inRef = db.collection(`users/${uid}/transactions`).doc(inId);
       batch.set(outRef, {
         transactionDate: u.transactionDate,
         loadedAt: FieldValue.serverTimestamp(),

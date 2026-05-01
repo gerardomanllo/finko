@@ -90,7 +90,7 @@ class RecurringScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final upcomingAsync = ref.watch(upcomingTransactionsStreamProvider);
+    final upcomingAsync = ref.watch(recurringMergedUpcomingProvider);
     final categoriesAsync = ref.watch(categoriesStreamProvider);
     final rulesAsync = ref.watch(recurringRulesStreamProvider);
     final accountsAsync = ref.watch(accountsStreamProvider);
@@ -159,6 +159,13 @@ class RecurringScreen extends ConsumerWidget {
                         TextButton(
                           onPressed: () {
                             ref.invalidate(upcomingTransactionsStreamProvider);
+                            ref.invalidate(
+                              futureDatedLedgerTransactionsStreamProvider,
+                            );
+                            ref.invalidate(
+                              ledgerFromTodayForUpcomingMergeStreamProvider,
+                            );
+                            ref.invalidate(recurringMergedUpcomingProvider);
                             ref.invalidate(categoriesStreamProvider);
                             ref.invalidate(recurringRulesStreamProvider);
                           },

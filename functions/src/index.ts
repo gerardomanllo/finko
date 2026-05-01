@@ -10,6 +10,7 @@ import {
   txDataToPayload,
 } from "./aggregateLedger";
 import { ingestDailyForexRates } from "./dailyForex";
+import { createRecurringFromTransaction } from "./createRecurringFromTransaction";
 import { materializeDueUpcoming } from "./materialize";
 import { commitOnboarding } from "./onboardingCommit";
 import { disconnectMessagingIntegration } from "./disconnectMessagingIntegration";
@@ -27,6 +28,7 @@ initializeApp();
 export {
   ingestDailyForexRates,
   materializeDueUpcoming,
+  createRecurringFromTransaction,
   commitOnboarding,
   disconnectMessagingIntegration,
   requestMessagingOtp,

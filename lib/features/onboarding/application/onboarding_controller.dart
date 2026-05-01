@@ -216,20 +216,8 @@ class OnboardingController extends Notifier<OnboardingState> {
 
   /// Ensures every income category has a recurring draft (default: not recurring).
   void ensureRecurringDraftsForIncomeCategories() {
-    final next = {...state.draft.recurringByCategory};
-    for (final c in state.draft.categories.where(
-      (x) => x.kind == OnboardingCategoryKind.income,
-    )) {
-      next.putIfAbsent(
-        c.id,
-        () => OnboardingRecurringIncomeDraft(
-          categoryId: c.id,
-          isRecurring: false,
-        ),
-      );
-    }
     state = state.copyWith(
-      draft: state.draft.copyWith(recurringByCategory: next),
+      draft: _draftWithRecurringIncomeStepPrepared(state.draft),
       clearValidation: true,
     );
   }
@@ -271,12 +259,23 @@ class OnboardingController extends Notifier<OnboardingState> {
     return draft.copyWith(budgetsMinorByCategory: budgets);
   }
 
-  /// Re-applies income category budgets from recurring (monthly equivalent per cadence).
-  void seedIncomeBudgetsFromRecurring() {
-    state = state.copyWith(
-      draft: _draftWithBudgetsStepPrepared(state.draft),
-      clearValidation: true,
-    );
+  /// Income recurring step: default recurring row per income category (single draft mutation).
+  static OnboardingDraft _draftWithRecurringIncomeStepPrepared(
+    OnboardingDraft draft,
+  ) {
+    final next = {...draft.recurringByCategory};
+    for (final c in draft.categories.where(
+      (x) => x.kind == OnboardingCategoryKind.income,
+    )) {
+      next.putIfAbsent(
+        c.id,
+        () => OnboardingRecurringIncomeDraft(
+          categoryId: c.id,
+          isRecurring: false,
+        ),
+      );
+    }
+    return draft.copyWith(recurringByCategory: next);
   }
 
   void setBudget(String categoryId, int amountMinor) {
@@ -355,11 +354,17 @@ class OnboardingController extends Notifier<OnboardingState> {
       return true;
     }
 
-    state = state.copyWith(step: nextStep, clearValidation: true);
-
     if (nextStep == OnboardingStep.recurringIncome) {
-      ensureRecurringDraftsForIncomeCategories();
+      // Same rationale as budgets: step + draft in one update.
+      state = state.copyWith(
+        step: nextStep,
+        draft: _draftWithRecurringIncomeStepPrepared(state.draft),
+        clearValidation: true,
+      );
+      return true;
     }
+
+    state = state.copyWith(step: nextStep, clearValidation: true);
     return true;
   }
 

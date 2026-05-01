@@ -285,9 +285,14 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                         byCategoryPositiveMinorMain:
                             txRollup.byCategoryMinorMain,
                       )
-                    : splitFixedVariableExpense(
+                    : splitFixedVariableFromPositiveSlices(
                         totalExpenseMinorMain: totalExpense,
-                        byCategoryMinorMain: merged.byCategoryMinorMain,
+                        positiveExpenseByCategoryMinorMain:
+                            positiveExpenseByCategoryId(
+                              signedByCategoryMinorMain:
+                                  merged.byCategoryMinorMain,
+                              categories: categories,
+                            ),
                       );
                 return FinkoSpendingIncomeFixedVariableAccordion(
                   incomeLabel: l10n.spendingIncome,

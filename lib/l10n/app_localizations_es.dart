@@ -1009,6 +1009,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionEditorEntryTransfer => 'Transferencia';
 
   @override
+  String get transactionEditorModeRecurring => 'Recurrente';
+
+  @override
+  String get newTransactionRecurringHint =>
+      'Guarda el movimiento y elige la frecuencia. Puedes cancelar la programación y quedarte solo con este registro.';
+
+  @override
+  String get transactionEditorSaveAndMakeRecurring =>
+      'Guardar y hacer recurrente';
+
+  @override
   String get transactionEditorFieldFromAccount => 'Cuenta origen';
 
   @override
@@ -1109,6 +1120,45 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get transactionEditorErrorDelete =>
       'No se pudo eliminar. Inténtalo de nuevo.';
+
+  @override
+  String get transactionEditorMakeRecurring => 'Hacer recurrente';
+
+  @override
+  String get recurringFromTxTitle => 'Crear regla recurrente';
+
+  @override
+  String get recurringFromTxCadence => 'Con qué frecuencia';
+
+  @override
+  String get recurringFromTxCadenceMonthly => 'Mensual';
+
+  @override
+  String get recurringFromTxCadenceTwiceMonthly => 'Dos veces al mes';
+
+  @override
+  String get recurringFromTxCadenceBiweekly => 'Cada dos semanas';
+
+  @override
+  String get recurringFromTxCadenceWeekly => 'Semanal';
+
+  @override
+  String get recurringFromTxDayOfMonth => 'Día del mes (1–31)';
+
+  @override
+  String get recurringFromTxSecondDay => 'Segundo día (1–31)';
+
+  @override
+  String get recurringFromTxWeekday => 'Día de la semana';
+
+  @override
+  String get recurringFromTxSubmit => 'Crear regla';
+
+  @override
+  String get recurringFromTxSuccess => 'Regla recurrente creada.';
+
+  @override
+  String get recurringFromTxError => 'No se pudo crear la regla recurrente.';
 
   @override
   String get budgetsThisMonth => 'Este mes';

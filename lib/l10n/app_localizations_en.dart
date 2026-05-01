@@ -1003,6 +1003,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionEditorEntryTransfer => 'Transfer';
 
   @override
+  String get transactionEditorModeRecurring => 'Recurring';
+
+  @override
+  String get newTransactionRecurringHint =>
+      'Saves this entry, then you pick how often it repeats. You can cancel the schedule and keep only this one movement.';
+
+  @override
+  String get transactionEditorSaveAndMakeRecurring => 'Save & make recurring';
+
+  @override
   String get transactionEditorFieldFromAccount => 'From account';
 
   @override
@@ -1099,6 +1109,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionEditorErrorDelete => 'Could not delete. Try again.';
+
+  @override
+  String get transactionEditorMakeRecurring => 'Make recurring';
+
+  @override
+  String get recurringFromTxTitle => 'Create recurring rule';
+
+  @override
+  String get recurringFromTxCadence => 'How often';
+
+  @override
+  String get recurringFromTxCadenceMonthly => 'Monthly';
+
+  @override
+  String get recurringFromTxCadenceTwiceMonthly => 'Twice a month';
+
+  @override
+  String get recurringFromTxCadenceBiweekly => 'Every two weeks';
+
+  @override
+  String get recurringFromTxCadenceWeekly => 'Weekly';
+
+  @override
+  String get recurringFromTxDayOfMonth => 'Day of month (1–31)';
+
+  @override
+  String get recurringFromTxSecondDay => 'Second day (1–31)';
+
+  @override
+  String get recurringFromTxWeekday => 'Weekday';
+
+  @override
+  String get recurringFromTxSubmit => 'Create rule';
+
+  @override
+  String get recurringFromTxSuccess => 'Recurring rule created.';
+
+  @override
+  String get recurringFromTxError => 'Could not create recurring rule.';
 
   @override
   String get budgetsThisMonth => 'This month';

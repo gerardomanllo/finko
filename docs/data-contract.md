@@ -91,7 +91,7 @@ When a **transaction is created/updated**:
 | **Transactions** | Paged `get()` on `transactions` (`orderBy transactionDate desc`, cursor `startAfter`); accumulated list + client search/filter in `transactionsListNotifierProvider` (see §9). |
 | **Budgets** | **`userProfileStreamProvider`** (**`users/{uid}.budgets`**) + **`monthlyTotalsForMonthStreamProvider`** for that month’s spend/income + **`categoriesStreamProvider`** for labels/kinds. |
 | **Categories / accounts** | Collection snapshots. |
-| **Recurring / upcoming** | **`upcomingTransactionsStreamProvider`** (canonical schedule rows); **`recurringRulesStreamProvider`** + **`categoriesStreamProvider`** for labels/icons; **`todayYyyyMmDdProvider`** uses profile timezone when set. Pull-to-refresh: **`materializeDueUpcoming`**, **`reconcileDeferredLedgerForUser`**, + invalidate streams. |
+| **Recurring / upcoming** | **`recurringMergedUpcomingProvider`** — **`mergeUpcomingForUi`** (`includeDueToday: true`) with **`ledgerFromTodayForUpcomingMergeStreamProvider`** (ledger `transactionDate` **≥ today**) so today’s ledger previews merge like schedule rows; dashboard strip uses **`futureDatedLedgerTransactionsStreamProvider`** (strictly **>** today) + `includeDueToday: false`. **`recurringRulesStreamProvider`** + **`categoriesStreamProvider`**; **`todayYyyyMmDdProvider`**. Pull-to-refresh invalidates both ledger streams + **`recurringMergedUpcomingProvider`**. |
 
 ---
 
@@ -139,10 +139,10 @@ When a **transaction is created/updated**:
 
 **Recommended implementation**
 
-1. **Callable Cloud Function** `materializeDueUpcoming`, idempotent:
+1. **Callable Cloud Function** `materializeDueUpcoming`, **idempotent on posting**:
    - Input: `uid`, optional `asOfDate` (**yyyy-MM-dd**), optional `timezone` (IANA). **`resolveAsOfYmd`** in **`functions/src/scheduleNext.ts`**: explicit `asOfDate` wins; else **today’s calendar date in `timezone`** when set; else server-local calendar day.
    - Query `upcomingTransactions` where `transactionDate` **≤** `asOfDate`.
-   - For each doc: create **`transactions`** (and any transfer pair), **`sourceUpcomingId`** on new txs, then **advance** `transactionDate` using **`computeNextTransactionDate`** (cadence + `daysOfMonth` + `weekday`), **update** `recurring/{id}.nextTransactionDate` when **`recurringRuleId`** is set, or **delete** upcoming (and linked rule when applicable) if no next date.
+   - For each doc: create **`transactions`** (and any transfer pair) at **deterministic document ids** derived from `upcomingTransactions` doc id + `transactionDate` (so retries / overlapping calls do not mint duplicate ledger rows), set **`sourceUpcomingId`** on new txs, then **advance** `transactionDate` using **`computeNextTransactionDate`** (cadence + `daysOfMonth` + `weekday`), **update** `recurring/{id}.nextTransactionDate` when **`recurringRuleId`** is set, or **delete** upcoming (and linked rule when applicable) if no next date.
 2. **When to call:** On **app start** and optionally **resume** (once per calendar day per device—use `SharedPreferences` / local flag `lastMaterializeDate` to avoid redundant calls, or rely on idempotent CF).
 3. **After return:** Existing **`snapshots()`** on `transactions` and `monthlyTotals` **emit**—widgets already watching **update automatically**.
 
@@ -173,6 +173,7 @@ When a **transaction is created/updated**:
 
 | Date | Change |
 |------|--------|
+| 2026-04-27 | **§5** Recurring: **`ledgerFromTodayForUpcomingMergeStreamProvider`**, **`mergeUpcomingForUi`** ledger branch respects **`includeDueToday`** (today’s ledger previews). **`recurringMergedUpcomingProvider`** + **`mergeUpcomingForUi`** (existing). **§11** `materializeDueUpcoming`: deterministic **`transactions`** doc ids per materialized upcoming (+ transfer leg ids). |
 | 2026-04-18 | **§11** App-wide **pull-to-refresh**: `ledgerAwareAppRefreshProvider` (throttle + server timestamp gate + conditional **`reconcileDeferredLedgerForUser`** + canonical **`ref.invalidate`** list). |
 | 2026-04-18 | Ledger rows require **`categoryId`** (see `data-model.md` §4). **`categoriesStreamProvider`** omits reserved **`ledger-transfer`** from `/categories` pickers. Repository adds **`createCategory`**, **`createAccount`**, **`deleteCategoryCascade`**, **`deleteAccountCascade`**, **`preview*Delete`**, **`ensureLedgerTransferCategory`**, and cross-currency **`createTransferLegPair`**. **`createAccount`:** opening-balance adjustment requires caller-supplied **`openingBalanceTransactionDateYyyyMmDd`** (UI: **`todayYyyyMmDdProvider`**) when starting balance ≠ 0. |
 | 2026-04-16 | **§12** [`ledger-aggregations-and-ui-flow.md`](ledger-aggregations-and-ui-flow.md): formulas, functional mermaid pipelines, calculation→test traceability. |

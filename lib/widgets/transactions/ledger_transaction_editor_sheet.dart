@@ -1,8 +1,10 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/auth/firebase_auth_providers.dart';
+import '../../core/firebase/firebase_functions_provider.dart';
 import '../../core/data/models/finko_account.dart';
 import '../../core/data/models/finko_category.dart';
 import '../../core/data/models/finko_enums.dart';
@@ -45,7 +47,7 @@ class LedgerTransactionEditorSheet extends ConsumerStatefulWidget {
       _LedgerTransactionEditorSheetState();
 }
 
-enum _SheetMode { incomeExpense, transfer }
+enum _SheetMode { incomeExpense, transfer, recurring }
 
 class _LedgerTransactionEditorSheetState
     extends ConsumerState<LedgerTransactionEditorSheet> {
@@ -68,6 +70,7 @@ class _LedgerTransactionEditorSheetState
 
   bool _saving = false;
   bool _deleting = false;
+  bool _recurringBusy = false;
   bool _didPickDefaultAccount = false;
   bool _didPickDefaultTransferAccounts = false;
 
@@ -79,6 +82,11 @@ class _LedgerTransactionEditorSheetState
   bool get _isTransferContext =>
       _sheetMode == _SheetMode.transfer ||
       (widget.transaction?.type == LedgerTransactionKind.transferLeg);
+
+  bool get _canMakeRecurring =>
+      _editing &&
+      !_isTransferContext &&
+      widget.transaction?.type == LedgerTransactionKind.standard;
 
   @override
   void initState() {
@@ -147,6 +155,72 @@ class _LedgerTransactionEditorSheetState
       }
       _peerLoadDone = true;
     });
+  }
+
+  Future<void> _openMakeRecurringDialog() async {
+    final t = widget.transaction;
+    if (t == null) return;
+    await _invokeCreateRecurringFromTransaction(
+      transactionId: t.id,
+      transactionDateYmd: t.transactionDate,
+    );
+  }
+
+  /// Shared by **Make recurring** (edit) and **Recurring** create mode (save path).
+  Future<void> _invokeCreateRecurringFromTransaction({
+    required String transactionId,
+    required String transactionDateYmd,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+    final result = await showDialog<_MakeRecurringResult>(
+      context: context,
+      builder: (ctx) =>
+          _MakeRecurringDialog(transactionDateYmd: transactionDateYmd),
+    );
+    if (result == null || !mounted) return;
+
+    final tz =
+        ref.read(userProfileStreamProvider).valueOrNull?.timezone.trim() ?? '';
+    setState(() => _recurringBusy = true);
+    try {
+      final payload = <String, dynamic>{
+        'transactionId': transactionId,
+        'cadence': result.cadenceWire,
+        'daysOfMonth': result.daysOfMonth,
+        if (result.weekday != null) 'weekday': result.weekday,
+        if (tz.isNotEmpty) 'timezone': tz,
+      };
+      await ref
+          .read(firebaseFunctionsProvider)
+          .httpsCallable('createRecurringFromTransaction')
+          .call(payload);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.recurringFromTxSuccess)));
+      ref.invalidate(recurringRulesStreamProvider);
+      ref.invalidate(upcomingTransactionsStreamProvider);
+      ref.invalidate(recurringMergedUpcomingProvider);
+      ref.invalidate(dashboardUpcomingStripProvider);
+      ref.invalidate(futureDatedLedgerTransactionsStreamProvider);
+      ref.invalidate(ledgerFromTodayForUpcomingMergeStreamProvider);
+    } on FirebaseFunctionsException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${l10n.recurringFromTxError} (${e.message ?? e.code})',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.recurringFromTxError} ($e)')),
+      );
+    } finally {
+      if (mounted) setState(() => _recurringBusy = false);
+    }
   }
 
   void _onAmountChanged() {
@@ -444,7 +518,13 @@ class _LedgerTransactionEditorSheetState
           createdAt: placeholder,
           updatedAt: placeholder,
         );
-        await repo.createTransaction(uid, draft);
+        final newId = await repo.createTransaction(uid, draft);
+        if (_sheetMode == _SheetMode.recurring) {
+          await _invokeCreateRecurringFromTransaction(
+            transactionId: newId,
+            transactionDateYmd: _dateYmd,
+          );
+        }
       }
       _invalidateAfterWrite();
       if (mounted) Navigator.of(context).pop();
@@ -710,7 +790,8 @@ class _LedgerTransactionEditorSheetState
           child: ChoiceChip(
             label: Text(l10n.transactionEditorDirectionIn),
             selected:
-                _sheetMode == _SheetMode.incomeExpense &&
+                (_sheetMode == _SheetMode.incomeExpense ||
+                    _sheetMode == _SheetMode.recurring) &&
                 _direction == MoneyDirection.in_,
             onSelected: (_) {
               final c =
@@ -719,7 +800,9 @@ class _LedgerTransactionEditorSheetState
               final f = _categoriesForDirection(c, MoneyDirection.in_);
               final wasTransfer = _sheetMode == _SheetMode.transfer;
               setState(() {
-                _sheetMode = _SheetMode.incomeExpense;
+                if (_sheetMode != _SheetMode.recurring) {
+                  _sheetMode = _SheetMode.incomeExpense;
+                }
                 _direction = MoneyDirection.in_;
                 if (wasTransfer) {
                   _accountId = null;
@@ -735,7 +818,8 @@ class _LedgerTransactionEditorSheetState
           child: ChoiceChip(
             label: Text(l10n.transactionEditorDirectionOut),
             selected:
-                _sheetMode == _SheetMode.incomeExpense &&
+                (_sheetMode == _SheetMode.incomeExpense ||
+                    _sheetMode == _SheetMode.recurring) &&
                 _direction == MoneyDirection.out_,
             onSelected: (_) {
               final c =
@@ -744,7 +828,9 @@ class _LedgerTransactionEditorSheetState
               final f = _categoriesForDirection(c, MoneyDirection.out_);
               final wasTransfer = _sheetMode == _SheetMode.transfer;
               setState(() {
-                _sheetMode = _SheetMode.incomeExpense;
+                if (_sheetMode != _SheetMode.recurring) {
+                  _sheetMode = _SheetMode.incomeExpense;
+                }
                 _direction = MoneyDirection.out_;
                 if (wasTransfer) {
                   _accountId = null;
@@ -765,6 +851,28 @@ class _LedgerTransactionEditorSheetState
                 _sheetMode = _SheetMode.transfer;
                 _categoryId = null;
                 _didPickDefaultTransferAccounts = false;
+              });
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ChoiceChip(
+            label: Text(l10n.transactionEditorModeRecurring),
+            selected: _sheetMode == _SheetMode.recurring,
+            onSelected: (_) {
+              final c =
+                  ref.read(categoriesStreamProvider).valueOrNull ??
+                  <FinkoCategory>[];
+              final f = _categoriesForDirection(c, _direction);
+              final wasTransfer = _sheetMode == _SheetMode.transfer;
+              setState(() {
+                _sheetMode = _SheetMode.recurring;
+                if (wasTransfer) {
+                  _accountId = null;
+                  _didPickDefaultAccount = false;
+                }
+                _syncCategoryAfterDirectionChange(f);
               });
             },
           ),
@@ -828,7 +936,8 @@ class _LedgerTransactionEditorSheetState
                         return Text(l10n.transactionEditorValidationAccount);
                       }
 
-                      if (_sheetMode == _SheetMode.incomeExpense) {
+                      if (_sheetMode == _SheetMode.incomeExpense ||
+                          _sheetMode == _SheetMode.recurring) {
                         if (_accountId == null &&
                             !_didPickDefaultAccount &&
                             accounts.isNotEmpty) {
@@ -968,6 +1077,16 @@ class _LedgerTransactionEditorSheetState
                           ),
                           const SizedBox(height: 8),
                           _buildModeSelector(l10n, theme),
+                          if (!_editing &&
+                              _sheetMode == _SheetMode.recurring) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.newTransactionRecurringHint,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           if (showTransferForm) ...[
                             Builder(
@@ -1142,9 +1261,29 @@ class _LedgerTransactionEditorSheetState
                               border: const OutlineInputBorder(),
                             ),
                           ),
+                          if (_canMakeRecurring) ...[
+                            const SizedBox(height: 16),
+                            OutlinedButton(
+                              onPressed:
+                                  (_saving || _deleting || _recurringBusy)
+                                  ? null
+                                  : _openMakeRecurringDialog,
+                              child: _recurringBusy
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(l10n.transactionEditorMakeRecurring),
+                            ),
+                          ],
                           const SizedBox(height: 20),
                           FilledButton(
-                            onPressed: (_saving || _deleting) ? null : _save,
+                            onPressed: (_saving || _deleting || _recurringBusy)
+                                ? null
+                                : _save,
                             child: _saving
                                 ? const SizedBox(
                                     height: 22,
@@ -1153,12 +1292,18 @@ class _LedgerTransactionEditorSheetState
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : Text(l10n.transactionEditorSave),
+                                : Text(
+                                    !_editing &&
+                                            _sheetMode == _SheetMode.recurring
+                                        ? l10n.transactionEditorSaveAndMakeRecurring
+                                        : l10n.transactionEditorSave,
+                                  ),
                           ),
                           if (_editing) ...[
                             const SizedBox(height: 12),
                             TextButton(
-                              onPressed: (_saving || _deleting)
+                              onPressed:
+                                  (_saving || _deleting || _recurringBusy)
                                   ? null
                                   : _confirmDelete,
                               child: _deleting
@@ -1186,5 +1331,218 @@ class _LedgerTransactionEditorSheetState
         );
       },
     );
+  }
+}
+
+enum _CadencePick { monthly, twiceMonthly, biweekly, weekly }
+
+class _MakeRecurringResult {
+  const _MakeRecurringResult({
+    required this.cadenceWire,
+    required this.daysOfMonth,
+    this.weekday,
+  });
+
+  final String cadenceWire;
+  final List<int> daysOfMonth;
+  final int? weekday;
+}
+
+class _MakeRecurringDialog extends StatefulWidget {
+  const _MakeRecurringDialog({required this.transactionDateYmd});
+
+  final String transactionDateYmd;
+
+  @override
+  State<_MakeRecurringDialog> createState() => _MakeRecurringDialogState();
+}
+
+class _MakeRecurringDialogState extends State<_MakeRecurringDialog> {
+  late _CadencePick _cadence;
+  late int _day1;
+  late int _day2;
+  late int _weekday;
+
+  @override
+  void initState() {
+    super.initState();
+    final parts = widget.transactionDateYmd.split('-');
+    final d = parts.length == 3
+        ? (int.tryParse(parts[2]) ?? 1).clamp(1, 31)
+        : 1;
+    _cadence = _CadencePick.monthly;
+    _day1 = d;
+    _day2 = 15.clamp(1, 31);
+    final parsed = DateTime.tryParse('${widget.transactionDateYmd}T12:00:00');
+    _weekday = parsed?.weekday ?? DateTime.monday;
+  }
+
+  void _submit() {
+    final l10n = AppLocalizations.of(context);
+    switch (_cadence) {
+      case _CadencePick.monthly:
+        if (_day1 < 1 || _day1 > 31) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.transactionEditorValidationDate)),
+          );
+          return;
+        }
+        Navigator.of(context).pop(
+          _MakeRecurringResult(cadenceWire: 'monthly', daysOfMonth: [_day1]),
+        );
+      case _CadencePick.twiceMonthly:
+        if (_day1 < 1 ||
+            _day1 > 31 ||
+            _day2 < 1 ||
+            _day2 > 31 ||
+            _day1 == _day2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.transactionEditorValidationDate)),
+          );
+          return;
+        }
+        final sorted = [_day1, _day2]..sort();
+        Navigator.of(context).pop(
+          _MakeRecurringResult(
+            cadenceWire: 'twiceMonthly',
+            daysOfMonth: sorted,
+          ),
+        );
+      case _CadencePick.biweekly:
+        Navigator.of(context).pop(
+          _MakeRecurringResult(
+            cadenceWire: 'biweekly',
+            daysOfMonth: [],
+            weekday: _weekday,
+          ),
+        );
+      case _CadencePick.weekly:
+        Navigator.of(context).pop(
+          _MakeRecurringResult(
+            cadenceWire: 'weekly',
+            daysOfMonth: [],
+            weekday: _weekday,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l10n.recurringFromTxTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DropdownButtonFormField<_CadencePick>(
+              // ignore: deprecated_member_use
+              value: _cadence,
+              decoration: InputDecoration(
+                labelText: l10n.recurringFromTxCadence,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: _CadencePick.monthly,
+                  child: Text(l10n.recurringFromTxCadenceMonthly),
+                ),
+                DropdownMenuItem(
+                  value: _CadencePick.twiceMonthly,
+                  child: Text(l10n.recurringFromTxCadenceTwiceMonthly),
+                ),
+                DropdownMenuItem(
+                  value: _CadencePick.biweekly,
+                  child: Text(l10n.recurringFromTxCadenceBiweekly),
+                ),
+                DropdownMenuItem(
+                  value: _CadencePick.weekly,
+                  child: Text(l10n.recurringFromTxCadenceWeekly),
+                ),
+              ],
+              onChanged: (v) {
+                if (v != null) setState(() => _cadence = v);
+              },
+            ),
+            if (_cadence == _CadencePick.monthly) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                initialValue: '$_day1',
+                decoration: InputDecoration(
+                  labelText: l10n.recurringFromTxDayOfMonth,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (s) => _day1 = int.tryParse(s.trim()) ?? _day1,
+              ),
+            ],
+            if (_cadence == _CadencePick.twiceMonthly) ...[
+              const SizedBox(height: 12),
+              TextFormField(
+                initialValue: '$_day1',
+                decoration: InputDecoration(
+                  labelText: l10n.recurringFromTxDayOfMonth,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (s) => _day1 = int.tryParse(s.trim()) ?? _day1,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: '$_day2',
+                decoration: InputDecoration(
+                  labelText: l10n.recurringFromTxSecondDay,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (s) => _day2 = int.tryParse(s.trim()) ?? _day2,
+              ),
+            ],
+            if (_cadence == _CadencePick.weekly ||
+                _cadence == _CadencePick.biweekly) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                // ignore: deprecated_member_use
+                value: _weekday,
+                decoration: InputDecoration(
+                  labelText: l10n.recurringFromTxWeekday,
+                  border: const OutlineInputBorder(),
+                ),
+                items: [
+                  for (var i = 1; i <= 7; i++)
+                    DropdownMenuItem(
+                      value: i,
+                      child: Text(_weekdayLabel(context, i)),
+                    ),
+                ],
+                onChanged: (v) {
+                  if (v != null) setState(() => _weekday = v);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.transactionEditorCancel),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(l10n.recurringFromTxSubmit),
+        ),
+      ],
+    );
+  }
+
+  static String _weekdayLabel(BuildContext context, int weekday) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    // 2026-01-05 is Monday (weekday == 1 in Dart).
+    final monday = DateTime.utc(2026, 1, 5);
+    final day = monday.add(Duration(days: weekday - 1));
+    return DateFormat.EEEE(locale).format(day);
   }
 }

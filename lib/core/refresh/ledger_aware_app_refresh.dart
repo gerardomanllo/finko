@@ -106,9 +106,11 @@ void _invalidateAggregateBackedProviders(WidgetRef ref) {
   ref.invalidate(recentTransactionsStreamProvider);
   ref.invalidate(upcomingTransactionsStreamProvider);
   ref.invalidate(futureDatedLedgerTransactionsStreamProvider);
+  ref.invalidate(ledgerFromTodayForUpcomingMergeStreamProvider);
   ref.invalidate(recurringRulesStreamProvider);
   ref.invalidate(categoriesStreamProvider);
   ref.invalidate(dashboardUpcomingStripProvider);
+  ref.invalidate(recurringMergedUpcomingProvider);
   ref.invalidate(netWorthSparklineSeriesProvider);
   ref.invalidate(transactionsListNotifierProvider);
 

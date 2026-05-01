@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **New transaction sheet:** fourth mode chip **Recurring** (income/expense direction still applies); primary action **Save & make recurring** posts the ledger row then opens the cadence dialog and **`createRecurringFromTransaction`** (same as **Make recurring** when editing).
+
+- **Recurring from transaction (KB-001):** Cloud Function **`createRecurringFromTransaction`** + **Make recurring** on the **standard** transaction editor (cadence: monthly / twice-monthly / biweekly / weekly); seeds **`recurring`** + **`upcomingTransactions`**. **`recurringMergedUpcomingProvider`** merges upcoming + rule previews + future-dated ledger rows for the **Recurring** tab (KB-008).
+
 - **Docs:** [`docs/references/google-sheets-bug-mcp.md`](docs/references/google-sheets-bug-mcp.md) — connect Cursor MCP to Google Form bug responses via **[xing5/mcp-google-sheets](https://github.com/xing5/mcp-google-sheets)** (`uvx`), service account + Drive folder, optional tool filtering.
 
 - **Docs:** [`docs/KNOWN_BUGS.md`](docs/KNOWN_BUGS.md) — living triage list for open **Finko (Responses)** sheet rows (Status ≠ Done / Not a bug), with **Discussed fix** and **Ready to fix** fields.
@@ -18,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Telegram messaging:** Cloud Function **`telegramWebhook`** (Telegram `secret_token` + `/start link_<token>`) binds **`chat_id`** and writes **`integrations.telegram`** in one transaction; **no Telegram OTP**. Flutter link sheet uses **`tg://` / `t.me`** when **`needsBotStart`** is returned; **`disconnectMessagingIntegration`** clears link state and profile integration. Firestore **`telegramLinkTokens`** + **`users/{uid}/_telegramLink`** (rules: client deny-all on token writes).
 
 ### Changed
+
+- **Spending (KB-002):** For **month** (and other non-week granularities), the income / fixed / variable accordion uses **`splitFixedVariableFromPositiveSlices`** so **fixed** matches the **Fixed Expenses** donut slice and **variable** is the remainder — aligned with **`positiveExpenseByCategoryId`**.
+
+- **Dashboard upcoming merge:** `mergeDashboardUpcoming` replaced by **`mergeUpcomingForUi`** (`includeDueToday: false` for strip, **`true`** for Recurring).
 
 - **Onboarding — projected savings chart:** **all** expense rows (fixed + each variable) are **sorted by budget** so the **largest** sits on the **$0** axis and the stack rises to **projected savings** at the top (expected income); blue shades by stack position.
 
@@ -30,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI:** modal bottom sheets (transaction editor, filters, onboarding editors, messaging, month summaries) use **nearly full height** via a shared helper (keyboard-aware, respects the **status-bar inset**, and leaves a **small peek** above the sheet so underlying UI stays visible) instead of short intrinsic or ~82% caps. **Add/edit account** and **add/edit category** sheets use **`useSafeArea` + drag handle** on `showModalBottomSheet` (same as the transaction editor) so they are not edge-to-edge under the status bar. **Category / account month-detail** summary sheets do the same (modal `useSafeArea`, no duplicate inner `SafeArea`).
 
 ### Fixed
+
+- **Recurring / KB-008:** **`ledgerFromTodayForUpcomingMergeStreamProvider`** + **`mergeUpcomingForUi`** respect **`includeDueToday`** for ledger previews so rows **dated today** appear on the Recurring tab (dashboard strip still uses strictly-after-today ledger query).
+
+- **Materialize (KB-003):** **`materializeDueUpcoming`** writes ledger **`transactions`** at **deterministic document ids** (`mat_{upcomingId}_{yyyymmdd}` and transfer `_out` / `_in` suffixes) so concurrent or repeated materialization does not create duplicate posting rows for the same upcoming occurrence.
 
 - **Telegram deep link handoff:** the link sheet tries **`tg://resolve?domain=…&start=…`** before **`https://t.me/…`** so the `start` payload is not dropped by the OS; iOS **`LSApplicationQueriesSchemes`** (`tg`) and Android **`<queries>`** for `tg` / `t.me` support `url_launcher`. Webhook accepts **`/start@BotUsername link_…`** when Telegram sends that command form.
 

@@ -45,6 +45,7 @@
 
 | Date | Change |
 |------|--------|
+| 2026-04-27 | **New transaction** sheet: fourth mode chip **Recurring** (with Income/Expense still setting direction); **Save & make recurring** creates the ledger row then opens the same cadence dialog + **`createRecurringFromTransaction`** as **Make recurring** on edit. |
 | 2026-04-19 | Ledger editor: **amount** inputs show **currency suffix** from the selected **account** (income/expense) or **from / to** account (transfer legs); suffix updates when account pickers change. |
 | 2026-04-16 | Ledger editor: **no type field** — income/expense saves as **standard** (editing **adjustment** preserves type). **Transfer** is a third option next to income/expense: **from/to account**, two **`transferLeg`** rows in one batch. |
 | 2026-04-16 | Ledger editor: **category is required** (income/expense must match direction); inline validation highlights missing fields. |

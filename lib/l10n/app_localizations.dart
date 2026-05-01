@@ -1916,6 +1916,24 @@ abstract class AppLocalizations {
   /// **'Transferencia'**
   String get transactionEditorEntryTransfer;
 
+  /// No description provided for @transactionEditorModeRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Recurrente'**
+  String get transactionEditorModeRecurring;
+
+  /// No description provided for @newTransactionRecurringHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Guarda el movimiento y elige la frecuencia. Puedes cancelar la programación y quedarte solo con este registro.'**
+  String get newTransactionRecurringHint;
+
+  /// No description provided for @transactionEditorSaveAndMakeRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar y hacer recurrente'**
+  String get transactionEditorSaveAndMakeRecurring;
+
   /// No description provided for @transactionEditorFieldFromAccount.
   ///
   /// In es, this message translates to:
@@ -2095,6 +2113,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo eliminar. Inténtalo de nuevo.'**
   String get transactionEditorErrorDelete;
+
+  /// No description provided for @transactionEditorMakeRecurring.
+  ///
+  /// In es, this message translates to:
+  /// **'Hacer recurrente'**
+  String get transactionEditorMakeRecurring;
+
+  /// No description provided for @recurringFromTxTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear regla recurrente'**
+  String get recurringFromTxTitle;
+
+  /// No description provided for @recurringFromTxCadence.
+  ///
+  /// In es, this message translates to:
+  /// **'Con qué frecuencia'**
+  String get recurringFromTxCadence;
+
+  /// No description provided for @recurringFromTxCadenceMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensual'**
+  String get recurringFromTxCadenceMonthly;
+
+  /// No description provided for @recurringFromTxCadenceTwiceMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'Dos veces al mes'**
+  String get recurringFromTxCadenceTwiceMonthly;
+
+  /// No description provided for @recurringFromTxCadenceBiweekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada dos semanas'**
+  String get recurringFromTxCadenceBiweekly;
+
+  /// No description provided for @recurringFromTxCadenceWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'Semanal'**
+  String get recurringFromTxCadenceWeekly;
+
+  /// No description provided for @recurringFromTxDayOfMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Día del mes (1–31)'**
+  String get recurringFromTxDayOfMonth;
+
+  /// No description provided for @recurringFromTxSecondDay.
+  ///
+  /// In es, this message translates to:
+  /// **'Segundo día (1–31)'**
+  String get recurringFromTxSecondDay;
+
+  /// No description provided for @recurringFromTxWeekday.
+  ///
+  /// In es, this message translates to:
+  /// **'Día de la semana'**
+  String get recurringFromTxWeekday;
+
+  /// No description provided for @recurringFromTxSubmit.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear regla'**
+  String get recurringFromTxSubmit;
+
+  /// No description provided for @recurringFromTxSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Regla recurrente creada.'**
+  String get recurringFromTxSuccess;
+
+  /// No description provided for @recurringFromTxError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo crear la regla recurrente.'**
+  String get recurringFromTxError;
 
   /// No description provided for @budgetsThisMonth.
   ///

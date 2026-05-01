@@ -24,94 +24,30 @@ Captured **2026-04-27** when tightening priority 4–5 items:
 | **KB-002** repro | **Month** pill on Spending (not Week). |
 | **KB-003** evidence | **Two real `transactions` rows** in Firestore on the duplicate day — not UI-only phantom. |
 
+## Shipped in repo (update sheet when you mirror)
+
+| ID | What shipped |
+|----|----------------|
+| **KB-001** | Callable **`createRecurringFromTransaction`** + **Make recurring** on standard transaction editor ([`ledger_transaction_editor_sheet.dart`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart)); seeds `recurring` + `upcomingTransactions`. |
+| **KB-002** | Month/quarter/year **fixed/variable accordion** uses **`splitFixedVariableFromPositiveSlices`** so totals align with **donut** slices ([`fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart), [`spending_screen.dart`](../lib/features/spending/presentation/spending_screen.dart)). |
+| **KB-003** | **`materializeDueUpcoming`** uses **deterministic** `transactions` doc ids per upcoming + date (and transfer leg pair ids) to prevent duplicate posts on retry/concurrency ([`materialize.ts`](../functions/src/materialize.ts)). |
+| **KB-008** | **`recurringMergedUpcomingProvider`** + **`mergeUpcomingForUi`** — Recurring screen matches dashboard merge (**today-inclusive** for schedule rows + ledger futures) ([`finko_stream_providers.dart`](../lib/core/data/providers/finko_stream_providers.dart)). |
+
 ## Index (open items)
 
 Search this file for **`KB-00N`** to jump to a bug.
 
 | ID | Sheet row | Status (sheet) | Priority | Area (sheet) | Title |
 |----|-----------|------------------|----------|--------------|--------|
-| KB-001 | 5 | To-do | 5 | Transacciones | Recurring transaction UI |
-| KB-002 | 6 | To-do | 5 | Gastos | Variable spend: strip vs chart |
-| KB-003 | 7 | To-do | 5 | Home | Double recurring / 20k |
 | KB-004 | 8 | Backlog | 4 | Onboarding | Fixed expenses vs category budgets |
 | KB-005 | 9 | Backlog | 4 | TODOS | Floating menu |
 | KB-006 | 12 | Backlog | 4 | Transacciones | `$` beside amount |
 | KB-007 | 13 | Backlog | 4 | Home | Net worth vs accounts |
-| KB-008 | 14 | Backlog | 4 | recurrente | Future tx not in Próximas |
 | KB-009 | 15 | Backlog | 3 | home / global | Transaction list icons |
 | KB-010 | 20 | Backlog | 3 | Home | Credit card strip + income card |
 | KB-011 | 21 | Backlog | 3 | Transacciones | “Nota” vs descripción copy |
 | KB-012 | 23 | Backlog | 2 | TODO | iOS-style scrolls / pickers |
 | KB-013 | 24 | Backlog | 1 | Home | Profile entry placement |
-
----
-
-### KB-001 — Recurring transaction UI
-
-| Field | Value |
-|-------|--------|
-| **Sheet row** | 5 |
-| **Submitted** | 2026-04-21 |
-| **Status (sheet)** | To-do |
-| **Tipo** | Bug |
-| **Reporter summary** | Cannot mark a transaction as recurring; wants cadence (every x weeks, day of month, duration or indefinite). |
-| **Discussed fix** | **Yes** (2026-04-27) — MVP: **create a new recurring rule from this transaction**, with cadence controls **aligned with onboarding recurring income** (monthly / twice-monthly / weekly + days of month / weekday). |
-| **Ready to fix** | **No** — still need: which ledger rows may seed a rule (expense-only first? transfers excluded?); default **name/memo**; first **`upcomingTransactions`** row date (tx date vs next schedule boundary); “indefinite” = `active: true` with no end field (confirm vs data model). |
-| **Likely code / product area** | [`lib/widgets/transactions/ledger_transaction_editor_sheet.dart`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart) (no recurrence UI today); new/extended Callable or client batch mirroring [`functions/src/onboardingCommit.ts`](../functions/src/onboardingCommit.ts) recurring + upcoming seed pattern; [`docs/data-model.md`](data-model.md) §8–9. |
-
-**Acceptance (from sheet):** Poder configurar recurrencia (intervalos, día del mes, duración o indefinido).
-
-**Engineering notes**
-
-- Today **recurrence** is created from **onboarding** income tiles and lives under `users/{uid}/recurring` + `upcomingTransactions`; the **transaction editor** only posts ledger rows ([`LedgerTransactionEditorSheet`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart)).
-- **Open questions:** Should “create from tx” also attach **`categoryId` / `accountId` / `amountMinor` / `currency`** from the row? If the tx is **edited** after the rule exists, do we unlink?
-
----
-
-### KB-002 — Gastos / variable spend strip vs chart
-
-| Field | Value |
-|-------|--------|
-| **Sheet row** | 6 |
-| **Submitted** | 2026-04-21 |
-| **Status (sheet)** | To-do |
-| **Tipo** | Bug |
-| **Reporter summary** | On Apple/Web in Gastos: variable spend not shown in the **top** section; **lower** chart does show it. |
-| **Discussed fix** | **In progress** — reproduce on **Month** pill ([Team answers](#team-answers-sync)). |
-| **Ready to fix** | **No** — confirm with live `monthlyTotals` whether mismatch is aggregate lag, category-key split, or layout/scroll. |
-| **Likely code / product area** | [`lib/features/spending/presentation/spending_screen.dart`](../lib/features/spending/presentation/spending_screen.dart) (`_SpendingPeriodDetailColumn`); [`lib/features/spending/presentation/spending_providers.dart`](../lib/features/spending/presentation/spending_providers.dart) (`spendingMergedMonthlyRollupProvider`, `spendingPeriodIncomeExpenseProvider`); [`lib/core/spending/fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart). |
-
-**Acceptance (from sheet):** Que el gasto y la transacción se reflejen arriba también.
-
-**Engineering notes**
-
-- **Month** view: top accordion uses **`merged.expenseMinorMain`** + **`splitFixedVariableExpense`**; the donut uses the **same** `merged` map via `positiveExpenseByCategoryId` — see `useTxDonut == false` branch (~lines 274–348 vs 333+).
-- **Variable** in the accordion is the **residual** after spend attributed to category id **`fixed-expenses`** only (`kFixedExpensesCategoryId` in [`fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart)). The donut shows **top categories** by positive expense slice — they can disagree with “variable” if almost all spend is bucketed as fixed in `byCategoryMinorMain`, or if **`monthlyTotals`** keys for `fixed-expenses` don’t match onboarding’s reserved id.
-- **Hypotheses to verify:** (1) aggregates classify too much into **`fixed-expenses`** so residual variable → 0 while per-category donut still shows slices; (2) **stale `monthlyTotals`** vs transaction stream for the selected month; (3) **Web/iOS layout** (e.g. accordion clipped) — less likely if numbers are exactly zero.
-
-**Open questions:** After pull-to-refresh, does variable still read `0`? Screenshot month label vs `monthlyTotals` doc id?
-
----
-
-### KB-003 — Home / double recurring “20k”
-
-| Field | Value |
-|-------|--------|
-| **Sheet row** | 7 |
-| **Submitted** | 2026-04-22 |
-| **Status (sheet)** | To-do |
-| **Tipo** | Bug |
-| **Reporter summary** | Sees ~20k recurring unexpectedly; recurring monthly on 30th, charged twice on the 22nd. |
-| **Discussed fix** | **In progress** — **two real `transactions` rows** on the duplicate day ([Team answers](#team-answers-sync)); not a UI-only double draw. |
-| **Ready to fix** | **No** — trace why two posts (duplicate `upcomingTransactions`, double materialize, schedule shift off 30th, or client retry). |
-| **Likely code / product area** | [`functions/src/materialize.ts`](../functions/src/materialize.ts) (`materializeDueUpcoming`); [`functions/src/scheduleNext.ts`](../functions/src/scheduleNext.ts) (`computeNextTransactionDate`, EOM / day-31 rules); client [`lib/core/upcoming/materialize_upcoming_service.dart`](../lib/core/upcoming/materialize_upcoming_service.dart) + any duplicate triggers. |
-
-**Acceptance (from sheet):** Clarify correct posting dates; no duplicate charges on wrong day.
-
-**Engineering notes**
-
-- Treat as **data / idempotency** bug: same rule must not emit two ledger postings for the same logical occurrence.
-- **Next step:** In Firestore for affected `uid`, list `transactions` on **2026-04-22** (filter memo/category/recurring metadata), and `upcomingTransactions` / `recurring` for the same **`recurringRuleId`** around that window.
 
 ---
 
@@ -186,27 +122,6 @@ Search this file for **`KB-00N`** to jump to a bug.
 - Dashboard **headline** uses **`netWorthSparklineSeriesProvider`’s last point** when any sparkline point is non-zero; **otherwise** it uses **`netWorthFromAccountsMinor(accounts)`**. If sparkline series is **stale or differently defined** than live account balances, the big number can disagree with the **accounts accordion** below (still sum of accounts).
 - **Hypothesis:** Mismatch is often **sparkline path vs accounts path**, not raw arithmetic on the accordion.
 - **Open questions:** If sparkline is disabled or empty, does headline match sum of accounts? Do we want headline to **always** equal `netWorthFromAccounts` and move history to a secondary widget?
-
----
-
-### KB-008 — recurrente / future tx not in Próximas
-
-| Field | Value |
-|-------|--------|
-| **Sheet row** | 14 |
-| **Submitted** | 2026-04-21 |
-| **Status (sheet)** | Backlog |
-| **Tipo** | Bug |
-| **Reporter summary** | Future-dated transaction (intended to add recurrence) does not appear under Próximas. |
-| **Discussed fix** | **Yes** (2026-04-27) — expectation is **Recurring** screen lists ([Team answers](#team-answers-sync)), not only Dashboard. |
-| **Ready to fix** | **Yes (engineering)** — behavior gap is understood: **Dashboard** uses [`dashboardUpcomingStripProvider`](../lib/core/data/providers/finko_stream_providers.dart) which **merges** `upcomingTransactions` + recurring previews + **future-dated ledger** rows (`futureDatedLedgerTransactionsStreamProvider`); **Recurring** screen uses **only** [`upcomingTransactionsStreamProvider`](../lib/core/data/providers/finko_stream_providers.dart) for calendar + “Due soon” lists, so **posted future `transactions/`** never appear there. |
-| **Likely code / product area** | [`lib/features/recurring/presentation/recurring_screen.dart`](../lib/features/recurring/presentation/recurring_screen.dart); refactor to shared provider or duplicate `mergeDashboardUpcoming` filtering for list sections (respect existing 0–7 / 8–15 day filters). |
-
-**Engineering notes**
-
-- Firestore query for ledger futures: [`watchLedgerTransactionsAfterDate`](../lib/core/data/repositories/firestore_data_repository.dart) uses **`transactionDate` > today** (strict), so **today-dated** futures intentionally excluded from that merge path.
-
-**Open questions:** Should **Recurring** calendar marks include ledger-only futures, or only **`upcomingTransactions`** docs (product clarity)?
 
 ---
 
@@ -304,5 +219,6 @@ Search this file for **`KB-00N`** to jump to a bug.
 
 | Date | Change |
 |------|--------|
+| 2026-04-27 | **Shipped KB-001, 002, 003, 008:** moved to **Shipped in repo** table; removed full sections for those IDs. Recurring merge provider; spending fixed/variable from positive slices; materialize deterministic tx ids; `createRecurringFromTransaction` + editor CTA. |
 | 2026-04-27 | **Tighten P4–P5:** Team answers block (KB-001 create-rule MVP, KB-008 Recurring screen, KB-002 Month, KB-003 two real txs). Expanded **KB-001–KB-008** with code pointers, hypotheses, open questions; KB-007 net worth sparkline vs accounts path; KB-008 ready-to-fix **Yes (engineering)** with provider merge explanation. |
 | 2026-04-27 | Initial doc: 13 open items from **Finko (Responses)** `responses` tab (rows with Status ≠ Done / Not a bug). Added discussion + ready-to-fix fields. |

@@ -75,6 +75,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     String uid,
     String afterYyyyMmDd, {
     int limit = 40,
+    bool inclusiveFrom = false,
   }) => _ledgerAfterDate;
 
   @override

@@ -68,14 +68,21 @@ abstract class FirestoreDataRepository {
     required String endYyyyMmDd,
   });
 
-  /// Ledger rows with [transactionDate] **strictly after** [afterYyyyMmDd], ascending.
+  /// Ledger rows with [transactionDate] ordered ascending, limited by [limit].
   ///
-  /// Used for dashboard “próximos” alongside `upcomingTransactions` (user-entered
-  /// future-dated ledger rows are not duplicated in that collection).
+  /// When [inclusiveFrom] is **false** (default), dates are **strictly after**
+  /// [afterYyyyMmDd] — dashboard próximos strip (no “today” ledger previews).
+  ///
+  /// When **true**, dates are **on or after** [afterYyyyMmDd] — Recurring tab merge
+  /// with [includeDueToday] (today’s future-dated ledger rows).
+  ///
+  /// Used alongside `upcomingTransactions` (user-entered future-dated ledger rows
+  /// are not duplicated in that collection).
   Stream<List<LedgerTransaction>> watchLedgerTransactionsAfterDate(
     String uid,
     String afterYyyyMmDd, {
     int limit = 40,
+    bool inclusiveFrom = false,
   });
 
   /// Paged ledger read (newest first). Use [startAfter] from the previous page’s [TransactionsPageResult.lastDocument].
@@ -274,14 +281,19 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
     String uid,
     String afterYyyyMmDd, {
     int limit = 40,
+    bool inclusiveFrom = false,
   }) {
-    return _db
-        .collection(FirestorePaths.transactionsCollection(uid))
-        .where('transactionDate', isGreaterThan: afterYyyyMmDd)
-        .orderBy('transactionDate')
-        .limit(limit)
-        .snapshots()
-        .map(
+    final col = _db.collection(FirestorePaths.transactionsCollection(uid));
+    final query = inclusiveFrom
+        ? col
+              .where('transactionDate', isGreaterThanOrEqualTo: afterYyyyMmDd)
+              .orderBy('transactionDate')
+              .limit(limit)
+        : col
+              .where('transactionDate', isGreaterThan: afterYyyyMmDd)
+              .orderBy('transactionDate')
+              .limit(limit);
+    return query.snapshots().map(
           (snapshot) => snapshot.docs
               .map((d) => LedgerTransaction.fromFirestore(d.id, d.data()))
               .toList(),
