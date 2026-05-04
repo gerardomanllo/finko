@@ -11,5 +11,5 @@ export const telegramWebhookDevBypass = defineString("TELEGRAM_WEBHOOK_DEV_BYPAS
   default: "",
 });
 
-/** Optional Google AI Studio key for Gemini NLU / multimodal in Telegram bot. */
-export const geminiApiKeyParam = defineString("GEMINI_API_KEY", { default: "" });
+/** Google AI / Gemini API key — Secret Manager id **`GEMINI_API_KEY`**. If deploy fails with “secret overlaps non-secret”, remove legacy **plain** `GEMINI_API_KEY` from Cloud Run env first (see `docs/references/telegram-bot-webhook.md`). */
+export const geminiApiKey = defineSecret("GEMINI_API_KEY");

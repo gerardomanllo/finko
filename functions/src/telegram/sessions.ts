@@ -30,6 +30,21 @@ export function telegramBotSessionRef(db: Firestore, chatId: string) {
   return db.collection(TELEGRAM_BOT_SESSIONS).doc(chatId);
 }
 
+/** Omit `undefined` recursively — Firestore rejects undefined field values (dynamic `draft`). */
+function stripUndefinedDeep(input: unknown): unknown {
+  if (input === undefined) return undefined;
+  if (input === null || typeof input !== "object") return input;
+  if (Array.isArray(input)) {
+    return input.map((item) => stripUndefinedDeep(item));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    const sv = stripUndefinedDeep(v);
+    if (sv !== undefined) out[k] = sv;
+  }
+  return out;
+}
+
 export async function loadTelegramBotSession(
   db: Firestore,
   chatId: string
@@ -46,10 +61,12 @@ export async function loadTelegramBotSession(
   return d;
 }
 
+/** Telegram client language only; prefer [pickBotLocale] for bot replies. */
 export function resolveBotLocaleFromTelegram(message?: TelegramMessage): BotLocale {
   const code = message?.from?.language_code?.trim().toLowerCase() ?? "";
   if (code.startsWith("es")) return "es";
-  return "en";
+  if (code.startsWith("en")) return "en";
+  return "es";
 }
 
 export async function upsertTelegramBotSession(
@@ -63,6 +80,7 @@ export async function upsertTelegramBotSession(
   await telegramBotSessionRef(db, chatId).set(
     {
       ...partial,
+      draft: stripUndefinedDeep(partial.draft) as Record<string, unknown>,
       expiresAt,
       updatedAt: FieldValue.serverTimestamp(),
     },

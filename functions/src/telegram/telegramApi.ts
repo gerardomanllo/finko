@@ -67,3 +67,19 @@ export async function telegramEditMessageText(
   const { httpOk, json } = await telegramPostJson(fetchFn, botToken, "editMessageText", payload);
   return httpOk && json.ok === true;
 }
+
+/** Try to edit an existing bot message; if Telegram rejects it, send a new message (common when edit fails). */
+export async function telegramEditMessageTextOrSend(
+  fetchFn: typeof fetch,
+  botToken: string,
+  chatId: number,
+  messageId: number,
+  text: string,
+  extra?: { reply_markup?: unknown }
+): Promise<void> {
+  if (messageId > 0) {
+    const ok = await telegramEditMessageText(fetchFn, botToken, chatId, messageId, text, extra);
+    if (ok) return;
+  }
+  await telegramSendMessage(fetchFn, botToken, chatId, text, extra);
+}

@@ -25,8 +25,12 @@ export type MessageKey =
   | "pick_account"
   | "pick_category"
   | "confirm_transaction"
+  | "confirm_transfer"
   | "amount_missing"
   | "parse_error"
+  | "need_amount"
+  | "need_memo"
+  | "conversational_parse_requires_gemini"
   | "make_recurring_prompt"
   | "pick_transfer_from"
   | "pick_transfer_to"
@@ -62,9 +66,9 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
   },
   small_talk_hint: {
     en:
-      "Hi! To log spending, send something like `12 coffee` or `+50 paycheck`. Type /help for all commands.",
+      "Hi! I'm Finko — your personal finance assistant. You can log spending and income right here in chat. Try something like `12 coffee` or `+50 paycheck`. Type /help for all commands.",
     es:
-      "¡Hola! Para registrar un gasto, envía algo como `12 café` o `+50 nómina`. Escribe /help para ver todos los comandos.",
+      "¡Hola! Soy Finko, tu asistente de finanzas personales. Puedes registrar gastos e ingresos aquí en el chat. Por ejemplo: `12 café` o `+50 nómina`. Escribe /help para ver todos los comandos.",
   },
   generic_error: {
     en: "Something went wrong on our side. Please try again in a moment, or open the Finko app.",
@@ -149,8 +153,16 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
     es: "Elige una categoría:",
   },
   confirm_transaction: {
-    en: "Confirm: {{direction}} {{amount}} {{memo}}\nAccount: {{account}}\nCategory: {{category}}",
-    es: "Confirmar: {{direction}} {{amount}} {{memo}}\nCuenta: {{account}}\nCategoría: {{category}}",
+    en:
+      "Confirm: {{direction}}\nCurrency: {{currency}}\nAmount: {{amount}}\nName: {{memo}}\nAccount: {{account}}\nCategory: {{category}}",
+    es:
+      "Confirmar: {{direction}}\nMoneda: {{currency}}\nMonto: {{amount}}\nNombre: {{memo}}\nCuenta: {{account}}\nCategoría: {{category}}",
+  },
+  confirm_transfer: {
+    en:
+      "Confirm TRANSFER\nFrom: {{fromAcc}} ({{fromCur}})\nTo: {{toAcc}} ({{toCur}})\nOut: {{amountOut}}\nIn: {{amountIn}}\nNote: {{memo}}",
+    es:
+      "Confirmar TRANSFERENCIA\nDesde: {{fromAcc}} ({{fromCur}})\nHacia: {{toAcc}} ({{toCur}})\nSalida: {{amountOut}}\nEntrada: {{amountIn}}\nNota: {{memo}}",
   },
   amount_missing: {
     en: "Include an amount (e.g. `25 tacos`).",
@@ -159,6 +171,20 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
   parse_error: {
     en: "Couldn't read that. Try `amount note` or /help.",
     es: "No entendí. Prueba `monto nota` o /help.",
+  },
+  need_amount: {
+    en: "How much? Send the amount (numbers only is fine, e.g. `120.50`).",
+    es: "¿Cuánto? Envía el monto (solo números vale, ej. `120.50`).",
+  },
+  need_memo: {
+    en: "What was this for? Send a short name or note.",
+    es: "¿En qué fue? Envía un nombre o nota breve.",
+  },
+  conversational_parse_requires_gemini: {
+    en:
+      "Full conversational logging in English/Spanish needs the Telegram bot AI feature enabled (Gemini). Try a simple pattern like `50 coffee`, or use the Finko app.",
+    es:
+      "Registrar en inglés o español conversacional requiere la función de IA del bot (Gemini) activa. Prueba un formato simple como `50 café`, o usa la app Finko.",
   },
   make_recurring_prompt: {
     en: "Make this recurring?",

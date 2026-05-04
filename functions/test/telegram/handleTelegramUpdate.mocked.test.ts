@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { handleTelegramUpdate } from "../../src/telegram/handleUpdate";
+import { t } from "../../src/telegram/i18n";
 import type { TelegramUpdate } from "../../src/telegram/types";
 import { createMockFirestoreForTelegram } from "../helpers/mockFirestoreTelegram";
 
@@ -72,7 +73,7 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     expect(jestFetch).toHaveBeenCalledTimes(1);
     const body = bodies[0] as Record<string, unknown>;
     expect(body.chat_id).toBe(4242);
-    expect(String(body.text)).toContain("attachment");
+    expect(String(body.text)).toMatch(/attachment|archivo/i);
   });
 
   it("plain /start without token sends hint DM", async () => {
@@ -122,6 +123,42 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     expect(jestFetch).toHaveBeenCalledTimes(1);
     const body = bodies[0] as Record<string, unknown>;
     expect(String(body.text)).toMatch(/\/help|`12/i);
+  });
+
+  it("bound chat Spanish phrase with English client gets Gemini-required message when no API key", async () => {
+    const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
+    const db = createMockFirestoreForTelegram({
+      bindings: { "4242": "user_test_1" },
+    });
+    const update: TelegramUpdate = {
+      update_id: 9198,
+      message: {
+        message_id: 11,
+        chat: { id: 4242, type: "private" },
+        date: 1,
+        from: { id: 1, language_code: "en" },
+        text: "gasté 100 pesos en el supermercado hoy",
+      },
+    };
+    await handleTelegramUpdate(update, { db, fetchTelegram, botToken });
+    expect(jestFetch).toHaveBeenCalledTimes(1);
+    const body = bodies[0] as Record<string, unknown>;
+    expect(String(body.text)).toMatch(/Gemini|español|Spanish|conversational|conversacional|simple/i);
+  });
+
+  it("confirm_transaction copy includes currency line (i18n shape)", () => {
+    const s = t("en", "confirm_transaction", {
+      direction: "OUT",
+      currency: "MXN",
+      amount: "50.00",
+      memo: "Cafe",
+      account: "Cash",
+      category: "Food",
+    });
+    expect(s).toContain("Currency:");
+    expect(s).toContain("MXN");
+    expect(s).toContain("Name:");
+    expect(s).toContain("Cafe");
   });
 
   it("bound chat /help sends help text", async () => {

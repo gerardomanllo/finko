@@ -48,7 +48,7 @@ export type TelegramMessage = {
 };
 
 export type TelegramCallbackQuery = {
-  id?: string;
+  id?: string | number;
   from?: TelegramUser;
   message?: TelegramMessage;
   inline_message_id?: string;

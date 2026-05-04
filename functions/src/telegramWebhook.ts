@@ -5,7 +5,7 @@ import * as logger from "firebase-functions/logger";
 import { handleTelegramUpdate } from "./telegram/handleUpdate";
 import type { TelegramUpdate } from "./telegram/types";
 import {
-  geminiApiKeyParam,
+  geminiApiKey,
   telegramBotToken,
   telegramWebhookDevBypass,
   telegramWebhookSecret,
@@ -14,7 +14,7 @@ import {
 export const telegramWebhook = onRequest(
   {
     region: "us-central1",
-    secrets: [telegramBotToken, telegramWebhookSecret],
+    secrets: [telegramBotToken, telegramWebhookSecret, geminiApiKey],
     cors: false,
     invoker: "public",
   },
@@ -48,7 +48,7 @@ export const telegramWebhook = onRequest(
     }
 
     const botTok = telegramBotToken.value();
-    const geminiKey = geminiApiKeyParam.value().trim();
+    const geminiKey = geminiApiKey.value().trim();
 
     try {
       await handleTelegramUpdate(update, {
