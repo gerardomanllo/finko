@@ -73,6 +73,8 @@ Client SDK **cannot** access the three **`telegram*`** collections (see **`fires
 4. **Expense** `12 coffee` → confirm keyboard → **`transactions`** row in Firestore.
 5. **Sticker / video** → one friendly reject line.
 6. **Retry same `update_id`** → no duplicate outbound messages.
+7. **Linked user** sends **`hello`** → **`small_talk_hint`** (examples + `/help`), not only “include an amount”.
+8. **Bad / expired link token** on **`/start link_…`** → localized **`link_token_*`** DM (not silent).
 
 ## Automated tests
 
@@ -101,6 +103,7 @@ Fixture-driven Jest suite + mocked **`fetch`**: [`telegram-bot-testing.md`](tele
 
 | Date | Change |
 |------|--------|
+| 2026-05-04 | **DM copy:** short greetings / thanks → **`small_talk_hint`** (examples + `/help`); failed **`/start link_…`** bind → **`link_token_expired`**, **`link_token_used_other`**, or **`link_token_invalid`** (no silent failure); unexpected handler errors → **`generic_error`** DM (details still in logs only). |
 | 2026-05-01 | DM **chatbot** architecture: classification gate, **`allowed_updates`** incl. **`callback_query`**, **`GEMINI_API_KEY`**, Firestore runtime paths, QA checklist, pointer to [`telegram-bot-testing.md`](telegram-bot-testing.md). **`disconnectMessagingIntegration`** clears bindings/sessions. |
 | 2026-04-21 | **No Telegram OTP:** **`integrations.telegram`** is written in the **webhook transaction** with **`_telegramLink/state`**; app flow is magic link + **Done** only. |
 | 2026-04-21 | **`telegramWebhook`:** structured Cloud Logging for each update (parse / bind / `sendMessage`), without logging secrets or full tokens. |

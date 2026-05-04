@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Telegram DM bot:** short greetings / thanks get **`small_talk_hint`** (examples + `/help`) instead of **`amount_missing`**; failed **`/start link_…`** bind sends **`link_token_expired`**, **`link_token_used_other`**, or **`link_token_invalid`**; uncaught handler errors send **`generic_error`** (still **logged** without leaking internals). **`consumeLinkTokenAndBindChat`** returns a **`reason`** on failure.
+
 - **Spending (KB-002):** For **month** (and other non-week granularities), the income / fixed / variable accordion uses **`splitFixedVariableFromPositiveSlices`** so **fixed** matches the **Fixed Expenses** donut slice and **variable** is the remainder — aligned with **`positiveExpenseByCategoryId`**.
 
 - **Dashboard upcoming merge:** `mergeDashboardUpcoming` replaced by **`mergeUpcomingForUi`** (`includeDueToday: false` for strip, **`true`** for Recurring).

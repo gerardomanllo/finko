@@ -3,6 +3,11 @@ import type { BotLocale } from "./sessions";
 export type MessageKey =
   | "link_connected"
   | "plain_start_hint"
+  | "link_token_expired"
+  | "link_token_used_other"
+  | "link_token_invalid"
+  | "small_talk_hint"
+  | "generic_error"
   | "help"
   | "not_linked"
   | "unsupported_media"
@@ -38,6 +43,32 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
   plain_start_hint: {
     en: "Open Finko → Settings / Onboarding → Telegram → Next and tap Start in this chat using the link from the app.",
     es: "Abre Finko → Ajustes u onboarding → Telegram → Siguiente y pulsa Iniciar en este chat con el enlace de la app.",
+  },
+  link_token_expired: {
+    en:
+      "This link expired. Open Finko → Settings → Telegram, tap Next, and start the bot again with the new link from the app.",
+    es:
+      "Este enlace expiró. Abre Finko → Ajustes → Telegram, pulsa Siguiente e inicia el bot otra vez con el enlace nuevo de la app.",
+  },
+  link_token_used_other: {
+    en:
+      "This link was already used from another Telegram chat, or is no longer valid. Open Finko → Settings → Telegram and generate a fresh link.",
+    es:
+      "Este enlace ya se usó desde otro chat de Telegram o ya no es válido. Abre Finko → Ajustes → Telegram y genera un enlace nuevo.",
+  },
+  link_token_invalid: {
+    en: "I couldn’t verify that link. Open Finko → Settings → Telegram and try connecting again.",
+    es: "No pude verificar ese enlace. Abre Finko → Ajustes → Telegram e intenta vincular de nuevo.",
+  },
+  small_talk_hint: {
+    en:
+      "Hi! To log spending, send something like `12 coffee` or `+50 paycheck`. Type /help for all commands.",
+    es:
+      "¡Hola! Para registrar un gasto, envía algo como `12 café` o `+50 nómina`. Escribe /help para ver todos los comandos.",
+  },
+  generic_error: {
+    en: "Something went wrong on our side. Please try again in a moment, or open the Finko app.",
+    es: "Algo salió mal de nuestro lado. Intenta de nuevo en un momento o abre la app Finko.",
   },
   help: {
     en:

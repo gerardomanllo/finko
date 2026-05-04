@@ -103,6 +103,27 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     expect(String(body.text)).toMatch(/Link Telegram|vincula/i);
   });
 
+  it("bound chat hello sends small-talk hint (not raw amount_missing)", async () => {
+    const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
+    const db = createMockFirestoreForTelegram({
+      bindings: { "4242": "user_test_1" },
+    });
+    const update: TelegramUpdate = {
+      update_id: 9104,
+      message: {
+        message_id: 5,
+        chat: { id: 4242, type: "private" },
+        date: 1,
+        from: { id: 1, language_code: "en" },
+        text: "hello",
+      },
+    };
+    await handleTelegramUpdate(update, { db, fetchTelegram, botToken });
+    expect(jestFetch).toHaveBeenCalledTimes(1);
+    const body = bodies[0] as Record<string, unknown>;
+    expect(String(body.text)).toMatch(/\/help|`12/i);
+  });
+
   it("bound chat /help sends help text", async () => {
     const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
     const db = createMockFirestoreForTelegram({

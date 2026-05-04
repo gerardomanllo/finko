@@ -30,6 +30,7 @@ import {
   upsertTelegramBotSession,
   type BotLocale,
 } from "./sessions";
+import { looksLikeSmallTalk } from "./smallTalk";
 import type { TelegramMessage, TelegramUpdate } from "./types";
 import {
   telegramAnswerCallbackQuery,
@@ -201,6 +202,19 @@ export async function handleTelegramUpdate(update: TelegramUpdate, deps: Telegra
       updateId,
       err: e instanceof Error ? e.message : String(e),
     });
+    const chatId = classified.chatId;
+    const loc =
+      classified.outcome === "callback_query"
+        ? pickLocale(classified.cq.message)
+        : pickLocale(classified.message);
+    try {
+      await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatId, t(loc, "generic_error"));
+    } catch (sendErr) {
+      logger.warn("telegramWebhook: generic_error send failed", {
+        updateId,
+        err: sendErr instanceof Error ? sendErr.message : String(sendErr),
+      });
+    }
   }
 }
 
@@ -215,7 +229,14 @@ async function handleLinkToken(
   const usernameNorm = typeof tgUser === "string" ? tgUser.toLowerCase() : "";
   const bound = await consumeLinkTokenAndBindChat(deps.db, token, String(chatIdNum), usernameNorm);
   if (!bound.ok) {
-    logger.warn("telegramWebhook: bind failed", { chatId: chatIdNum });
+    logger.warn("telegramWebhook: bind failed", { chatId: chatIdNum, reason: bound.reason });
+    const key: MessageKey =
+      bound.reason === "expired"
+        ? "link_token_expired"
+        : bound.reason === "used_other"
+          ? "link_token_used_other"
+          : "link_token_invalid";
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, key));
     return;
   }
   await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "link_connected"));
@@ -911,7 +932,8 @@ async function handleDialogText(
     categories
   );
   if (!parsed || parsed.amountMinor <= 0) {
-    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "amount_missing"));
+    const key: MessageKey = looksLikeSmallTalk(norm) ? "small_talk_hint" : "amount_missing";
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, key));
     return;
   }
 

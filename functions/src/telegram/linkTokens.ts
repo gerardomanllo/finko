@@ -38,12 +38,18 @@ export async function createLinkToken(db: Firestore, uid: string): Promise<strin
  * **`integrations.telegram`** on `users/{uid}`, and marks the token used.
  * Idempotent: if the token was already used for the same `chatId`, returns success (no extra writes).
  */
+export type LinkBindFailureReason = "missing" | "expired" | "used_other" | "invalid" | "unknown";
+
+export type ConsumeLinkTokenResult =
+  | { ok: true; uid: string }
+  | { ok: false; reason: LinkBindFailureReason };
+
 export async function consumeLinkTokenAndBindChat(
   db: Firestore,
   token: string,
   chatId: string,
   usernameNorm: string
-): Promise<{ ok: true; uid: string } | { ok: false }> {
+): Promise<ConsumeLinkTokenResult> {
   const tokenRef = linkTokenRef(db, token);
 
   try {
@@ -116,8 +122,13 @@ export async function consumeLinkTokenAndBindChat(
       return uidInner;
     });
     return { ok: true, uid };
-  } catch {
-    return { ok: false };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg === "missing") return { ok: false, reason: "missing" };
+    if (msg === "expired") return { ok: false, reason: "expired" };
+    if (msg === "used") return { ok: false, reason: "used_other" };
+    if (msg === "nouid") return { ok: false, reason: "invalid" };
+    return { ok: false, reason: "unknown" };
   }
 }
 
