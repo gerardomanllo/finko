@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Telegram DM bot (Functions):** **`classifyTelegramUpdate`** gate, **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`**, bound-chat expense/income/transfer/recurring flows, optional **Gemini** via **`GEMINI_API_KEY`**, Spanish/English copy; **`disconnectMessagingIntegration`** clears bindings/sessions. **Tests:** `functions/test/telegram/` fixtures + mocked **`fetch`** (`npm test` in **`functions/`**).
+- **Telegram bot defaults (Flutter):** **`users/{uid}.telegramBotPreferences`** on **`UserProfile`**; **Settings → Telegram (connected) → Bot defaults** sheet (`telegram_bot_preferences_sheet.dart`).
+- **Docs:** [`docs/references/telegram-bot-testing.md`](docs/references/telegram-bot-testing.md); expanded [`docs/references/telegram-bot-webhook.md`](docs/references/telegram-bot-webhook.md) (`allowed_updates`, **`GEMINI_API_KEY`**).
+
 - **New transaction sheet:** fourth mode chip **Recurring** (income/expense direction still applies); primary action **Save & make recurring** posts the ledger row then opens the cadence dialog and **`createRecurringFromTransaction`** (same as **Make recurring** when editing).
 
 - **Recurring from transaction (KB-001):** Cloud Function **`createRecurringFromTransaction`** + **Make recurring** on the **standard** transaction editor (cadence: monthly / twice-monthly / biweekly / weekly); seeds **`recurring`** + **`upcomingTransactions`**. **`recurringMergedUpcomingProvider`** merges upcoming + rule previews + future-dated ledger rows for the **Recurring** tab (KB-008).
@@ -18,8 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Docs:** [`docs/KNOWN_BUGS.md`](docs/KNOWN_BUGS.md) — living triage list for open **Finko (Responses)** sheet rows (Status ≠ Done / Not a bug), with **Discussed fix** and **Ready to fix** fields.
 
 - **Onboarding:** **Main currency** picker on profile; always-on **Cash** account (`type: cash`, localized name, editable currency and **starting balance**, not deletable); **credit card total credit line**; **Automatic** theme label for system preference; **stacked projected savings** chart (fills step height; blue expense bands; savings on top in green/red); expanded **color/icon dropdowns** (overlay-safe rows); **Remind me later** advances the flow; recurring income **prefills** zero income budgets using monthly/biweekly/weekly multipliers (single state update when opening budgets so fields stay in sync). Firestore accounts may include **`creditLimitMinor`**, **`isSystem`**, and **`cash`** type (see `docs/data-model.md`).
-
-- **Telegram messaging:** Cloud Function **`telegramWebhook`** (Telegram `secret_token` + `/start link_<token>`) binds **`chat_id`** and writes **`integrations.telegram`** in one transaction; **no Telegram OTP**. Flutter link sheet uses **`tg://` / `t.me`** when **`needsBotStart`** is returned; **`disconnectMessagingIntegration`** clears link state and profile integration. Firestore **`telegramLinkTokens`** + **`users/{uid}/_telegramLink`** (rules: client deny-all on token writes).
 
 ### Changed
 

@@ -36,6 +36,9 @@ users/{uid}/_processedAggregateEvents/{eventId}  # idempotency for CF aggregate 
 
 forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not user-scoped
 telegramLinkTokens/{tokenId}             # Telegram deep-link tokens (24h TTL; Functions + webhook only; see §3.1)
+telegramChatBindings/{chatId}            # Telegram chat id (string) → Firebase uid (Functions / webhook only; see §3.2)
+telegramBotSessions/{chatId}             # DM bot draft + wizard state (Functions only)
+telegramProcessedUpdates/{updateId}      # Webhook idempotency by Telegram update_id (Functions only)
 ```
 
 ---
@@ -57,6 +60,7 @@ telegramLinkTokens/{tokenId}             # Telegram deep-link tokens (24h TTL; F
 | `budgets` | `map<string, object>` | **Recurring monthly targets** (same every month): `categoryId` → `{ "targetMinorMain": int, "kind": "income"|"expense" }`. **Legacy:** flat `categoryId` → minor int coerces to `{ targetMinorMain, kind: expense }` in clients; **`commitOnboarding`** writes canonical rows. |
 | `ledgerSourcesLastChangedAt` | `Timestamp?` | **Server-only** (Cloud Functions / Admin): last time **ledger sources** changed in a way that can require aggregates—**transactions** (non–audit-only writes), **categories**, or **accounts** (excluding balance-only denormalized updates). Clients read for pull-to-refresh gating; **`firestore.rules`** block client **create/update** on this key. |
 | `aggregateLastCompletedAt` | `Timestamp?` | **Server-only**: last time incremental **aggregates** finished applying (`accounts` / `monthlyTotals`) for this user. Clients read for gating; rules block client writes. |
+| `telegramBotPreferences` | `map?` | Optional defaults for the **Telegram DM bot** (`defaultAccountId`, `defaultExpenseCategoryId`, `defaultIncomeCategoryId`, `localeOverride` as `es` \| `en`). Client merge when linked; **Cloud Functions** read when handling webhook updates. |
 
 ### 3.1 Integrations (messaging channels)
 
@@ -83,6 +87,16 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | `telegramLinkTokens/{tokenId}` | One-time deep-link token: `uid`, `expiresAt` (~24h), `used`. Minted by **`requestMessagingOtp`** when the user must open the bot first; consumed in a **transaction** with **`_telegramLink/state`** and **`integrations.telegram`** in **`telegramWebhook`**. |
 
 **Product rule:** At most **one** WhatsApp and **one** Telegram identity per user.
+
+### 3.2 Telegram server-only collections (bot runtime)
+
+| Path | Purpose |
+|------|---------|
+| `telegramChatBindings/{chatId}` | Telegram private-chat id (string) → `{ uid, updatedAt }`. Written when `/start link_<token>` binds; deleted when the user disconnects Telegram or via **`disconnectMessagingIntegration`**. |
+| `telegramBotSessions/{chatId}` | Bot FSM / draft payload for DMs (expires; refreshed on inbound traffic). **Admin SDK only.** |
+| `telegramProcessedUpdates/{updateId}` | Idempotency for Telegram `update_id` retries (create-if-absent semantics). **Admin SDK only.** |
+
+**Rules:** Clients **cannot** read or write these collections (see `firestore.rules`).
 
 ---
 
@@ -370,6 +384,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-05-01 | §2 / §3 / §3.2: **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`** (Functions-only); **`users/{uid}.telegramBotPreferences`** for DM bot defaults; linking path unchanged. See [`references/telegram-bot-testing.md`](references/telegram-bot-testing.md). |
 | 2026-04-27 | §8: **`materializeDueUpcoming`** deterministic **`transactions`** ids; Callable **`createRecurringFromTransaction`** seeds **`recurring`** + **`upcomingTransactions`** from a **standard** ledger row. |
 | 2026-04-21 | §5: Account type **`cash`** (physical wallet); optional **`creditLimitMinor`** (credit cards); optional **`isSystem`** for non-deletable rows (onboarding Cash). §4.2: **`cash`** is an **asset**. |
 | 2026-04-21 | §3.1 **Telegram:** **`requestMessagingOtp`** does not write **`integrations.telegram`**; only the webhook transaction does (avoids racing **`consumeLinkTokenAndBindChat`**). |

@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 
 import { LINK_TOKEN_TTL_MS, TELEGRAM_LINK_TOKENS } from "./constants";
+import { writeTelegramChatBindingTx } from "./chatBindings";
 import { telegramLinkStateRef } from "./telegramLinkState";
 
 export type LinkTokenDoc = {
@@ -72,6 +73,7 @@ export async function consumeLinkTokenAndBindChat(
 
       if (used) {
         if (existingChat === chatId) {
+          writeTelegramChatBindingTx(tx, db, chatId, uidInner);
           return uidInner;
         }
         throw new Error("used");
@@ -110,6 +112,7 @@ export async function consumeLinkTokenAndBindChat(
         },
         { merge: true }
       );
+      writeTelegramChatBindingTx(tx, db, chatId, uidInner);
       return uidInner;
     });
     return { ok: true, uid };

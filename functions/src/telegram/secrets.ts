@@ -10,3 +10,6 @@ export const telegramBotUsername = defineString("TELEGRAM_BOT_USERNAME", { defau
 export const telegramWebhookDevBypass = defineString("TELEGRAM_WEBHOOK_DEV_BYPASS", {
   default: "",
 });
+
+/** Optional Google AI Studio key for Gemini NLU / multimodal in Telegram bot. */
+export const geminiApiKeyParam = defineString("GEMINI_API_KEY", { default: "" });

@@ -29,7 +29,7 @@
 
 - Separate rows (**WhatsApp**, **Telegram**) with **Connected** / **Not connected** from `UserProfile.integrations`.
 - **Not connected:** same bottom sheet as onboarding — `showOnboardingMessagingChannelSheet` + `requestMessagingOtp` / `verifyMessagingOtp` Cloud Functions; then refresh profile stream. **Telegram:** multi-step sheet (`TelegramChannelLinkSheet`) — **phone (dial + national) or @username** → **Next** → **Open Telegram** → real-time read of **`users/{uid}/_telegramLink/state`** until `chatId` appears → **Done** (no OTP; profile **`integrations.telegram`** is written by the webhook). **WhatsApp:** still OTP + verify (see [`references/telegram-bot-webhook.md`](references/telegram-bot-webhook.md)).
-- **Connected:** bottom sheet shows identity (`phoneE164` / `@username`) and verified date when present; **Disconnect** → confirm dialog → **`disconnectMessagingIntegration`** callable (removes `integrations.*` and, for Telegram, server-only link state under `users/{uid}/_telegramLink`).
+- **Connected:** bottom sheet shows identity (`phoneE164` / `@username`) and verified date when present; **Telegram** adds **Bot defaults** (Firestore **`telegramBotPreferences`**) before **Disconnect** → confirm dialog → **`disconnectMessagingIntegration`** callable (removes `integrations.*`, clears `_telegramLink`, and server-side Telegram binding/session docs).
 - User may connect **one, both, or neither** — do not require both.
 - Copy must **not** imply WhatsApp/Telegram are sign-in methods (they are **messaging** integrations only).
 
@@ -55,6 +55,7 @@
 
 ## Revision log
 
+- **2026-05-01** — Telegram **connected** sheet: **Bot defaults** → optional **`users/{uid}.telegramBotPreferences`** (`UserSettingsWriter`); revision cross-ref [`data-model.md`](data-model.md) §3 / §3.2 and [`telegram-bot-webhook.md`](references/telegram-bot-webhook.md).
 - **2026-04-22** — Telegram not-connected sheet: **phone/username** toggle, **`_telegramLink`** listener, multi-step copy; **Firestore** rules allow owner **read** on `_telegramLink`.
 - **2026-04-21** — Messaging: **Telegram** uses magic link + webhook only (no OTP); **disconnect** uses **`disconnectMessagingIntegration`** callable instead of client-only Firestore merge for integration removal.
 - **2026-04-19** — Planned subsection: **net worth** toggle for **secured-asset estimates** (default on when feature ships); pointer to [`loans-collateral-and-net-worth.md`](loans-collateral-and-net-worth.md).

@@ -1,0 +1,15 @@
+{
+  "update_id": 24,
+  "message": {
+    "message_id": 10,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "document": {
+      "file_name": "notes.pdf",
+      "mime_type": "application/pdf",
+      "file_id": "pdf1",
+      "file_unique_id": "p1"
+    }
+  }
+}

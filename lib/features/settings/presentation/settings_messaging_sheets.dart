@@ -12,6 +12,7 @@ Future<void> showSettingsMessagingConnectedSheet({
   required String channel,
   required UserProfile profile,
   required VoidCallback onDisconnect,
+  VoidCallback? onTelegramBotDefaults,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -21,6 +22,7 @@ Future<void> showSettingsMessagingConnectedSheet({
       channel: channel,
       profile: profile,
       onDisconnect: onDisconnect,
+      onTelegramBotDefaults: onTelegramBotDefaults,
     ),
   );
 }
@@ -31,12 +33,14 @@ class _ConnectedMessagingSheet extends StatelessWidget {
     required this.channel,
     required this.profile,
     required this.onDisconnect,
+    this.onTelegramBotDefaults,
   });
 
   final AppLocalizations l10n;
   final String channel;
   final UserProfile profile;
   final VoidCallback onDisconnect;
+  final VoidCallback? onTelegramBotDefaults;
 
   bool get _isWa => channel == 'whatsapp';
 
@@ -125,6 +129,16 @@ class _ConnectedMessagingSheet extends StatelessWidget {
                         const SizedBox(height: 12),
                         ...details,
                         const SizedBox(height: 20),
+                        if (!_isWa && onTelegramBotDefaults != null) ...[
+                          FilledButton.tonal(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              onTelegramBotDefaults!();
+                            },
+                            child: Text(l10n.settingsMessagingTelegramBotDefaults),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                         FilledButton.tonal(
                           style: FilledButton.styleFrom(
                             foregroundColor: Theme.of(

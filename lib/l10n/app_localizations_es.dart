@@ -703,6 +703,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsMessagingDisconnectCancel => 'Cancelar';
 
   @override
+  String get settingsMessagingTelegramBotDefaults => 'Valores del bot';
+
+  @override
+  String get settingsTelegramBotDefaultsTitle => 'Valores del bot de Telegram';
+
+  @override
+  String get settingsTelegramBotDefaultsSubtitle =>
+      'Atajos opcionales al usar el bot de Finko (cuenta, categorías e idioma de respuesta).';
+
+  @override
+  String get settingsTelegramBotDefaultsLocale => 'Idioma del bot';
+
+  @override
+  String get settingsTelegramBotDefaultsLocaleFollow => 'Igual que Telegram';
+
+  @override
+  String get settingsTelegramBotDefaultsLocaleEs => 'Español';
+
+  @override
+  String get settingsTelegramBotDefaultsLocaleEn => 'Inglés';
+
+  @override
+  String get settingsTelegramBotDefaultsAccount => 'Cuenta predeterminada';
+
+  @override
+  String get settingsTelegramBotDefaultsExpenseCategory => 'Categoría de gasto';
+
+  @override
+  String get settingsTelegramBotDefaultsIncomeCategory =>
+      'Categoría de ingreso';
+
+  @override
+  String get settingsTelegramBotDefaultsNone => 'Ninguna';
+
+  @override
+  String get settingsTelegramBotDefaultsSave => 'Guardar';
+
+  @override
+  String get settingsTelegramBotDefaultsClear => 'Borrar valores';
+
+  @override
   String get settingsErrorSave => 'No se pudo guardar. Intenta de nuevo.';
 
   @override

@@ -66,6 +66,21 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Telegram chat → Firebase uid (Functions only).
+    match /telegramChatBindings/{chatId} {
+      allow read, write: if false;
+    }
+
+    // Telegram bot conversation drafts (Functions only).
+    match /telegramBotSessions/{chatId} {
+      allow read, write: if false;
+    }
+
+    // Telegram webhook idempotency (Functions only).
+    match /telegramProcessedUpdates/{updateId} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
       // Profile document only (not subcollections).
       allow read: if signedIn(userId);

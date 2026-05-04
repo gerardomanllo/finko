@@ -63,6 +63,10 @@ Use **`FutureProvider`** / **`get()`** only for cold data, explicit exports, or 
 
 Prefer **one provider per logical subscription**; **`ref.watch`** the same provider from many widgets.
 
+### 3.4 Telegram bot preferences
+
+Optional map **`users/{uid}.telegramBotPreferences`** is consumed by **`telegramWebhook`** (Cloud Functions) for default account/category shortcuts and optional **`localeOverride`** (`es` \| `en`). The Flutter app merges updates from **Settings → Telegram (connected) → Bot defaults** via **`UserSettingsWriter`**; expose changes through the existing **`userProfileStreamProvider`** subscription.
+
 ---
 
 ## 4. Widget responsibilities
@@ -173,6 +177,7 @@ When a **transaction is created/updated**:
 
 | Date | Change |
 |------|--------|
+| 2026-05-01 | **§3.4** Optional **`users/{uid}.telegramBotPreferences`** for Telegram DM bot defaults; client merge via **`UserSettingsWriter`**; surfaced on **`userProfileStreamProvider`**. |
 | 2026-04-27 | **§5** Recurring: **`ledgerFromTodayForUpcomingMergeStreamProvider`**, **`mergeUpcomingForUi`** ledger branch respects **`includeDueToday`** (today’s ledger previews). **`recurringMergedUpcomingProvider`** + **`mergeUpcomingForUi`** (existing). **§11** `materializeDueUpcoming`: deterministic **`transactions`** doc ids per materialized upcoming (+ transfer leg ids). |
 | 2026-04-18 | **§11** App-wide **pull-to-refresh**: `ledgerAwareAppRefreshProvider` (throttle + server timestamp gate + conditional **`reconcileDeferredLedgerForUser`** + canonical **`ref.invalidate`** list). |
 | 2026-04-18 | Ledger rows require **`categoryId`** (see `data-model.md` §4). **`categoriesStreamProvider`** omits reserved **`ledger-transfer`** from `/categories` pickers. Repository adds **`createCategory`**, **`createAccount`**, **`deleteCategoryCascade`**, **`deleteAccountCascade`**, **`preview*Delete`**, **`ensureLedgerTransferCategory`**, and cross-currency **`createTransferLegPair`**. **`createAccount`:** opening-balance adjustment requires caller-supplied **`openingBalanceTransactionDateYyyyMmDd`** (UI: **`todayYyyyMmDdProvider`**) when starting balance ≠ 0. |

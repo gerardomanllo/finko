@@ -15,6 +15,7 @@ import '../../../widgets/layout/finko_settings_section.dart';
 import '../../../widgets/settings/finko_theme_mode_toggle.dart';
 import '../data/user_settings_writer.dart';
 import 'settings_messaging_sheets.dart';
+import 'telegram_bot_preferences_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -101,6 +102,13 @@ class SettingsScreen extends ConsumerWidget {
         channel: 'telegram',
         profile: profile,
         onDisconnect: () => _confirmDisconnect(context, ref, 'telegram'),
+        onTelegramBotDefaults: () {
+          showTelegramBotPreferencesSheet(
+            context: context,
+            ref: ref,
+            profile: profile,
+          );
+        },
       );
       return;
     }

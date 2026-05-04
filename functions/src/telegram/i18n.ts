@@ -1,0 +1,170 @@
+import type { BotLocale } from "./sessions";
+
+export type MessageKey =
+  | "link_connected"
+  | "plain_start_hint"
+  | "help"
+  | "not_linked"
+  | "unsupported_media"
+  | "message_too_long"
+  | "emoji_only"
+  | "empty_message"
+  | "session_expired"
+  | "callback_invalid"
+  | "transfer_same_account"
+  | "posted_expense"
+  | "posted_income"
+  | "posted_transfer"
+  | "posted_recurring"
+  | "cancelled"
+  | "pick_account"
+  | "pick_category"
+  | "confirm_transaction"
+  | "amount_missing"
+  | "parse_error"
+  | "make_recurring_prompt"
+  | "pick_transfer_from"
+  | "pick_transfer_to"
+  | "transfer_enter_amount"
+  | "processing_photo"
+  | "processing_voice"
+  | "pick_recurring_cadence";
+
+const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
+  link_connected: {
+    en: "Finko: Telegram is connected. Open the app anytime, or chat here to log expenses and income.",
+    es: "Finko: Telegram conectado. Abre la app cuando quieras, o escribe aquí para registrar gastos e ingresos.",
+  },
+  plain_start_hint: {
+    en: "Open Finko → Settings / Onboarding → Telegram → Next and tap Start in this chat using the link from the app.",
+    es: "Abre Finko → Ajustes u onboarding → Telegram → Siguiente y pulsa Iniciar en este chat con el enlace de la app.",
+  },
+  help: {
+    en:
+      "Commands:\n" +
+      "/help — this message\n" +
+      "/cancel — reset draft\n" +
+      "Expense: `50 coffee` or tap menus after sending an amount.\n" +
+      "Income: `+100 paycheck`\n" +
+      "Transfer: `/transfer`\n" +
+      "Photo receipts and voice notes are supported after linking.",
+    es:
+      "Comandos:\n" +
+      "/help — este mensaje\n" +
+      "/cancel — borrar borrador\n" +
+      "Gasto: `50 café` o usa los menús tras enviar un monto.\n" +
+      "Ingreso: `+100 nómina`\n" +
+      "Transferencia: `/transfer`\n" +
+      "Fotos de ticket y notas de voz funcionan tras vincular.",
+  },
+  not_linked: {
+    en: "Link Telegram from the Finko app first (Settings → Telegram).",
+    es: "Primero vincula Telegram desde la app Finko (Ajustes → Telegram).",
+  },
+  unsupported_media: {
+    en: "I can't use that attachment yet. Send text, a photo, or a voice note, or try /help.",
+    es: "Aún no puedo usar ese archivo. Envía texto, foto o nota de voz, o prueba /help.",
+  },
+  message_too_long: {
+    en: "That message is too long. Send something shorter (amount + short note).",
+    es: "El mensaje es demasiado largo. Envía algo más corto (monto + nota breve).",
+  },
+  emoji_only: {
+    en: "Send an amount and description (e.g. `12 coffee`) or type /help.",
+    es: "Envía un monto y descripción (ej. `12 café`) o escribe /help.",
+  },
+  empty_message: {
+    en: "Send text, a photo with optional caption, or a voice note.",
+    es: "Envía texto, foto con texto opcional o nota de voz.",
+  },
+  session_expired: {
+    en: "Session expired — start again with an amount or /help.",
+    es: "Sesión caducada — empieza de nuevo con un monto o /help.",
+  },
+  callback_invalid: {
+    en: "That button is no longer valid. Send a new message or /cancel.",
+    es: "Ese botón ya no es válido. Envía un mensaje nuevo o /cancel.",
+  },
+  transfer_same_account: {
+    en: "Pick two different accounts.",
+    es: "Elige dos cuentas distintas.",
+  },
+  posted_expense: {
+    en: "Expense recorded: {{memo}} — {{amount}}",
+    es: "Gasto registrado: {{memo}} — {{amount}}",
+  },
+  posted_income: {
+    en: "Income recorded: {{memo}} — {{amount}}",
+    es: "Ingreso registrado: {{memo}} — {{amount}}",
+  },
+  posted_transfer: {
+    en: "Transfer recorded — {{amount}}",
+    es: "Transferencia registrada — {{amount}}",
+  },
+  posted_recurring: {
+    en: "Recurring rule created.",
+    es: "Regla recurrente creada.",
+  },
+  cancelled: {
+    en: "Cancelled.",
+    es: "Cancelado.",
+  },
+  pick_account: {
+    en: "Pick an account:",
+    es: "Elige una cuenta:",
+  },
+  pick_category: {
+    en: "Pick a category:",
+    es: "Elige una categoría:",
+  },
+  confirm_transaction: {
+    en: "Confirm: {{direction}} {{amount}} {{memo}}\nAccount: {{account}}\nCategory: {{category}}",
+    es: "Confirmar: {{direction}} {{amount}} {{memo}}\nCuenta: {{account}}\nCategoría: {{category}}",
+  },
+  amount_missing: {
+    en: "Include an amount (e.g. `25 tacos`).",
+    es: "Incluye un monto (ej. `25 tacos`).",
+  },
+  parse_error: {
+    en: "Couldn't read that. Try `amount note` or /help.",
+    es: "No entendí. Prueba `monto nota` o /help.",
+  },
+  make_recurring_prompt: {
+    en: "Make this recurring?",
+    es: "¿Hacer esto recurrente?",
+  },
+  pick_transfer_from: {
+    en: "Transfer: pick **from** account:",
+    es: "Transferencia: cuenta **origen**:",
+  },
+  pick_transfer_to: {
+    en: "Pick **to** account:",
+    es: "Cuenta **destino**:",
+  },
+  transfer_enter_amount: {
+    en: "Send the amount and optional memo (e.g. `500 rent`).",
+    es: "Envía el monto y nota opcional (ej. `500 renta`).",
+  },
+  processing_photo: {
+    en: "Got the photo — extracting details…",
+    es: "Foto recibida — extrayendo datos…",
+  },
+  processing_voice: {
+    en: "Got the voice note — transcribing…",
+    es: "Nota de voz recibida — transcribiendo…",
+  },
+  pick_recurring_cadence: {
+    en: "Pick recurring cadence:",
+    es: "Elige la frecuencia recurrente:",
+  },
+};
+
+export function t(locale: BotLocale, key: MessageKey, vars?: Record<string, string>): string {
+  let s = STRINGS[key][locale] ?? STRINGS[key].en;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.replaceAll(`{{${k}}}`, v);
+    }
+  }
+  return s;
+}

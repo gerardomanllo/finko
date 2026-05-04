@@ -1,6 +1,8 @@
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
+import { deleteTelegramChatBinding } from "./telegram/chatBindings";
+import { deleteTelegramBotSession } from "./telegram/sessions";
 import { deleteTelegramLinkState } from "./telegram/telegramLinkState";
 
 function readChannel(value: unknown): "whatsapp" | "telegram" {
@@ -24,6 +26,14 @@ export const disconnectMessagingIntegration = onCall({ region: "us-central1" }, 
   }
 
   if (channel === "telegram") {
+    const data = userSnap.data() as Record<string, unknown> | undefined;
+    const integrations = data?.integrations as Record<string, unknown> | undefined;
+    const tg = integrations?.telegram as Record<string, unknown> | undefined;
+    const chatId = typeof tg?.chatId === "string" ? tg.chatId.trim() : "";
+    if (chatId) {
+      await deleteTelegramChatBinding(db, chatId);
+      await deleteTelegramBotSession(db, chatId);
+    }
     await deleteTelegramLinkState(db, uid);
     await userRef.update({
       "integrations.telegram": FieldValue.delete(),

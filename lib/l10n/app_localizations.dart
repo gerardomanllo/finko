@@ -1356,6 +1356,84 @@ abstract class AppLocalizations {
   /// **'Cancelar'**
   String get settingsMessagingDisconnectCancel;
 
+  /// No description provided for @settingsMessagingTelegramBotDefaults.
+  ///
+  /// In es, this message translates to:
+  /// **'Valores del bot'**
+  String get settingsMessagingTelegramBotDefaults;
+
+  /// No description provided for @settingsTelegramBotDefaultsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Valores del bot de Telegram'**
+  String get settingsTelegramBotDefaultsTitle;
+
+  /// No description provided for @settingsTelegramBotDefaultsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Atajos opcionales al usar el bot de Finko (cuenta, categorías e idioma de respuesta).'**
+  String get settingsTelegramBotDefaultsSubtitle;
+
+  /// No description provided for @settingsTelegramBotDefaultsLocale.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma del bot'**
+  String get settingsTelegramBotDefaultsLocale;
+
+  /// No description provided for @settingsTelegramBotDefaultsLocaleFollow.
+  ///
+  /// In es, this message translates to:
+  /// **'Igual que Telegram'**
+  String get settingsTelegramBotDefaultsLocaleFollow;
+
+  /// No description provided for @settingsTelegramBotDefaultsLocaleEs.
+  ///
+  /// In es, this message translates to:
+  /// **'Español'**
+  String get settingsTelegramBotDefaultsLocaleEs;
+
+  /// No description provided for @settingsTelegramBotDefaultsLocaleEn.
+  ///
+  /// In es, this message translates to:
+  /// **'Inglés'**
+  String get settingsTelegramBotDefaultsLocaleEn;
+
+  /// No description provided for @settingsTelegramBotDefaultsAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta predeterminada'**
+  String get settingsTelegramBotDefaultsAccount;
+
+  /// No description provided for @settingsTelegramBotDefaultsExpenseCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría de gasto'**
+  String get settingsTelegramBotDefaultsExpenseCategory;
+
+  /// No description provided for @settingsTelegramBotDefaultsIncomeCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría de ingreso'**
+  String get settingsTelegramBotDefaultsIncomeCategory;
+
+  /// No description provided for @settingsTelegramBotDefaultsNone.
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguna'**
+  String get settingsTelegramBotDefaultsNone;
+
+  /// No description provided for @settingsTelegramBotDefaultsSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get settingsTelegramBotDefaultsSave;
+
+  /// No description provided for @settingsTelegramBotDefaultsClear.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar valores'**
+  String get settingsTelegramBotDefaultsClear;
+
   /// No description provided for @settingsErrorSave.
   ///
   /// In es, this message translates to:

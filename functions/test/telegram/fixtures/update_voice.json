@@ -1,0 +1,10 @@
+{
+  "update_id": 21,
+  "message": {
+    "message_id": 7,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "voice": { "duration": 3, "mime_type": "audio/ogg", "file_id": "voice1", "file_unique_id": "u1" }
+  }
+}

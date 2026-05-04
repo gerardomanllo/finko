@@ -1,0 +1,18 @@
+{
+  "update_id": 23,
+  "message": {
+    "message_id": 9,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "video": {
+      "duration": 5,
+      "width": 720,
+      "height": 480,
+      "file_name": "clip.mp4",
+      "mime_type": "video/mp4",
+      "file_id": "vidz",
+      "file_unique_id": "vz"
+    }
+  }
+}

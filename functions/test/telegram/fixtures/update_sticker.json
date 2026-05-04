@@ -1,0 +1,10 @@
+{
+  "update_id": 22,
+  "message": {
+    "message_id": 8,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "sticker": { "file_id": "stk", "width": 512, "height": 512, "is_animated": false, "is_video": false }
+  }
+}

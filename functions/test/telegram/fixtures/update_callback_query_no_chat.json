@@ -1,0 +1,9 @@
+{
+  "update_id": 15,
+  "callback_query": {
+    "id": "cq_nc",
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "inline_message_id": "bad",
+    "data": "cf"
+  }
+}

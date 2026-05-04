@@ -1,0 +1,11 @@
+{
+  "update_id": 13,
+  "edited_message": {
+    "message_id": 3,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "edit_date": 2,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "text": "edited"
+  }
+}

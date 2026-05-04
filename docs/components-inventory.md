@@ -14,6 +14,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
+| **Messaging connected sheet** | WhatsApp/Telegram identity + verified date + disconnect | Settings (`settings_messaging_sheets.dart`); Telegram adds **Bot defaults** → `telegram_bot_preferences_sheet.dart` |
 | **Paper card / paper section** | Full-width or inset “paper” surface (elevation, padding); `InkWell` only when `onTap` is set (scrollable lists use plain padding). Without `title`, child is not wrapped in a min-height `Column` so **`ListView`** + **`RefreshIndicator`** get bounded height | Dashboard, recurring, spending, transactions, budgets, categories, accounts |
 | **Ledger-aware pull refresh** | `ledgerAwareAppRefreshProvider.runPullToRefresh` — throttle, server timestamp gate, materialize + conditional reconcile, canonical `ref.invalidate` | Dashboard, Recurring, Transactions (`RefreshIndicator`); **required** for new refresh surfaces per `shell-navigation.md` |
 | **Pill toggle group** | Single-select pills (segmented control style) | Spending (`week` / `month` / `quarter` / `year`) |
@@ -107,6 +108,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-05-01** — **Messaging connected sheet** / **`telegram_bot_preferences_sheet`**: Telegram **Bot defaults** row for optional **`telegramBotPreferences`**.
 - **2026-04-21** — **Messaging OTP bottom sheet** row: Telegram bot-start / deep-link branch + `url_launcher`.
 - **2026-04-18** — **Ledger-aware pull refresh** row: `ledgerAwareAppRefreshProvider` for shared `RefreshIndicator` behavior.
 - **2026-04-16** — **`FinkoThemeModeToggle`:** three-way theme control on `/settings`.

@@ -1,0 +1,19 @@
+{
+  "update_id": 25,
+  "message": {
+    "message_id": 11,
+    "chat": { "id": 4242, "type": "private" },
+    "date": 1,
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "poll": {
+      "id": "poll1",
+      "question": "Q?",
+      "options": [{ "text": "A", "voter_count": 0 }],
+      "total_voter_count": 0,
+      "is_closed": false,
+      "is_anonymous": true,
+      "type": "regular",
+      "allows_multiple_answers": false
+    }
+  }
+}

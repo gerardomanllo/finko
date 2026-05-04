@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../json/json_converters.dart';
 import 'finko_enums.dart';
 import 'monthly_totals.dart';
+import 'telegram_bot_preferences.dart';
 
 part 'user_profile.g.dart';
 
@@ -29,6 +30,7 @@ class UserProfile {
     this.budgets = const {},
     this.aggregateLastCompletedAt,
     this.ledgerSourcesLastChangedAt,
+    this.telegramBotPreferences,
   });
 
   @JsonKey(includeToJson: false)
@@ -80,6 +82,13 @@ class UserProfile {
   /// ledger-relevant way (Cloud Functions).
   @FirestoreNullableUtcDateTimeConverter()
   final DateTime? ledgerSourcesLastChangedAt;
+
+  /// Defaults for the Telegram bot (optional map on `users/{uid}`).
+  @JsonKey(
+    fromJson: telegramBotPreferencesFromJson,
+    toJson: telegramBotPreferencesToJson,
+  )
+  final TelegramBotPreferences? telegramBotPreferences;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);

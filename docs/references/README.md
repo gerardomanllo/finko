@@ -13,6 +13,7 @@ Use this folder for **stable pointers** that agents should read when touching a 
 | **Design** | Figma or asset URLs (if any) |
 | **APIs** | Third-party docs for providers (Google/Apple sign-in, messaging APIs) |
 | **Telegram bot (webhook + linking)** | [`telegram-bot-webhook.md`](telegram-bot-webhook.md) — secrets, `setWebhook`, deep-link flow, Cloud Function names |
+| **Telegram bot (automated tests)** | [`telegram-bot-testing.md`](telegram-bot-testing.md) — fixture matrix, Jest + mocked Bot API |
 | **Bug reports (Google Sheet MCP)** | [`google-sheets-bug-mcp.md`](google-sheets-bug-mcp.md) — Cursor + **`uvx mcp-google-sheets@latest`** ([xing5/mcp-google-sheets](https://github.com/xing5/mcp-google-sheets)), service account + Drive folder, tool filtering |
 | **Known bugs (triage)** | [`../KNOWN_BUGS.md`](../KNOWN_BUGS.md) — open Form responses (sheet ≠ Done / Not a bug); **Discussed fix** + **Ready to fix**; keep in sync when the sheet changes |
 

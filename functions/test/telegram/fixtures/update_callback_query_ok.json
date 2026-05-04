@@ -1,0 +1,14 @@
+{
+  "update_id": 14,
+  "callback_query": {
+    "id": "cq_ok",
+    "from": { "id": 7, "is_bot": false, "first_name": "U" },
+    "message": {
+      "message_id": 20,
+      "chat": { "id": 4242, "type": "private" },
+      "date": 1,
+      "text": "Pick"
+    },
+    "data": "cf"
+  }
+}

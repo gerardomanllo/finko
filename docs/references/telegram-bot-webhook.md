@@ -1,15 +1,15 @@
 # Telegram bot (webhook + linking)
 
-Finko uses a **Telegram Bot** to bind each Firebase user to a **`chat_id`** (magic link + **`/start`**) and to write **`integrations.telegram`**. The bot can still send **DMs** (e.g. future product messages); there is **no Telegram OTP** for linking.
+Finko uses a **Telegram Bot** to bind each Firebase user to a **`chat_id`** (magic link + **`/start`**) and to write **`integrations.telegram`**. After linking, the same webhook runs a **DM chatbot** (text/voice/photo, inline keyboards, expense/income/transfer/recurring flows) using **`classifyTelegramUpdate`** as the first gate, Firestore sessions/bindings, optional **Gemini** when **`GEMINI_API_KEY`** is set, and **200 OK** responses even when inbound updates are unsupported. There is **no Telegram OTP** for linking.
 
 ## Cloud Functions
 
 | Export | Type | Role |
 |--------|------|------|
-| `telegramWebhook` | HTTPS (`onRequest`) | Receives Bot API updates; handles `/start link_<token>` and in one transaction updates **`users/{uid}/_telegramLink/state`**, **`integrations.telegram`**, and the link token doc. |
+| `telegramWebhook` | HTTPS (`onRequest`) | Verifies **`secret_token`** → idempotent **`update_id`** → **`classifyTelegramUpdate`** → **`handleTelegramUpdate`**: `/start link_<token>` bind transaction (**`_telegramLink`**, **`integrations.telegram`**, token consume), or bound-chat ledger/dialog (**`telegramChatBindings`**, **`telegramBotSessions`**). |
 | `requestMessagingOtp` | Callable | **Telegram:** mints link token + returns **`tg://resolve?domain=…&start=link_<token>`** when needed; if already linked, returns **`messagingReady`**. **WhatsApp:** OTP challenge only. |
 | `verifyMessagingOtp` | Callable | **WhatsApp:** verifies OTP and writes `integrations.whatsapp`. **Telegram:** no OTP — returns **`ok`** if `integrations.telegram` already exists, otherwise **`failed-precondition`**. |
-| `disconnectMessagingIntegration` | Callable | Removes Telegram (or WhatsApp) integration and clears `_telegramLink` / OTP challenge server-side. |
+| `disconnectMessagingIntegration` | Callable | Removes Telegram (or WhatsApp) integration, clears **`_telegramLink`** / OTP challenge, and for Telegram deletes **`telegramChatBindings`** + **`telegramBotSessions`** for the stored **`chatId`**. |
 
 Deployed region (current): **`us-central1`**.
 
@@ -23,6 +23,7 @@ Configure before deploy (per Firebase project: **dev** vs **prod**):
 | `TELEGRAM_WEBHOOK_SECRET` | **Secret** | Value passed to Telegram `setWebhook` as `secret_token`; the webhook rejects requests whose `X-Telegram-Bot-Api-Secret-Token` header does not match. |
 | `TELEGRAM_BOT_USERNAME` | **String param** | Bot username **without** `@` (e.g. `FinkoDevBot`) for `https://t.me/<username>?start=...` deep links. If you store `@FinkoDevBot`, strip the `@` in config — a leading `@` breaks `t.me` links and looks like an “invalid / expired” deep link in Telegram. |
 | `TELEGRAM_WEBHOOK_DEV_BYPASS` | **String param** (optional) | Set to `true` **only** for local emulator testing to skip secret header verification. **Never** in production. |
+| `GEMINI_API_KEY` | **String param** (optional) | When non-empty, enables **Gemini** NLU / multimodal parsing for Telegram chat lines, receipt images, and voice; otherwise the bot relies on **heuristics** for text. |
 
 Bind secrets to the functions that need them (CLI examples use current Firebase tooling):
 
@@ -32,7 +33,7 @@ npx -y firebase-tools@latest functions:secrets:set TELEGRAM_BOT_TOKEN
 npx -y firebase-tools@latest functions:secrets:set TELEGRAM_WEBHOOK_SECRET
 ```
 
-Set **`TELEGRAM_BOT_USERNAME`** and optional bypass in Firebase **environment params** for Functions (Console: Google Cloud → Cloud Functions → your function → **Edit** → **Runtime, build, connections and security variables**, or use `firebase functions:config` successors as documented for your CLI version).
+Set **`TELEGRAM_BOT_USERNAME`**, optional **`TELEGRAM_WEBHOOK_DEV_BYPASS`**, and optional **`GEMINI_API_KEY`** in Firebase **environment params** for Functions (Console: Google Cloud → Cloud Functions → your function → **Edit** → **Runtime, build, connections and security variables**, or use `firebase functions:config` successors as documented for your CLI version).
 
 ## Register the webhook (after deploy)
 
@@ -46,10 +47,36 @@ Example `setWebhook` (replace placeholders; keep `secret_token` aligned with `TE
 curl -sS "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
   -d "url=https://us-central1-<PROJECT_ID>.cloudfunctions.net/telegramWebhook" \
   -d "secret_token=<SAME_AS_TELEGRAM_WEBHOOK_SECRET>" \
-  -d "allowed_updates=[\"message\"]"
+  -d "allowed_updates=[\"message\",\"callback_query\",\"my_chat_member\"]"
 ```
 
-Verify with `getWebhookInfo`. Use **dev** project URL for dev bot and **prod** for production bot.
+Include **`callback_query`** so inline keyboard taps reach the webhook. **`my_chat_member`** is optional (ignored today but useful for future block/unblock hygiene).
+
+Verify with **`getWebhookInfo`**. Use **dev** project URL for dev bot and **prod** for production bot.
+
+## Runtime data (Firestore)
+
+| Path | Role |
+|------|------|
+| `telegramChatBindings/{chatId}` | Resolve Telegram DM → Firebase **`uid`**. |
+| `telegramBotSessions/{chatId}` | Wizard / draft (**merge** updates per inbound message). |
+| `telegramProcessedUpdates/{updateId}` | Telegram **`update_id`** dedupe. |
+| `users/{uid}.telegramBotPreferences` | Optional defaults edited from **Settings → Telegram → Bot defaults**. |
+
+Client SDK **cannot** access the three **`telegram*`** collections (see **`firestore.rules`**).
+
+## Manual QA checklist
+
+1. **Link:** `/start link_<token>` → **`integrations.telegram`** + binding doc.
+2. **Plain `/start`** → localized hint (no uncaught errors).
+3. **Unbound** user sends text → single “link from app” DM.
+4. **Expense** `12 coffee` → confirm keyboard → **`transactions`** row in Firestore.
+5. **Sticker / video** → one friendly reject line.
+6. **Retry same `update_id`** → no duplicate outbound messages.
+
+## Automated tests
+
+Fixture-driven Jest suite + mocked **`fetch`**: [`telegram-bot-testing.md`](telegram-bot-testing.md).
 
 ## Logs Explorer
 
@@ -74,6 +101,7 @@ Verify with `getWebhookInfo`. Use **dev** project URL for dev bot and **prod** f
 
 | Date | Change |
 |------|--------|
+| 2026-05-01 | DM **chatbot** architecture: classification gate, **`allowed_updates`** incl. **`callback_query`**, **`GEMINI_API_KEY`**, Firestore runtime paths, QA checklist, pointer to [`telegram-bot-testing.md`](telegram-bot-testing.md). **`disconnectMessagingIntegration`** clears bindings/sessions. |
 | 2026-04-21 | **No Telegram OTP:** **`integrations.telegram`** is written in the **webhook transaction** with **`_telegramLink/state`**; app flow is magic link + **Done** only. |
 | 2026-04-21 | **`telegramWebhook`:** structured Cloud Logging for each update (parse / bind / `sendMessage`), without logging secrets or full tokens. |
 | 2026-04-21 | Callable + client use **`tg://resolve?…&start=link_<token>`** (Telegram bot **`start`** payload) so the webhook still sees **`/start link_<token>`**; sheet mirrors **`https://t.me/…?start=…`**. |
