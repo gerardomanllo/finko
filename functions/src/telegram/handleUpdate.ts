@@ -18,6 +18,7 @@ import {
   analyzeFirstMessageWithGemini,
   applyPreferenceDefaults,
   continueDialogWithGemini,
+  detectMessageLanguageWithGemini,
   EMPTY_TRANSACTION_SNAPSHOT,
   snapshotFromDraftRecord,
   snapshotFromLegacySpendDraft,
@@ -52,6 +53,14 @@ import {
   telegramEditMessageTextOrSend,
 } from "./telegramApi";
 import { telegramDownloadFileBytes, telegramGetFilePath } from "./telegramFiles";
+import { formatLedgerAmountMinor } from "./telegramAmountFormat";
+import {
+  resolveIdAtIndex,
+  setPickAccountOrder,
+  setPickCategoryOrder,
+  setTransferFromOrder,
+  setTransferToOrder,
+} from "./telegramPickerOrder";
 
 export type TelegramHandleDeps = {
   db: Firestore;
@@ -104,12 +113,13 @@ export function parseTelegramCallbackData(data: string): ParsedCb | null {
   return null;
 }
 
-function fmtAmount(minor: number, currency: string): string {
-  return `${(minor / 100).toFixed(2)} ${currency}`;
-}
-
-function fmtAmountMinorOnly(minor: number): string {
-  return (minor / 100).toFixed(2);
+function pickListAmountHint(locale: BotLocale, draft: Draft, mainCurrency: string): string {
+  const minor = typeof draft.amountMinor === "number" ? draft.amountMinor : 0;
+  if (!Number.isFinite(minor) || minor <= 0) return "";
+  const curRaw = typeof draft.currency === "string" ? draft.currency.trim() : "";
+  const cur = (curRaw.length > 0 ? curRaw : mainCurrency).toUpperCase();
+  const label = locale === "es" ? "Monto" : "Amount";
+  return `${label}: ${formatLedgerAmountMinor(Math.round(minor), cur)}\n\n`;
 }
 
 function buildConfirmDraftFromSnapshot(
@@ -158,6 +168,95 @@ function buildConfirmDraftFromSnapshot(
   return draft;
 }
 
+/** Mirrors txKind inference in `validateTransactionSnapshot` — keep in sync when that logic changes. */
+function inferSpendTxKindForPickerRouting(s: GeminiTransactionSnapshot): "standard" | "transfer" | null {
+  let kind = s.txKind;
+  if (kind == null && s.transferFromId && s.transferToId) {
+    kind = "transfer";
+  }
+  if (kind == null && s.direction && (s.categoryId != null || (s.memo ?? "").trim().length > 0)) {
+    kind = "standard";
+  }
+  if (kind === "transfer") return "transfer";
+  if (kind === "standard") return "standard";
+  return null;
+}
+
+function isRecoverableStandardSpendForPickers(validated: GeminiTransactionSnapshot): boolean {
+  const dir = validated.direction === "in" || validated.direction === "out" ? validated.direction : null;
+  const amt = validated.amountMinor;
+  const memo = (validated.memo ?? "").trim();
+  if (dir == null || amt == null || amt <= 0 || memo.length === 0) return false;
+
+  if (inferSpendTxKindForPickerRouting(validated) !== "standard") return false;
+
+  const fromLeg = validated.transferFromId != null && String(validated.transferFromId).length > 0;
+  const toLeg = validated.transferToId != null && String(validated.transferToId).length > 0;
+  if (fromLeg !== toLeg) return false;
+
+  return true;
+}
+
+async function tryFinalizeSpendViaPickersFromPartialSnap(
+  uid: string,
+  chatIdStr: string,
+  chatIdNum: number,
+  loc: BotLocale,
+  validated: GeminiTransactionSnapshot,
+  prevDraft: Draft,
+  accounts: { id: string; name: string; currency: string }[],
+  categories: { id: string; name: string; kind: string }[],
+  mainCurrency: string,
+  deps: TelegramHandleDeps
+): Promise<boolean> {
+  if (!isRecoverableStandardSpendForPickers(validated)) return false;
+
+  const direction = validated.direction === "in" ? "in" : "out";
+  const ledgerKind = direction === "in" ? "income" : "expense";
+
+  const validatedCat =
+    validated.categoryId && categories.some((c) => c.id === validated.categoryId && c.kind === ledgerKind)
+      ? validated.categoryId
+      : undefined;
+  const accRaw = validated.accountId;
+  const validatedAcc =
+    typeof accRaw === "string" &&
+    accRaw.trim().length > 0 &&
+    accounts.some((a) => a.id === accRaw.trim())
+      ? accRaw.trim()
+      : undefined;
+
+  const draft: Draft = {
+    ...prevDraft,
+    txKind: "standard",
+    direction,
+    intent: ledgerKind === "income" ? "income" : "expense",
+    amountMinor: validated.amountMinor,
+    memo: (validated.memo ?? "").trim().slice(0, 200),
+    _accounts: accounts,
+    _categories: categories,
+  };
+  delete draft.categoryId;
+  delete draft.accountId;
+  delete draft.currency;
+  if (validatedCat !== undefined) draft.categoryId = validatedCat;
+  if (validatedAcc !== undefined) draft.accountId = validatedAcc;
+
+  await finalizeSpendCategoryResolution(
+    uid,
+    chatIdStr,
+    chatIdNum,
+    loc,
+    draft,
+    accounts,
+    categories,
+    mainCurrency,
+    deps,
+    0
+  );
+  return true;
+}
+
 async function finalizeTelegramGeminiSnapshotFromModelSnap(
   uid: string,
   chatIdStr: string,
@@ -197,6 +296,22 @@ async function finalizeTelegramGeminiSnapshotFromModelSnap(
     await showConfirm(uid, chatIdStr, chatIdNum, loc, draft, accounts, categories, mainCurrency, deps, 0);
     return;
   }
+  if (
+    await tryFinalizeSpendViaPickersFromPartialSnap(
+      uid,
+      chatIdStr,
+      chatIdNum,
+      loc,
+      validated,
+      prevDraft,
+      accounts,
+      categories,
+      mainCurrency,
+      deps
+    )
+  ) {
+    return;
+  }
   const draft: Draft = {
     ...prevDraft,
     _accounts: accounts,
@@ -227,6 +342,25 @@ async function sendReject(
   key: MessageKey
 ): Promise<void> {
   await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatId, t(locale, key));
+}
+
+async function detectStrictTextLocale(
+  text: string,
+  fallbackLocale: BotLocale,
+  deps: TelegramHandleDeps,
+  chatIdNum: number
+): Promise<BotLocale | null> {
+  const key = deps.geminiApiKey?.trim() ?? "";
+  if (!key) {
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(fallbackLocale, "language_not_understood"));
+    return null;
+  }
+  const detected = await detectMessageLanguageWithGemini(key, text);
+  if (!detected) {
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(fallbackLocale, "language_not_understood"));
+    return null;
+  }
+  return detected;
 }
 
 export async function handleTelegramUpdate(update: TelegramUpdate, deps: TelegramHandleDeps): Promise<void> {
@@ -421,7 +555,10 @@ async function handleCallback(
 
     if (parsed.t === "cancel") {
       await deleteTelegramBotSession(deps.db, chatIdStr);
-      await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
+      await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+        text: t(locale, "callback_discarded"),
+        show_alert: false,
+      });
       await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "cancelled"));
       return;
     }
@@ -429,8 +566,18 @@ async function handleCallback(
     const mainCurrency = await loadMainCurrency(deps.db, uid);
 
     if (parsed.t === "pick_cat") {
-      const filtered = categories.filter((c) => c.kind === (draft.direction === "in" ? "income" : "expense"));
-      const cat = filtered[parsed.idx];
+      if (session.step !== "pick_category") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
+      const kind = draft.direction === "in" ? "income" : "expense";
+      const filtered = categories.filter((c) => c.kind === kind);
+      const fallbackIds = filtered.map((c) => c.id);
+      const resolvedId = resolveIdAtIndex(draft._pickCategoryOrder, parsed.idx, fallbackIds);
+      const cat =
+        (resolvedId ? filtered.find((c) => c.id === resolvedId) : undefined) ?? filtered[parsed.idx];
       if (!cat) {
         await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
           text: t(locale, "callback_invalid"),
@@ -456,7 +603,16 @@ async function handleCallback(
     }
 
     if (parsed.t === "pick_acc") {
-      const acc = accounts[parsed.idx];
+      if (session.step !== "pick_account") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
+      const fallbackIds = accounts.map((a) => a.id);
+      const resolvedId = resolveIdAtIndex(draft._pickAccountOrder, parsed.idx, fallbackIds);
+      const acc =
+        (resolvedId ? accounts.find((a) => a.id === resolvedId) : undefined) ?? accounts[parsed.idx];
       if (!acc) {
         await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
           text: t(locale, "callback_invalid"),
@@ -482,7 +638,16 @@ async function handleCallback(
     }
 
     if (parsed.t === "confirm") {
-      await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
+      if (session.step !== "confirm") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
+      await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+        text: t(locale, "callback_saved"),
+        show_alert: false,
+      });
       if (draft.txKind === "transfer") {
         await postTransferTx(uid, chatIdStr, chatIdNum, locale, draft, deps, messageId);
       } else {
@@ -492,6 +657,12 @@ async function handleCallback(
     }
 
     if (parsed.t === "rec_no") {
+      if (session.step !== "recurring_ask" && session.step !== "pick_recurring_cadence") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
       await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
       await deleteTelegramBotSession(deps.db, chatIdStr);
       await telegramEditMessageTextOrSend(
@@ -505,6 +676,12 @@ async function handleCallback(
     }
 
     if (parsed.t === "rec_yes") {
+      if (session.step !== "recurring_ask") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
       await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
       const rows = [
         [
@@ -537,6 +714,12 @@ async function handleCallback(
     }
 
     if (parsed.t === "rec_cad") {
+      if (session.step !== "pick_recurring_cadence") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
       await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
       const txId = typeof draft.pendingTxId === "string" ? draft.pendingTxId : "";
       if (!txId) {
@@ -579,7 +762,16 @@ async function handleCallback(
     }
 
     if (parsed.t === "tf") {
-      const acc = accounts[parsed.idx];
+      if (session.step !== "transfer_from") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
+      const fromFallbackIds = accounts.map((a) => a.id);
+      const fromResolved = resolveIdAtIndex(draft._transferFromOrder, parsed.idx, fromFallbackIds);
+      const acc =
+        (fromResolved ? accounts.find((a) => a.id === fromResolved) : undefined) ?? accounts[parsed.idx];
       if (!acc) {
         await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
           text: t(locale, "callback_invalid"),
@@ -589,6 +781,8 @@ async function handleCallback(
       draft.transferFromId = acc.id;
       draft.transferFromCurrency = acc.currency;
       draft.step = "transfer_to";
+      const toPickerAccounts = accounts.filter((a) => a.id !== acc.id);
+      setTransferToOrder(draft, toPickerAccounts.map((a) => a.id));
       await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId);
       await upsertTelegramBotSession(deps.db, chatIdStr, {
         uid,
@@ -597,13 +791,24 @@ async function handleCallback(
         step: "transfer_to",
         draft,
       });
-      await promptTransferTo(chatIdNum, locale, accounts, deps);
+      await promptTransferTo(chatIdNum, locale, toPickerAccounts, deps);
       return;
     }
 
     if (parsed.t === "tt") {
-      const acc = accounts[parsed.idx];
+      if (session.step !== "transfer_to") {
+        await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
+          text: t(locale, "callback_invalid"),
+        });
+        return;
+      }
       const fromId = typeof draft.transferFromId === "string" ? draft.transferFromId : "";
+      const toPickerAccounts = accounts.filter((a) => a.id !== fromId);
+      const toFallbackIds = toPickerAccounts.map((a) => a.id);
+      const toResolved = resolveIdAtIndex(draft._transferToOrder, parsed.idx, toFallbackIds);
+      const acc =
+        (toResolved ? accounts.find((a) => a.id === toResolved) : undefined) ??
+        toPickerAccounts[parsed.idx];
       if (!acc || !fromId || acc.id === fromId) {
         await telegramAnswerCallbackQuery(deps.fetchTelegram, deps.botToken, cqId, {
           text: t(locale, "transfer_same_account"),
@@ -644,14 +849,14 @@ async function handleCallback(
 async function promptTransferTo(
   chatIdNum: number,
   locale: BotLocale,
-  accounts: { id: string; name: string; currency: string }[],
+  pickerAccounts: { id: string; name: string; currency: string }[],
   deps: TelegramHandleDeps
 ): Promise<void> {
   const rows: { text: string; callback_data: string }[][] = [];
   let row: { text: string; callback_data: string }[] = [];
-  accounts.forEach((a, i) => {
+  pickerAccounts.forEach((a, i) => {
     row.push({
-      text: a.name.slice(0, 24),
+      text: `${a.name.slice(0, 18)} (${a.currency})`,
       callback_data: `tt:${i}`,
     });
     if (row.length === 2) {
@@ -679,6 +884,11 @@ async function advanceAfterCategory(
 ): Promise<void> {
   const catId = typeof draft.categoryId === "string" ? draft.categoryId : "";
   const cat = pickedCategory ?? categories.find((c) => c.id === catId);
+  if (accounts.length === 0) {
+    await deleteTelegramBotSession(deps.db, chatIdStr);
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "no_accounts_available"));
+    return;
+  }
   const accIdDraft = typeof draft.accountId === "string" ? draft.accountId.trim() : "";
   const accFromDraft = accounts.find((a) => a.id === accIdDraft);
   if (accFromDraft && cat) {
@@ -712,7 +922,7 @@ async function advanceAfterCategory(
     await showConfirm(uid, chatIdStr, chatIdNum, locale, draft, accounts, categories, mainCurrency, deps, messageId);
     return;
   }
-  await promptPickAccount(uid, chatIdStr, chatIdNum, locale, draft, accounts, deps, messageId);
+  await promptPickAccount(uid, chatIdStr, chatIdNum, locale, draft, accounts, mainCurrency, deps, messageId);
 }
 
 async function promptPickAccount(
@@ -722,10 +932,17 @@ async function promptPickAccount(
   locale: BotLocale,
   draft: Draft,
   accounts: { id: string; name: string; currency: string }[],
+  mainCurrency: string,
   deps: TelegramHandleDeps,
   messageId: number
 ): Promise<void> {
+  if (accounts.length === 0) {
+    await deleteTelegramBotSession(deps.db, chatIdStr);
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "no_accounts_available"));
+    return;
+  }
   draft.step = "pick_account";
+  setPickAccountOrder(draft, accounts.map((a) => a.id));
   await upsertTelegramBotSession(deps.db, chatIdStr, {
     uid,
     locale,
@@ -744,7 +961,7 @@ async function promptPickAccount(
   });
   if (row.length) rows.push(row);
   rows.push([{ text: "✗", callback_data: "cx" }]);
-  const text = t(locale, "pick_account");
+  const text = t(locale, "pick_account", { amountHint: pickListAmountHint(locale, draft, mainCurrency) });
   await telegramEditMessageTextOrSend(deps.fetchTelegram, deps.botToken, chatIdNum, messageId, text, kb(rows));
 }
 
@@ -795,8 +1012,8 @@ async function showConfirm(
       toAcc: toName,
       fromCur,
       toCur,
-      amountOut: `${fmtAmountMinorOnly(amountMinor)} ${fromCur}`,
-      amountIn: `${fmtAmountMinorOnly(inMinor)} ${toCur}`,
+      amountOut: formatLedgerAmountMinor(amountMinor, fromCur),
+      amountIn: formatLedgerAmountMinor(inMinor, toCur),
       memo: memo.trim().length > 0 ? memo : dash,
     });
   } else {
@@ -805,13 +1022,12 @@ async function showConfirm(
     const direction = draft.direction === "in" ? "in" : "out";
     const accId = typeof draft.accountId === "string" ? draft.accountId : "";
     const catId = typeof draft.categoryId === "string" ? draft.categoryId : "";
-    const cur = typeof draft.currency === "string" ? draft.currency : mainCurrency;
+    const cur = (typeof draft.currency === "string" ? draft.currency : mainCurrency).toUpperCase();
     const accName = accounts.find((a) => a.id === accId)?.name ?? accId;
     const catName = categories.find((c) => c.id === catId)?.name ?? catId;
     body = t(locale, "confirm_transaction", {
       direction: direction === "in" ? "IN" : "OUT",
-      currency: cur,
-      amount: fmtAmountMinorOnly(amountMinor),
+      amount: formatLedgerAmountMinor(amountMinor, cur),
       memo,
       account: accName,
       category: catName,
@@ -850,7 +1066,7 @@ async function postStandardTx(
     await deleteTelegramBotSession(deps.db, chatIdStr);
     return;
   }
-  const txId = await createStandardLedgerTransaction(deps.db, uid, {
+  await createStandardLedgerTransaction(deps.db, uid, {
     transactionDate: ymd,
     amountMinor,
     direction,
@@ -860,30 +1076,14 @@ async function postStandardTx(
     memo,
   });
   const postedKey: MessageKey = direction === "in" ? "posted_income" : "posted_expense";
-  const msgPosted = t(locale, postedKey, { memo, amount: fmtAmount(amountMinor, cur) });
-  draft.pendingTxId = txId;
-  draft.step = "recurring_ask";
-  await upsertTelegramBotSession(deps.db, chatIdStr, {
-    uid,
-    locale,
-    intent: draft.intent === "income" ? "income" : "expense",
-    step: "recurring_ask",
-    draft,
-  });
-  const rows = [
-    [
-      { text: "✓", callback_data: "ry" },
-      { text: "✗", callback_data: "rn" },
-    ],
-  ];
-  const prompt = `${msgPosted}\n\n${t(locale, "make_recurring_prompt")}`;
+  const msgPosted = t(locale, postedKey, { memo, amount: formatLedgerAmountMinor(amountMinor, cur) });
+  await deleteTelegramBotSession(deps.db, chatIdStr);
   await telegramEditMessageTextOrSend(
     deps.fetchTelegram,
     deps.botToken,
     chatIdNum,
     messageId,
-    prompt,
-    kb(rows)
+    msgPosted
   );
 }
 
@@ -923,8 +1123,8 @@ async function postTransferTx(
   });
   const amtLabel =
     fromCur === toCur
-      ? fmtAmount(outAmt, fromCur)
-      : `${fmtAmount(outAmt, fromCur)} → ${fmtAmount(inAmt, toCur)}`;
+      ? formatLedgerAmountMinor(outAmt, fromCur)
+      : `${formatLedgerAmountMinor(outAmt, fromCur)} → ${formatLedgerAmountMinor(inAmt, toCur)}`;
   await deleteTelegramBotSession(deps.db, chatIdStr);
   await telegramEditMessageTextOrSend(
     deps.fetchTelegram,
@@ -949,6 +1149,11 @@ async function finalizeSpendCategoryResolution(
 ): Promise<void> {
   const prefs = await loadTelegramBotPreferences(deps.db, uid);
   const kind = draft.direction === "in" ? "income" : "expense";
+  if (!categories.some((c) => c.kind === kind)) {
+    await deleteTelegramBotSession(deps.db, chatIdStr);
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "no_categories_available"));
+    return;
+  }
   let catId = typeof draft.categoryId === "string" ? draft.categoryId : "";
   if (!catId || !categories.find((c) => c.id === catId && c.kind === kind)) {
     const defaultCat =
@@ -961,7 +1166,7 @@ async function finalizeSpendCategoryResolution(
     }
   }
   if (!catId || !categories.find((c) => c.id === catId && c.kind === kind)) {
-    await promptPickCategory(uid, chatIdStr, chatIdNum, locale, draft, categories, deps, messageId);
+    await promptPickCategory(uid, chatIdStr, chatIdNum, locale, draft, categories, mainCurrency, deps, messageId);
     return;
   }
   draft.categoryId = catId;
@@ -1002,6 +1207,7 @@ async function handlePhoto(
       caption,
       categories,
       accounts,
+      locale,
       genkitToolContext
     );
   }
@@ -1019,6 +1225,7 @@ async function handlePhoto(
           caption,
           categories,
           accounts,
+          locale,
           genkitToolContext
         );
       }
@@ -1059,6 +1266,7 @@ async function handleVoice(
           "audio/ogg",
           categories,
           accounts,
+          locale,
           genkitToolContext
         );
       }
@@ -1150,11 +1358,18 @@ async function promptPickCategory(
   locale: BotLocale,
   draft: Draft,
   categories: { id: string; name: string; kind: string }[],
+  mainCurrency: string,
   deps: TelegramHandleDeps,
   messageId: number
 ): Promise<void> {
   const kind = draft.direction === "in" ? "income" : "expense";
   const filtered = categories.filter((c) => c.kind === kind);
+  if (filtered.length === 0) {
+    await deleteTelegramBotSession(deps.db, chatIdStr);
+    await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "no_categories_available"));
+    return;
+  }
+  setPickCategoryOrder(draft, filtered.map((c) => c.id));
   const rows: { text: string; callback_data: string }[][] = [];
   let row: { text: string; callback_data: string }[] = [];
   filtered.forEach((c, i) => {
@@ -1174,7 +1389,7 @@ async function promptPickCategory(
     step: "pick_category",
     draft,
   });
-  const textBody = t(locale, "pick_category");
+  const textBody = t(locale, "pick_category", { amountHint: pickListAmountHint(locale, draft, mainCurrency) });
   await telegramEditMessageTextOrSend(deps.fetchTelegram, deps.botToken, chatIdNum, messageId, textBody, kb(rows));
 }
 
@@ -1192,10 +1407,13 @@ async function handleDialogText(
   const mainCurrency = await loadMainCurrency(deps.db, uid);
   const genkitToolContext = { db: deps.db, uid };
   let session = await loadTelegramBotSession(deps.db, chatIdStr);
-  const loc =
+  const fallbackLoc =
     session?.locale === "es" || session?.locale === "en"
       ? session.locale
       : pickBotLocale({ localeOverride: prefs.localeOverride, userText: text, message });
+  const detectedLoc = await detectStrictTextLocale(text, fallbackLoc, deps, chatIdNum);
+  if (!detectedLoc) return;
+  const loc = detectedLoc;
 
   const norm = text.trim().toLowerCase();
 
@@ -1226,6 +1444,7 @@ async function handleDialogText(
       _accounts: accounts,
       _categories: categories,
     };
+    setTransferFromOrder(draft, accounts.map((a) => a.id));
     await upsertTelegramBotSession(deps.db, chatIdStr, {
       uid,
       locale: loc,
@@ -1472,8 +1691,8 @@ async function handleDialogText(
         });
         const amtLabel =
           fromA.currency === toA.currency
-            ? fmtAmount(outAmt, fromA.currency)
-            : `${fmtAmount(outAmt, fromA.currency)} → ${fmtAmount(inAmt, toA.currency)}`;
+            ? formatLedgerAmountMinor(outAmt, fromA.currency)
+            : `${formatLedgerAmountMinor(outAmt, fromA.currency)} → ${formatLedgerAmountMinor(inAmt, toA.currency)}`;
         await telegramSendMessage(
           deps.fetchTelegram,
           deps.botToken,
@@ -1504,6 +1723,7 @@ async function handleDialogText(
       text,
       categories,
       accounts,
+      loc,
       genkitToolContext
     );
     if (
@@ -1544,7 +1764,7 @@ async function handleDialogText(
       deps.fetchTelegram,
       deps.botToken,
       chatIdNum,
-      t(loc, "posted_transfer", { amount: fmtAmount(parsed.amountMinor, fromCur) })
+      t(loc, "posted_transfer", { amount: formatLedgerAmountMinor(parsed.amountMinor, fromCur) })
     );
     await deleteTelegramBotSession(deps.db, chatIdStr);
     return;
@@ -1693,6 +1913,7 @@ async function handleDialogText(
       text,
       categories,
       accounts,
+      loc,
       genkitToolContext
     );
     if (!parsed) {

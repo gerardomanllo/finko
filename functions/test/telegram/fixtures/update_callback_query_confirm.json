@@ -1,0 +1,14 @@
+{
+  "update_id": 15001,
+  "callback_query": {
+    "id": "cq_confirm_test",
+    "from": { "id": 7, "language_code": "en", "is_bot": false, "first_name": "U" },
+    "message": {
+      "message_id": 88,
+      "chat": { "id": 4242, "type": "private" },
+      "date": 1,
+      "text": "Confirm preview"
+    },
+    "data": "cf"
+  }
+}

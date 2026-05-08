@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { handleTelegramUpdate } from "../../src/telegram/handleUpdate";
+import * as geminiOrchestrator from "../../src/telegram/geminiOrchestrator";
 import { t } from "../../src/telegram/i18n";
 import type { TelegramUpdate } from "../../src/telegram/types";
 import { createMockFirestoreForTelegram } from "../helpers/mockFirestoreTelegram";
@@ -17,6 +18,7 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
+    jest.restoreAllMocks();
   });
 
   function mockFetchRecorder() {
@@ -104,7 +106,7 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     expect(String(body.text)).toMatch(/Link Telegram|vincula/i);
   });
 
-  it("bound chat hello sends small-talk hint (not raw amount_missing)", async () => {
+  it("bound chat without Gemini key rejects unknown language turn", async () => {
     const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
     const db = createMockFirestoreForTelegram({
       bindings: { "4242": "user_test_1" },
@@ -122,10 +124,10 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     await handleTelegramUpdate(update, { db, fetchTelegram, botToken });
     expect(jestFetch).toHaveBeenCalledTimes(1);
     const body = bodies[0] as Record<string, unknown>;
-    expect(String(body.text)).toMatch(/\/help|`12/i);
+    expect(String(body.text)).toMatch(/English|Spanish|inglés|español/i);
   });
 
-  it("bound chat Spanish phrase with English client gets Gemini-required message when no API key", async () => {
+  it("bound chat conversational text without Gemini key gets language-not-understood", async () => {
     const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
     const db = createMockFirestoreForTelegram({
       bindings: { "4242": "user_test_1" },
@@ -143,25 +145,24 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     await handleTelegramUpdate(update, { db, fetchTelegram, botToken });
     expect(jestFetch).toHaveBeenCalledTimes(1);
     const body = bodies[0] as Record<string, unknown>;
-    expect(String(body.text)).toMatch(/Gemini|español|Spanish|conversational|conversacional|simple/i);
+    expect(String(body.text)).toMatch(/English|Spanish|inglés|español/i);
   });
 
-  it("confirm_transaction copy includes currency line (i18n shape)", () => {
+  it("confirm_transaction copy includes formatted amount (i18n shape)", () => {
     const s = t("en", "confirm_transaction", {
       direction: "OUT",
-      currency: "MXN",
-      amount: "50.00",
+      amount: "MXN $50.00",
       memo: "Cafe",
       account: "Cash",
       category: "Food",
     });
-    expect(s).toContain("Currency:");
-    expect(s).toContain("MXN");
-    expect(s).toContain("Name:");
+    expect(s).toContain("Amount:");
+    expect(s).toContain("MXN $50.00");
+    expect(s).toContain("Note:");
     expect(s).toContain("Cafe");
   });
 
-  it("bound chat /help sends help text", async () => {
+  it("bound chat /help without Gemini key gets language-not-understood", async () => {
     const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
     const db = createMockFirestoreForTelegram({
       bindings: { "4242": "user_test_1" },
@@ -178,7 +179,137 @@ describe("handleTelegramUpdate — mocked Firestore + fetch", () => {
     await handleTelegramUpdate(update, { db, fetchTelegram, botToken });
     expect(jestFetch).toHaveBeenCalledTimes(1);
     const body = bodies[0] as Record<string, unknown>;
-    expect(String(body.text)).toContain("/transfer");
+    expect(String(body.text)).toMatch(/English|Spanish|inglés|español/i);
+  });
+
+  it("Gemini incomplete standard snapshot shows category picker instead of prose", async () => {
+    jest.spyOn(geminiOrchestrator, "detectMessageLanguageWithGemini").mockResolvedValue("en");
+    jest.spyOn(geminiOrchestrator, "analyzeFirstMessageWithGemini").mockResolvedValue({
+      intent: "transaction",
+      quickReply: "",
+      transaction: {
+        complete: false,
+        assistantMessage: "Pick a category for me?",
+        txKind: "standard",
+        direction: "out",
+        amountMinor: 5000,
+        amountMinorTo: null,
+        memo: "coffee",
+        categoryId: null,
+        accountId: null,
+        transferFromId: null,
+        transferToId: null,
+      },
+    });
+
+    const { fetchTelegram, bodies } = mockFetchRecorder();
+    const db = createMockFirestoreForTelegram({
+      bindings: { "4242": "user_test_1" },
+      accounts: [{ id: "acc_a", name: "Cash", currency: "MXN" }],
+      categories: [{ id: "cat_x", name: "Food", kind: "expense" }],
+    });
+
+    await handleTelegramUpdate(
+      {
+        update_id: 9220,
+        message: {
+          message_id: 31,
+          chat: { id: 4242, type: "private" },
+          date: 1,
+          text: "spent 50 on coffee",
+        },
+      },
+      {
+        db,
+        fetchTelegram,
+        botToken,
+        geminiApiKey: "TEST_GEMINI_KEY",
+      }
+    );
+
+    const lastBody = bodies[bodies.length - 1] as Record<string, unknown>;
+    const mk = lastBody.reply_markup as { inline_keyboard?: Array<Array<{ callback_data?: string }>> };
+    const cbs = (mk.inline_keyboard ?? []).flat().map((b) => b.callback_data ?? "");
+    expect(cbs.some((d) => d.startsWith("pc:"))).toBe(true);
+    expect(String(lastBody.text)).not.toContain("Pick a category for me?");
+  });
+
+  it("Gemini incomplete standard snapshot with category shows account picker", async () => {
+    jest.spyOn(geminiOrchestrator, "detectMessageLanguageWithGemini").mockResolvedValue("en");
+    jest.spyOn(geminiOrchestrator, "analyzeFirstMessageWithGemini").mockResolvedValue({
+      intent: "transaction",
+      quickReply: "",
+      transaction: {
+        complete: false,
+        assistantMessage: "Tell me account",
+        txKind: "standard",
+        direction: "out",
+        amountMinor: 5000,
+        amountMinorTo: null,
+        memo: "coffee",
+        categoryId: "cat_x",
+        accountId: null,
+        transferFromId: null,
+        transferToId: null,
+      },
+    });
+
+    const { fetchTelegram, bodies } = mockFetchRecorder();
+    const db = createMockFirestoreForTelegram({
+      bindings: { "4242": "user_test_1" },
+      accounts: [{ id: "acc_a", name: "Cash", currency: "MXN" }],
+      categories: [{ id: "cat_x", name: "Food", kind: "expense" }],
+    });
+
+    await handleTelegramUpdate(
+      {
+        update_id: 9221,
+        message: {
+          message_id: 32,
+          chat: { id: 4242, type: "private" },
+          date: 1,
+          text: "spent 50 on coffee food",
+        },
+      },
+      {
+        db,
+        fetchTelegram,
+        botToken,
+        geminiApiKey: "TEST_GEMINI_KEY",
+      }
+    );
+
+    const lastBody = bodies[bodies.length - 1] as Record<string, unknown>;
+    const mk = lastBody.reply_markup as { inline_keyboard?: Array<Array<{ callback_data?: string }>> };
+    const cbs = (mk.inline_keyboard ?? []).flat().map((b) => b.callback_data ?? "");
+    expect(cbs.some((d) => d.startsWith("pa:"))).toBe(true);
+    expect(String(lastBody.text)).not.toContain("Tell me account");
+  });
+
+  it("strict language detection replies in detected language", async () => {
+    jest.spyOn(geminiOrchestrator, "detectMessageLanguageWithGemini").mockResolvedValue("es");
+    const { fetchTelegram, jestFetch, bodies } = mockFetchRecorder();
+    const db = createMockFirestoreForTelegram({
+      bindings: { "4242": "user_test_1" },
+    });
+    const update: TelegramUpdate = {
+      update_id: 9210,
+      message: {
+        message_id: 7,
+        chat: { id: 4242, type: "private" },
+        date: 1,
+        text: "/help",
+      },
+    };
+    await handleTelegramUpdate(update, {
+      db,
+      fetchTelegram,
+      botToken,
+      geminiApiKey: "TEST_GEMINI_KEY",
+    });
+    expect(jestFetch).toHaveBeenCalledTimes(1);
+    const body = bodies[0] as Record<string, unknown>;
+    expect(String(body.text)).toContain("Comandos:");
   });
 
   it("duplicate delivery does not send twice", async () => {

@@ -1,6 +1,10 @@
 import type { AccountRow, CategoryRow } from "./ledgerToolkit";
 import type { BotLocale } from "./sessions";
-import { analyzeFirstMessageWithGenkit, continueDialogWithGenkit } from "./genkit/dialogGenkit";
+import {
+  analyzeFirstMessageWithGenkit,
+  continueDialogWithGenkit,
+  detectMessageLanguageWithGenkit,
+} from "./genkit/dialogGenkit";
 import type { TelegramGenkitToolContext } from "./genkit/types";
 import { looksLikeSmallTalk } from "./smallTalk";
 import { parseSpendLine } from "./parseTxText";
@@ -202,4 +206,12 @@ export function applyPreferenceDefaults(
     categoryId = defCat;
   }
   return { ...snap, accountId, categoryId };
+}
+
+export async function detectMessageLanguageWithGemini(
+  apiKey: string,
+  userText: string
+): Promise<BotLocale | null> {
+  const lang = await detectMessageLanguageWithGenkit(apiKey, userText);
+  return lang === "es" || lang === "en" ? lang : null;
 }

@@ -38,6 +38,10 @@ export const continueDialogSchema = z.object({
   transferToId: z.string().nullable(),
 });
 
+export const languageDetectSchema = z.object({
+  language: z.enum(["es", "en", "unknown"]),
+});
+
 export const nluLineSchema = z.object({
   amountMinor: z.number().int().positive().nullable(),
   memo: z.string().nullable(),

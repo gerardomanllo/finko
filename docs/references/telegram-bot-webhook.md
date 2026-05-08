@@ -61,6 +61,8 @@ When **`GEMINI_API_KEY`** is set, model calls run through **Genkit** (`genkit`, 
 
 **Read-only Firestore tools** (optional on each turn, `uid` injected by **`handleTelegramUpdate`**, never from the model): **`list_accounts`**, **`list_categories`**, **`recent_transactions`** (`ledgerTools.ts`). Server-side **`validateTransactionSnapshot`** and confirm/post flows stay in plain TypeScript (`geminiOrchestrator.ts`, `handleUpdate.ts`).
 
+When a first-turn Gemini **`transaction`** snapshot fails **`validateTransactionSnapshot`** but is already a **standard** expense/income with valid **direction**, a **positive** amount, and a **non-empty memo**—while **category** and/or **account** are missing or invalid after **`validateIds`**—**`handleTelegramUpdate`** merges that snapshot into the session draft and calls **`finalizeSpendCategoryResolution`**, which shows **inline pickers** (**`pc:`** / **`pa:`**) the same way as amount-first heuristics. Only genuinely incomplete or ambiguous parses (e.g. missing amount/memo, partial transfers, non-standard shape) fall through to **`gemini_collect`** + the model **`assistantMessage`**.
+
 Transport (**`telegramWebhook`**, **`classifyTelegramUpdate`**, sessions, Telegram Bot API, ledger writes) is unchanged except for wiring and logging prefixes (**`telegramGenkit:`** on Genkit failures).
 
 ## Runtime data (Firestore)
@@ -76,14 +78,12 @@ Client SDK **cannot** access the three **`telegram*`** collections (see **`fires
 
 ## Reply language (bot copy)
 
-Precedence when choosing **Spanish vs English** for outbound bot strings:
+For **text** turns, the bot runs a strict Gemini language-detection pass and accepts only **`es`** or **`en`**:
 
-1. **`telegramBotPreferences.localeOverride`** (`es` or `en`) — explicit user preference from the app.
-2. **Strong signal from the user’s message text** (DM text, photo **caption**, or inferred from **voice** transcription context / memo).
-3. Telegram client **`language_code`** on the inbound message.
-4. Default **`es`** if nothing else applies.
+1. If Gemini detects `es` or `en`, that locale is used for the whole turn and written to **`telegramBotSessions.locale`**.
+2. If detection is not `es/en` (or Gemini key is unavailable), the bot replies with a localized **`language_not_understood`** message and stops processing the turn.
 
-The chosen locale is stored on **`telegramBotSessions`** so follow-up steps (category, account, confirm) stay consistent.
+For **photo/voice** fallback and non-text contexts, locale still uses existing resolver heuristics (preference/message signals/Telegram metadata).
 
 ## Manual QA checklist
 
@@ -94,10 +94,10 @@ The chosen locale is stored on **`telegramBotSessions`** so follow-up steps (cat
 5. **Confirm** summary shows **direction, currency (ISO), numeric amount, name/memo, account, category**; posting happens **only** after **✓** (no auto-post from NLU alone).
 6. **Spanish sentence** with Telegram UI in English (e.g. “gasté 100 pesos…”) → prompts in **Spanish** when **`localeOverride`** is unset and the text signals Spanish.
 7. **Missing amount** after conversational parse → bot asks for amount; user sends `120` → flow continues to category/account/confirm as needed.
-8. **`GEMINI_API_KEY` unset** (secret empty / missing) + conversational phrase → localized message that **conversational logging needs the feature enabled**; **`50 coffee`**-style lines still work via heuristics.
+8. **`GEMINI_API_KEY` unset** (secret empty / missing) + text input → localized **`language_not_understood`** (strict text language detection requires Gemini).
 9. **Sticker / video** → one friendly reject line.
 10. **Retry same `update_id`** → no duplicate outbound messages.
-11. **Linked user** sends **`hello`** → **`small_talk_hint`** (examples + `/help`), not only “include an amount”.
+11. **Linked user** sends **`hello`** with Gemini key set → reply in the detected language (ES/EN). If not ES/EN, return **`language_not_understood`**.
 12. **Bad / expired link token** on **`/start link_…`** → localized **`link_token_*`** DM (not silent).
 
 ## Automated tests
@@ -140,6 +140,10 @@ Fixture-driven Jest suite + mocked **`fetch`**: [`telegram-bot-testing.md`](tele
 
 | Date | Change |
 |------|--------|
+| 2026-05-08 | **Strict text-language flow + no auto-recurring prompt:** Every text turn runs Gemini language detection (`es`/`en` only) and replies in the detected language; otherwise returns **`language_not_understood`**. Standard transaction confirm now posts immediately without follow-up recurring buttons. Picker flow adds defensive “no categories/accounts” messages instead of silent paths. **Gemini picker precedence:** Incomplete-but-standard snapshots (amount + memo + direction valid; category/account unset or unknown ids) route to **`finalizeSpendCategoryResolution`** and **`pc:`/`pa:`** keyboards instead of **`gemini_collect`** prose. |
+| 2026-05-07 | **Callback UX + CI:** Confirm/cancel inline buttons call **`answerCallbackQuery`** with short localized text (**saved** / **discarded**) so clients show the standard callback notification. Jest (**`handleTelegramCallback.mocked.test.ts`**) locks in **answer → edit/send** order; keep **`setWebhook`** **`allowed_updates`** including **`callback_query`** (see **Register the webhook**). |
+| 2026-05-04 | **Genkit prompts — reply language:** Dialog and NLU (text, receipt, voice, caption) prepend **`replyLanguageInstructions(locale)`** so **`assistantMessage`** / **`quickReply`** / NLU **memo** are in **English** or **Spanish** per the **bot UI locale** (session + resolver), not the raw DM language. **`handleTelegramUpdate`** passes **`locale`** / **`loc`** into **`parse*WithOptionalGemini`**. |
+| 2026-05-04 | **Pickers + amounts:** Account/category prompts use inline keyboards with **`_pickAccountOrder`** / **`_pickCategoryOrder`** (and transfer **`_transferFromOrder`** / **`_transferToOrder`**) on the session draft so **`pa:`** / **`pc:`** / **`tf:`** / **`tt:`** indices resolve to stable ids; **`handleCallback`** rejects mismatched **`session.step`** for those actions and confirm/recurring buttons. User-visible amounts use **`formatLedgerAmountMinor`** (`CCY $x,xxx.xx`, e.g. **`MXN $50.00`**) on confirm and posted messages. |
 | 2026-05-04 | **Genkit for Telegram AI:** Replaced direct **`@google/generative-ai`** usage with **Genkit** (`functions/src/telegram/genkit/`): model **`googleai/gemini-2.5-flash`**, Zod structured outputs, optional read-only Firestore tools (**`list_accounts`**, **`list_categories`**, **`recent_transactions`**) with **`uid`** from the handler. Snapshot parsing lives in **`telegramGeminiSnapshot.ts`**; API failures log **`telegramGenkit:`** prefixes. |
 | 2026-05-04 | **Gemini model id (pre-Genkit):** Flash used **`gemini-2.0-flash`** (replacing **`gemini-1.5-flash`**). Superseded by **Genkit** + **`googleai/gemini-2.5-flash`** (see **Genkit for Telegram AI** row). |
 | 2026-05-04 | **Observability:** `handleTelegramUpdate` error log includes **`outcome`** and **`stack`**; Gemini-null paths log **`telegramWebhook: gemini_turn_null`** with **`reason`**. |

@@ -16,6 +16,8 @@ export type MessageKey =
   | "empty_message"
   | "session_expired"
   | "callback_invalid"
+  | "callback_saved"
+  | "callback_discarded"
   | "transfer_same_account"
   | "posted_expense"
   | "posted_income"
@@ -31,7 +33,10 @@ export type MessageKey =
   | "need_amount"
   | "need_memo"
   | "conversational_parse_requires_gemini"
+  | "language_not_understood"
   | "make_recurring_prompt"
+  | "no_categories_available"
+  | "no_accounts_available"
   | "pick_transfer_from"
   | "pick_transfer_to"
   | "transfer_enter_amount"
@@ -120,6 +125,14 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
     en: "That button is no longer valid. Send a new message or /cancel.",
     es: "Ese botón ya no es válido. Envía un mensaje nuevo o /cancel.",
   },
+  callback_saved: {
+    en: "Saved.",
+    es: "Guardado.",
+  },
+  callback_discarded: {
+    en: "Discarded.",
+    es: "Descartado.",
+  },
   transfer_same_account: {
     en: "Pick two different accounts.",
     es: "Elige dos cuentas distintas.",
@@ -145,18 +158,18 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
     es: "Cancelado.",
   },
   pick_account: {
-    en: "Pick an account:",
-    es: "Elige una cuenta:",
+    en: "{{amountHint}}Pick an account — tap a button:",
+    es: "{{amountHint}}Elige una cuenta — toca un botón:",
   },
   pick_category: {
-    en: "Pick a category:",
-    es: "Elige una categoría:",
+    en: "{{amountHint}}Pick a category — tap a button:",
+    es: "{{amountHint}}Elige una categoría — toca un botón:",
   },
   confirm_transaction: {
     en:
-      "Confirm: {{direction}}\nCurrency: {{currency}}\nAmount: {{amount}}\nName: {{memo}}\nAccount: {{account}}\nCategory: {{category}}",
+      "Please confirm transaction\nType: {{direction}}\nAmount: {{amount}}\nCategory: {{category}}\nAccount: {{account}}\nNote: {{memo}}",
     es:
-      "Confirmar: {{direction}}\nMoneda: {{currency}}\nMonto: {{amount}}\nNombre: {{memo}}\nCuenta: {{account}}\nCategoría: {{category}}",
+      "Confirma la transacción\nTipo: {{direction}}\nMonto: {{amount}}\nCategoría: {{category}}\nCuenta: {{account}}\nNota: {{memo}}",
   },
   confirm_transfer: {
     en:
@@ -186,9 +199,21 @@ const STRINGS: Record<MessageKey, Record<BotLocale, string>> = {
     es:
       "Registrar en inglés o español conversacional requiere la función de IA del bot (Gemini) activa. Prueba un formato simple como `50 café`, o usa la app Finko.",
   },
+  language_not_understood: {
+    en: "I can only process English or Spanish right now. Please send your message in English or Spanish.",
+    es: "Por ahora solo puedo procesar inglés o español. Envía tu mensaje en inglés o español.",
+  },
   make_recurring_prompt: {
     en: "Make this recurring?",
     es: "¿Hacer esto recurrente?",
+  },
+  no_categories_available: {
+    en: "I couldn't find matching categories in your account. Please add categories in the app first.",
+    es: "No encontré categorías compatibles en tu cuenta. Agrega categorías en la app primero.",
+  },
+  no_accounts_available: {
+    en: "I couldn't find accounts in your profile. Please add an account in the app first.",
+    es: "No encontré cuentas en tu perfil. Agrega una cuenta en la app primero.",
   },
   pick_transfer_from: {
     en: "Transfer: pick **from** account:",

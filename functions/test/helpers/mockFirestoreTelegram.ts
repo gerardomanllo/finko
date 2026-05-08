@@ -27,6 +27,14 @@ export type TelegramMockFirestoreOptions = {
   categories?: MockLedgerCategory[];
   /** Raw `telegramBotSessions/{chatId}` data; omit or null → no session */
   botSession?: Record<string, unknown> | null;
+  /**
+   * When true, `telegramBotSessions/{chatId}` merges `set(..., { merge: true })` in memory so
+   * `handleTelegramUpdate` callback flows match production session updates.
+   * Seed initial doc from **`botSession`** + **`statefulBotSessionChatId`** (default `4242`).
+   */
+  statefulBotSession?: boolean;
+  /** Chat id string used to seed **`botSession`** when **`statefulBotSession`** is true */
+  statefulBotSessionChatId?: string;
 };
 
 /**
@@ -39,6 +47,15 @@ export function createMockFirestoreForTelegram(
   const processedIds = new Set<string>();
   const { bindings = {}, duplicateUpdateIds = new Set() } = opts;
   let txDocCounter = 0;
+
+  const statefulChatId = opts.statefulBotSessionChatId ?? "4242";
+  const statefulSessions: Map<string, Record<string, unknown>> | null = opts.statefulBotSession
+    ? new Map(
+        opts.botSession !== undefined && opts.botSession !== null
+          ? [[statefulChatId, { ...(opts.botSession as Record<string, unknown>) }]]
+          : []
+      )
+    : null;
 
   const accountsSnap = () => {
     const accs = opts.accounts ?? [];
@@ -106,6 +123,30 @@ export function createMockFirestoreForTelegram(
         };
       }
       if (path === "telegramBotSessions") {
+        if (statefulSessions !== null) {
+          return {
+            async get() {
+              const cid = String(docId);
+              const stored = statefulSessions.get(cid);
+              if (!stored) {
+                return { exists: false, id, data: () => undefined };
+              }
+              return { exists: true, id, data: () => ({ ...stored }) };
+            },
+            async set(data: Record<string, unknown>, setOpts?: { merge?: boolean }) {
+              const cid = String(docId);
+              if (setOpts?.merge) {
+                const prev = statefulSessions.get(cid) ?? {};
+                statefulSessions.set(cid, { ...prev, ...data });
+              } else {
+                statefulSessions.set(cid, { ...data });
+              }
+            },
+            async delete() {
+              statefulSessions.delete(String(docId));
+            },
+          };
+        }
         return {
           async get() {
             if (opts.botSession === undefined || opts.botSession === null) {

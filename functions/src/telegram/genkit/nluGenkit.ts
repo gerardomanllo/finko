@@ -2,10 +2,11 @@ import * as logger from "firebase-functions/logger";
 import type { Genkit } from "genkit";
 
 import type { AccountRow, CategoryRow } from "../ledgerToolkit";
+import type { BotLocale } from "../sessions";
 import { parseSpendLine } from "../parseTxText";
 import { createTelegramLedgerReadTools } from "./ledgerTools";
 import { TELEGRAM_GENKIT_MODEL_ID, telegramGenkit } from "./instance";
-import { accountsSnippet, categoriesSnippet, toolsHint } from "./promptContext";
+import { accountsSnippet, categoriesSnippet, replyLanguageInstructions, toolsHint } from "./promptContext";
 import { nluLineSchema } from "./schemas";
 import type { TelegramGenkitToolContext } from "./types";
 
@@ -22,13 +23,16 @@ function heuristicToNlu(h: ReturnType<typeof parseSpendLine>): NluParseResult | 
   return { amountMinor: h.amountMinor, memo: h.memo, direction: h.direction };
 }
 
-function nluJsonInstruction(mainCurrency: string): string {
-  return `Reply with structured output for:
+function nluJsonInstruction(mainCurrency: string, locale: BotLocale): string {
+  const lang = replyLanguageInstructions(locale);
+  return `${lang}
+
+Reply with structured output for:
 {"amountMinor":number|null,"memo":string|null,"direction":"in"|"out","categoryId":string|null,"accountId":string|null}
 Rules:
-- User may write in Spanish or English (e.g. "gasté 100 pesos en el super", "spent 12.50 on coffee").
+- The user message may be in any language; still follow the mandatory reply language above for any memo text you produce or normalize.
 - amountMinor: minor units (2 decimals) in the user's MAIN currency (${mainCurrency}). Examples: 12.50 -> 1250. Use null if amount unknown.
-- memo: short merchant/description, or null if unknown.
+- memo: short merchant/ledger description in the mandatory reply language above, or null if unknown.
 - direction: "out" for spending, "in" for income.
 - categoryId: exactly one id from the matching list for direction, or null.
 - accountId: exactly one id from the ACCOUNTS list, or null if unknown.
@@ -61,6 +65,7 @@ async function generateNluLine(
   text: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   const key = apiKey.trim();
@@ -73,7 +78,7 @@ async function generateNluLine(
       ? createTelegramLedgerReadTools(ai, toolContext.db, toolContext.uid)
       : undefined;
   const toolBlock = tools ? `\n${toolsHint()}\n` : "";
-  const prompt = `${nluJsonInstruction(mainCurrency)}
+  const prompt = `${nluJsonInstruction(mainCurrency, locale)}
 ${toolBlock}
 ACCOUNTS (id:name (currency)): ${accs}
 Expense categories (id:name): ${expenseCats}
@@ -121,6 +126,7 @@ export async function parseTransactionLineWithGenkit(
   text: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   const cleaned = text.replace(/^\/\/\s*/, "");
@@ -132,7 +138,7 @@ export async function parseTransactionLineWithGenkit(
     return heuristicToNlu(heuristic);
   }
   try {
-    return await generateNluLine(ai, apiKey, mainCurrency, text, categories, accounts, toolContext);
+    return await generateNluLine(ai, apiKey, mainCurrency, text, categories, accounts, locale, toolContext);
   } catch (e) {
     logger.warn("telegramGenkit: parseTransactionLine failed", {
       err: e instanceof Error ? e.message : String(e),
@@ -149,9 +155,10 @@ export async function parseReceiptCaptionWithGenkit(
   caption: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
-  return parseTransactionLineWithGenkit(ai, apiKey, mainCurrency, caption, categories, accounts, toolContext);
+  return parseTransactionLineWithGenkit(ai, apiKey, mainCurrency, caption, categories, accounts, locale, toolContext);
 }
 
 export async function parseReceiptImageWithGenkit(
@@ -163,6 +170,7 @@ export async function parseReceiptImageWithGenkit(
   caption: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   const cap =
@@ -174,6 +182,7 @@ export async function parseReceiptImageWithGenkit(
           caption,
           categories,
           accounts,
+          locale,
           toolContext
         )
       : null;
@@ -189,10 +198,14 @@ export async function parseReceiptImageWithGenkit(
       ? createTelegramLedgerReadTools(ai, toolContext.db, toolContext.uid)
       : undefined;
   const toolBlock = tools ? `\n${toolsHint()}\n` : "";
-  const prompt = `Read this receipt image. Structured output:
+  const lang = replyLanguageInstructions(locale);
+  const prompt = `${lang}
+
+Read this receipt image. Structured output:
 {"amountMinor":number|null,"memo":string|null,"direction":"in"|"out","categoryId":string|null,"accountId":string|null}
 amountMinor = total paid in minor units (2 decimals) in ${mainCurrency}, or null if unreadable.
 direction is usually "out" for purchases.
+memo: in the mandatory reply language above (or null).
 categoryId: expense id from list or null: ${expenseCats}
 accountId: one of ${accs} or null
 Income categories (rare): ${incomeCats}
@@ -213,12 +226,13 @@ ${toolBlock}`;
         ? Math.round(parsed.amountMinor)
         : null;
     const memoRaw = parsed.memo;
+    const memoDefault = locale === "es" ? "Recibo" : "Receipt";
     const memo =
       typeof memoRaw === "string"
         ? memoRaw.trim().slice(0, 200)
         : memoRaw === null
           ? ""
-          : "Receipt";
+          : memoDefault;
     const direction = parsed.direction === "in" || parsed.direction === "out" ? parsed.direction : "out";
     const rawCat =
       typeof parsed.categoryId === "string" && parsed.categoryId.trim().length > 0
@@ -232,7 +246,7 @@ ${toolBlock}`;
     if (amountMinor == null || amountMinor <= 0) return cap ?? null;
     return {
       amountMinor,
-      memo: memo.length > 0 ? memo : "Receipt",
+      memo: memo.length > 0 ? memo : memoDefault,
       direction,
       categoryId,
       accountId,
@@ -254,6 +268,7 @@ export async function parseVoiceBytesWithGenkit(
   mimeType: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   if (!apiKey?.trim()) return null;
@@ -266,9 +281,13 @@ export async function parseVoiceBytesWithGenkit(
       ? createTelegramLedgerReadTools(ai, toolContext.db, toolContext.uid)
       : undefined;
   const toolBlock = tools ? `\n${toolsHint()}\n` : "";
-  const prompt = `Transcribe this short voice note about money. Structured output:
+  const lang = replyLanguageInstructions(locale);
+  const prompt = `${lang}
+
+Transcribe this short voice note about money. Structured output:
 {"amountMinor":number|null,"memo":string|null,"direction":"in"|"out","categoryId":string|null,"accountId":string|null}
 Use minor units (2 decimals) in ${mainCurrency} or null if amount unknown.
+memo: in the mandatory reply language above (summarize the note for the ledger).
 categoryId from lists or null.
 accountId: one of ${accs} or null
 Expense: ${expenseCats}
@@ -290,8 +309,9 @@ ${toolBlock}`;
         ? Math.round(parsed.amountMinor)
         : null;
     const memoRaw = parsed.memo;
+    const voiceDefault = locale === "es" ? "Voz" : "Voice";
     const memo =
-      typeof memoRaw === "string" ? memoRaw.trim().slice(0, 200) : memoRaw === null ? "" : "Voice";
+      typeof memoRaw === "string" ? memoRaw.trim().slice(0, 200) : memoRaw === null ? "" : voiceDefault;
     const direction = parsed.direction === "in" || parsed.direction === "out" ? parsed.direction : "out";
     const rawCat =
       typeof parsed.categoryId === "string" && parsed.categoryId.trim().length > 0
@@ -305,7 +325,7 @@ ${toolBlock}`;
     if (amountMinor == null || amountMinor <= 0) return null;
     return {
       amountMinor,
-      memo: memo.length > 0 ? memo : "Voice",
+      memo: memo.length > 0 ? memo : voiceDefault,
       direction,
       categoryId,
       accountId,
@@ -325,6 +345,7 @@ export async function parseTransactionLineWithOptionalGenkit(
   text: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   return parseTransactionLineWithGenkit(
@@ -334,6 +355,7 @@ export async function parseTransactionLineWithOptionalGenkit(
     text,
     categories,
     accounts,
+    locale,
     toolContext
   );
 }
@@ -344,6 +366,7 @@ export async function parseReceiptCaptionWithOptionalGenkit(
   caption: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   return parseReceiptCaptionWithGenkit(
@@ -353,6 +376,7 @@ export async function parseReceiptCaptionWithOptionalGenkit(
     caption,
     categories,
     accounts,
+    locale,
     toolContext
   );
 }
@@ -365,6 +389,7 @@ export async function parseReceiptImageWithOptionalGenkit(
   caption: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   return parseReceiptImageWithGenkit(
@@ -376,6 +401,7 @@ export async function parseReceiptImageWithOptionalGenkit(
     caption,
     categories,
     accounts,
+    locale,
     toolContext
   );
 }
@@ -387,6 +413,7 @@ export async function parseVoiceBytesWithOptionalGenkit(
   mimeType: string,
   categories: CategoryRow[],
   accounts: AccountRow[],
+  locale: BotLocale,
   toolContext?: TelegramGenkitToolContext | null
 ): Promise<NluParseResult | null> {
   return parseVoiceBytesWithGenkit(
@@ -397,6 +424,7 @@ export async function parseVoiceBytesWithOptionalGenkit(
     mimeType,
     categories,
     accounts,
+    locale,
     toolContext
   );
 }

@@ -1,0 +1,14 @@
+{
+  "update_id": 15003,
+  "callback_query": {
+    "id": "cq_wrong_step",
+    "from": { "id": 7, "language_code": "en", "is_bot": false, "first_name": "U" },
+    "message": {
+      "message_id": 90,
+      "chat": { "id": 4242, "type": "private" },
+      "date": 1,
+      "text": "Pick category"
+    },
+    "data": "cf"
+  }
+}
