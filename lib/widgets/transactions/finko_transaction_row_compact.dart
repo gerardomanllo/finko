@@ -43,7 +43,7 @@ class FinkoTransactionRowCompact extends StatelessWidget {
           Text(
             amountText,
             style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
           if (secondaryAmountText != null)

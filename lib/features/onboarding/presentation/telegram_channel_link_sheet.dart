@@ -685,7 +685,7 @@ class _TelegramChannelLinkSheetState extends State<TelegramChannelLinkSheet> {
           _failureStep,
           style: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
         ),
         if (_failureDetail.isNotEmpty) ...[
           const SizedBox(height: 8),

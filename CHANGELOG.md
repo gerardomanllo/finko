@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Flutter UI:** Brand typography (**Poppins** bundled under **`assets/fonts/`**), full **`TextTheme`** weights, and shared button/input/navigation themes in **`FinkoTheme`** (`docs/redesign/` design handoff).
+
 - **Telegram DM bot (language + posting flow):** text turns now require strict Gemini language detection (`es`/`en` only) and reply in that detected language; otherwise the bot returns `language_not_understood`. Standard transaction confirm no longer shows recurring follow-up buttons and posts immediately. Category/account picker paths now fail loudly with localized “no categories/accounts” guidance instead of silent dead-ends.
 
 - **Telegram DM bot (inline confirm/cancel):** **`answerCallbackQuery`** now includes short **saved** / **discarded** toast copy; Jest suite **`handleTelegramCallback.mocked.test.ts`** + stateful session mock assert the callback → **editMessageText** / **sendMessage** sequence.

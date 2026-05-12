@@ -21,8 +21,11 @@ abstract final class FinkoTheme {
   /// a white background by default. Use **containers** (e.g. [ColorScheme.primaryContainer]),
   /// **semantic** colors, or explicit [Color] / [BoxDecoration] when a non-white surface
   /// is intentional.
+  static const String _font = 'Poppins';
+
   static const Color _lightSurface = Colors.white;
 
+  // ─── Light theme ───────────────────────────────────────────────────────────
   static ThemeData light() {
     final scheme =
         ColorScheme.fromSeed(
@@ -48,15 +51,120 @@ abstract final class FinkoTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: _font,
       extensions: const [FinkoSemanticColors.light()],
       scaffoldBackgroundColor: FinkoColors.cloud,
       iconTheme: IconThemeData(color: scheme.onSurfaceVariant),
+
+      // ── AppBar ──────────────────────────────────────────────────────────────
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: FinkoColors.grayDark,
         centerTitle: false,
         elevation: 0,
+        titleTextStyle: TextStyle(
+          fontFamily: _font,
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
       ),
+
+      // ── Text theme — brand spec:
+      //   Titles/Headlines → w500 (Medium)
+      //   Subtitles/Labels → w400 (Regular)
+      //   Body/Paragraphs  → w300 (Light)
+      // ────────────────────────────────────────────────────────────────────────
+      textTheme: const TextTheme(
+        // Display
+        displayLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+          letterSpacing: -0.02,
+        ),
+        displayMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+          letterSpacing: -0.02,
+        ),
+        displaySmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+          letterSpacing: -0.02,
+        ),
+        // Headlines → Medium (500)
+        headlineLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+          letterSpacing: -0.02,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+          letterSpacing: -0.01,
+        ),
+        headlineSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
+        // Titles → Medium (500)
+        titleLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
+        titleSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
+        // Body → Light (300)
+        bodyLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.grayDark,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.gray,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.gray,
+        ),
+        // Labels → Regular/Medium
+        labelLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.grayDark,
+        ),
+        labelMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w400,
+          color: FinkoColors.grayDark,
+        ),
+        labelSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w400,
+          color: FinkoColors.gray,
+          letterSpacing: 0.06,
+        ),
+      ),
+
+      // ── Card ────────────────────────────────────────────────────────────────
       cardTheme: const CardThemeData(
         color: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -65,29 +173,19 @@ abstract final class FinkoTheme {
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
-      dividerColor: FinkoColors.grayLight,
-      textTheme: const TextTheme(
-        headlineSmall: TextStyle(
-          color: FinkoColors.grayDark,
-          fontWeight: FontWeight.w700,
-        ),
-        titleMedium: TextStyle(
-          color: FinkoColors.grayDark,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(color: FinkoColors.grayDark),
-        bodyMedium: TextStyle(color: FinkoColors.gray),
-        labelLarge: TextStyle(
-          color: FinkoColors.grayDark,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+
+      // ── Inputs ──────────────────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
+        ),
+        hintStyle: const TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.gray,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -97,14 +195,85 @@ abstract final class FinkoTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: FinkoColors.primary, width: 1.5),
         ),
-      ),
-      navigationBarTheme: const NavigationBarThemeData(
-        backgroundColor: Colors.white,
-        indicatorColor: FinkoColors.cloud,
-        labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(fontWeight: FontWeight.w600),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFBA1A1A)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFBA1A1A), width: 1.5),
         ),
       ),
+
+      // ── Buttons ─────────────────────────────────────────────────────────────
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: FinkoColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: FinkoColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: FinkoColors.primary,
+          side: const BorderSide(color: FinkoColors.primary, width: 1.5),
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: FinkoColors.primary,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+      ),
+
+      // ── Navigation bar ──────────────────────────────────────────────────────
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.white,
+        indicatorColor: FinkoColors.cloud,
+        labelTextStyle: const WidgetStatePropertyAll(
+          TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 11,
+          ),
+        ),
+      ),
+
+      // ── Remaining (unchanged from original) ─────────────────────────────────
+      dividerColor: FinkoColors.grayLight,
       drawerTheme: const DrawerThemeData(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -143,6 +312,11 @@ abstract final class FinkoTheme {
         backgroundColor: _lightSurface,
         side: const BorderSide(color: FinkoColors.grayLight),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: const TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          fontSize: 11,
+        ),
       ),
       datePickerTheme: const DatePickerThemeData(
         backgroundColor: _lightSurface,
@@ -154,6 +328,7 @@ abstract final class FinkoTheme {
     );
   }
 
+  // ─── Dark theme ────────────────────────────────────────────────────────────
   static ThemeData dark() {
     final scheme = ColorScheme.fromSeed(
       brightness: Brightness.dark,
@@ -169,6 +344,7 @@ abstract final class FinkoTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      fontFamily: _font,
       extensions: const [FinkoSemanticColors.dark()],
       scaffoldBackgroundColor: FinkoColors.navy900,
       iconTheme: IconThemeData(color: scheme.onSurfaceVariant),
@@ -177,6 +353,93 @@ abstract final class FinkoTheme {
         foregroundColor: FinkoColors.textOnDark,
         centerTitle: false,
         elevation: 0,
+        titleTextStyle: TextStyle(
+          fontFamily: _font,
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+      ),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+          letterSpacing: -0.02,
+        ),
+        displayMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+          letterSpacing: -0.02,
+        ),
+        displaySmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+          letterSpacing: -0.02,
+        ),
+        headlineLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        headlineSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        titleMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        titleSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        bodyLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.textOnDark,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.grayLight,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.grayLight,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          color: FinkoColors.textOnDark,
+        ),
+        labelMedium: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w400,
+          color: FinkoColors.textOnDark,
+        ),
+        labelSmall: TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w400,
+          color: FinkoColors.grayLight,
+          letterSpacing: 0.06,
+        ),
       ),
       cardTheme: const CardThemeData(
         color: FinkoColors.navy800,
@@ -186,29 +449,17 @@ abstract final class FinkoTheme {
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
-      dividerColor: FinkoColors.navy700,
-      textTheme: const TextTheme(
-        headlineSmall: TextStyle(
-          color: FinkoColors.textOnDark,
-          fontWeight: FontWeight.w700,
-        ),
-        titleMedium: TextStyle(
-          color: FinkoColors.textOnDark,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(color: FinkoColors.textOnDark),
-        bodyMedium: TextStyle(color: FinkoColors.grayLight),
-        labelLarge: TextStyle(
-          color: FinkoColors.textOnDark,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: FinkoColors.navy700,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
+        ),
+        hintStyle: const TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w300,
+          color: FinkoColors.gray,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -222,13 +473,70 @@ abstract final class FinkoTheme {
           ),
         ),
       ),
-      navigationBarTheme: const NavigationBarThemeData(
-        backgroundColor: FinkoColors.navy800,
-        indicatorColor: FinkoColors.navy700,
-        labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(fontWeight: FontWeight.w600),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: FinkoColors.primaryLight,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
         ),
       ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: FinkoColors.primaryLight,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: FinkoColors.primaryLight,
+          side: const BorderSide(color: FinkoColors.primaryLight, width: 1.5),
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          shape: const StadiumBorder(),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: FinkoColors.primaryLight,
+          textStyle: const TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: FinkoColors.navy800,
+        indicatorColor: FinkoColors.navy700,
+        labelTextStyle: const WidgetStatePropertyAll(
+          TextStyle(
+            fontFamily: _font,
+            fontWeight: FontWeight.w500,
+            fontSize: 11,
+          ),
+        ),
+      ),
+      dividerColor: FinkoColors.navy700,
       drawerTheme: const DrawerThemeData(
         backgroundColor: FinkoColors.navy800,
         surfaceTintColor: Colors.transparent,
@@ -244,6 +552,14 @@ abstract final class FinkoTheme {
       listTileTheme: ListTileThemeData(
         iconColor: scheme.onSurfaceVariant,
         textColor: scheme.onSurface,
+      ),
+      chipTheme: ChipThemeData(
+        labelStyle: const TextStyle(
+          fontFamily: _font,
+          fontWeight: FontWeight.w500,
+          fontSize: 11,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

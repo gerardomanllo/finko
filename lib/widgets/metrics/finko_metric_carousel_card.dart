@@ -55,7 +55,7 @@ class FinkoMetricCarouselCard extends StatelessWidget {
               Text(
                 valueText,
                 style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 12),

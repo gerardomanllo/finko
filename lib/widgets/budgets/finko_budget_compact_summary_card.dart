@@ -45,7 +45,7 @@ class FinkoBudgetCompactSummaryCard extends StatelessWidget {
             Text(
               title,
               style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: onSurface,
               ),
             ),

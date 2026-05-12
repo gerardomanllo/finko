@@ -332,8 +332,7 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                       const SizedBox(height: 4),
                       Text(
                         signedMoneyLabel(monthMinor, mainCurrency, locale),
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -537,8 +536,7 @@ Future<void> showFinkoAccountMonthSummarySheet({
                       const SizedBox(height: 4),
                       Text(
                         signedMoneyLabel(netMinor, mainCurrency, locale),
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
                       Text(
