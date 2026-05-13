@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import 'package:finko/app/app_routes.dart';
 import 'package:finko/app/finko_app.dart';
@@ -35,13 +36,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final expectedDate = DateFormat('E, MMM d', 'es').format(DateTime.now());
     expect(
-      find.descendant(of: find.byType(AppBar), matching: find.text('Panel')),
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(expectedDate),
+      ),
       findsOneWidget,
     );
   });
 
-  testWidgets('English locale shows Dashboard title', (tester) async {
+  testWidgets('English locale shows date in dashboard app bar', (tester) async {
     final GlobalKey<NavigatorState> rootKey = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ProviderScope(
@@ -63,10 +68,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    final expectedDate = DateFormat('E, MMM d', 'en').format(DateTime.now());
     expect(
       find.descendant(
         of: find.byType(AppBar),
-        matching: find.text('Dashboard'),
+        matching: find.text(expectedDate),
       ),
       findsOneWidget,
     );

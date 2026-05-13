@@ -139,12 +139,22 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         leading: IconButton(
           onPressed: () => ShellDrawerController.open(context),
           tooltip: l10n.openShellMenu,
           icon: const Icon(Icons.settings_outlined),
         ),
-        title: Text(l10n.dashboardTitle),
+        title: Text(
+          dateLine,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        actions: const [
+          // Balance default leading width so the title stays visually centered.
+          SizedBox(width: 56),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -154,13 +164,6 @@ class DashboardScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
-            Text(
-              dateLine,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
             Text(l10n.dashboardHeadline, style: theme.textTheme.headlineSmall),
             const SizedBox(height: 20),
             FinkoTwoMetricCarousel(

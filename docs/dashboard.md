@@ -10,8 +10,8 @@
 
 ## UI — top
 
-- **Title** (screen title).
-- **Today’s date** — short format matching spec example: `**Tue, Apr 14`** (locale-aware formatting).
+- **App bar title**: **today’s date** only — short format matching spec example: `**Tue, Apr 14`** (locale-aware `DateFormat`), **centered** in the bar (settings remains leading; trailing uses a width placeholder so the title centers on screen).
+- **Body** opens with the dashboard **headline** (no duplicate date line).
 
 ## UI — two-card carousel
 
@@ -110,6 +110,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | App bar: **date** as centered title (removed separate “Panel” / screen title and duplicate date in body). |
 | 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |
 | 2026-04-18 | **Pull-to-refresh** documents shared **`ledgerAwareAppRefreshProvider`** pipeline (dashboard + other tabs); see **`data-contract.md` §11**. |
