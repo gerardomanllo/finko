@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/budget/monthly_budget_rollup.dart';
-import '../../../core/app_environment.dart';
-import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_account.dart';
 import '../../../core/data/models/finko_account_kind.dart';
 import '../../../core/data/models/finko_enums.dart';
@@ -15,7 +13,6 @@ import '../../../core/data/models/upcoming_transaction.dart';
 import '../../../core/data/monthly_totals_as_of_date.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
-import '../../../core/locale/app_environment_provider.dart';
 import '../../../core/refresh/ledger_aware_app_refresh.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
@@ -113,9 +110,6 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final env = ref.watch(appEnvironmentProvider);
-    final envLabel = env == AppEnvironment.dev ? 'DEV' : 'PROD';
-    final user = ref.watch(authStateProvider).valueOrNull;
 
     final accountsAsync = ref.watch(accountsStreamProvider);
     final userProfileAsync = ref.watch(userProfileStreamProvider);
@@ -160,20 +154,6 @@ class DashboardScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
-            Text(
-              l10n.environmentBanner(envLabel),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.labelSmall,
-            ),
-            if (user?.email != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                l10n.dashboardSignedInAs(user!.email!),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
-            const SizedBox(height: 8),
             Text(
               dateLine,
               style: theme.textTheme.titleMedium?.copyWith(

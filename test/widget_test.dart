@@ -39,7 +39,6 @@ void main() {
       find.descendant(of: find.byType(AppBar), matching: find.text('Panel')),
       findsOneWidget,
     );
-    expect(find.text('[DEV]'), findsOneWidget);
   });
 
   testWidgets('English locale shows Dashboard title', (tester) async {
