@@ -350,6 +350,7 @@
   "categoriesTitle": "Categorías",
   "accountsTitle": "Cuentas",
   "metricNetWorth": "Patrimonio neto",
+  "metricNetWorthSeeAccountsFooter": "Ver mis cuentas",
   "metricMonthlyExpense": "Gasto del mes",
   "metricDeltaStubUp": "+2,1 %",
   "metricDeltaStubDown": "-1,0 %",

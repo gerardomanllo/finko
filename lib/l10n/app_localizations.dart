@@ -1622,6 +1622,12 @@ abstract class AppLocalizations {
   /// **'Patrimonio neto'**
   String get metricNetWorth;
 
+  /// No description provided for @metricNetWorthSeeAccountsFooter.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver mis cuentas'**
+  String get metricNetWorthSeeAccountsFooter;
+
   /// No description provided for @metricMonthlyExpense.
   ///
   /// In es, this message translates to:

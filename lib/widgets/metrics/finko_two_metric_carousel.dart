@@ -6,7 +6,7 @@ class FinkoTwoMetricCarousel extends StatelessWidget {
     super.key,
     required this.first,
     required this.second,
-    this.height = 232,
+    this.height = 244,
   });
 
   final Widget first;
@@ -20,7 +20,10 @@ class FinkoTwoMetricCarousel extends StatelessWidget {
       child: PageView(
         padEnds: true,
         controller: PageController(viewportFraction: 0.92),
-        children: [first, second],
+        children: [
+          SizedBox(height: height, width: double.infinity, child: first),
+          SizedBox(height: height, width: double.infinity, child: second),
+        ],
       ),
     );
   }

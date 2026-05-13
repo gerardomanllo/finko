@@ -852,6 +852,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get metricNetWorth => 'Patrimonio neto';
 
   @override
+  String get metricNetWorthSeeAccountsFooter => 'Ver mis cuentas';
+
+  @override
   String get metricMonthlyExpense => 'Gasto del mes';
 
   @override

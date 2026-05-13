@@ -175,7 +175,28 @@ class DashboardScreen extends ConsumerWidget {
                   mainCurrency,
                 ),
                 deltaText: l10n.metricDeltaStubUp,
+                expandChartVertically: true,
                 chart: FinkoNetWorthSparkline(values: sparkline),
+                footer: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.metricNetWorthSeeAccountsFooter,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
                 onTap: () => context.push('/accounts'),
               ),
               second: FinkoMetricCarouselCard(
@@ -191,6 +212,7 @@ class DashboardScreen extends ConsumerWidget {
                   orElse: () => '—',
                 ),
                 deltaText: l10n.metricDeltaStubDown,
+                expandChartVertically: true,
                 chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
                 onTap: () => context.go('/spending'),
               ),

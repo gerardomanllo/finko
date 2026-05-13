@@ -15,7 +15,7 @@ class FinkoNetWorthSparkline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (values.isEmpty) {
-      return const SizedBox.shrink();
+      return const SizedBox.expand();
     }
     final theme = Theme.of(context);
     final color = lineColor ?? theme.colorScheme.primary;
@@ -25,28 +25,40 @@ class FinkoNetWorthSparkline extends StatelessWidget {
     final spots = <FlSpot>[
       for (var i = 0; i < values.length; i++) FlSpot(i.toDouble(), values[i]),
     ];
-    return LineChart(
-      LineChartData(
-        minY: minY - pad,
-        maxY: maxY + pad,
-        gridData: const FlGridData(show: false),
-        titlesData: const FlTitlesData(show: false),
-        borderData: FlBorderData(show: false),
-        lineTouchData: const LineTouchData(enabled: false),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            color: color,
-            barWidth: 2,
-            dotData: const FlDotData(show: false),
-            belowBarData: BarAreaData(
-              show: true,
-              color: color.withValues(alpha: 0.12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight.isFinite && constraints.maxHeight > 0
+            ? constraints.maxHeight
+            : 96.0;
+        final w = constraints.hasBoundedWidth ? constraints.maxWidth : 96.0;
+        return SizedBox(
+          height: h,
+          width: w,
+          child: LineChart(
+            LineChartData(
+              minY: minY - pad,
+              maxY: maxY + pad,
+              gridData: const FlGridData(show: false),
+              titlesData: const FlTitlesData(show: false),
+              borderData: FlBorderData(show: false),
+              lineTouchData: const LineTouchData(enabled: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  color: color,
+                  barWidth: 2,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: color.withValues(alpha: 0.12),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

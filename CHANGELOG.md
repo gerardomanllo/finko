@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Dashboard:** Net worth **footer** bottom-aligned on the card; sparkline **fills** the slot above it (no empty band between graph and copy).
+
 - **Cloud Functions (ledger):** Net worth EOD on **`monthlyTotals.days.*.netWorthEodMinorMain`** is now the **signed sum of all accounts** after each aggregate op (including **transfer** legs), not an incremental tx delta; **`rebuildNetWorthSeriesForMonth`** (async, capped tx replay) refreshes affected months after writes.
 
 - **Dashboard net worth sparkline:** `netWorthSparklineSeriesProvider` now subscribes to every **`monthlyTotals/{yyyy-mm}`** that intersects the rolling 30-day window (up to three months). Previously only the first and last month were loaded, so mid-window days in the middle month read the wrong document (often making the chart look like “this month only”).

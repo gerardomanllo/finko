@@ -22,6 +22,7 @@ Horizontal carousel with **exactly two** cards (order as designed):
 - **Top left**: label **“Net Worth”**; below it, net worth value **title-sized**.
 - **Top right**: differential vs **latest 30-day period** (sign/format per design system) — **stub copy** in app strings until real period-over-period math ships.
 - **Body**: line/spark chart for **last 30 calendar days** from **`monthlyTotals` → `days.{dd}.netWorthEodMinorMain`**, each point the **signed sum of all accounts** in main currency (written by Cloud Functions; may span **one to three** month docs; missing days forward-filled). If the series is all zeros, the **large amount** falls back to the **sum of all account balances** (main currency).
+- **Footer** (bottom of card): full-width row — **“Ver mis cuentas”** (localized) **on the left**, **chevron on the right**; chart sits in a **flexible** slot above a fixed bottom strip so the footer aligns to the **card bottom** without a blank gap under the sparkline (chart grows into the middle space). Same tap target: entire card → `/accounts`.
 - **Tap entire card** → `/accounts`.
 
 ### Card 2 — Total monthly expense (calendar month)
@@ -110,6 +111,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | Net worth card **footer** at **card bottom**: `expandChartVertically` + expanded sparkline slot (chart fills space; no dead band); paired card keeps same bottom strip height. |
 | 2026-05-13 | App bar: **date** as centered title (removed separate “Panel” / screen title and duplicate date in body). |
 | 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |
