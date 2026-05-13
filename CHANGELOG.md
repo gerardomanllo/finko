@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Cloud Functions (ledger):** Net worth EOD on **`monthlyTotals.days.*.netWorthEodMinorMain`** is now the **signed sum of all accounts** after each aggregate op (including **transfer** legs), not an incremental tx delta; **`rebuildNetWorthSeriesForMonth`** (async, capped tx replay) refreshes affected months after writes.
+
+- **Dashboard net worth sparkline:** `netWorthSparklineSeriesProvider` now subscribes to every **`monthlyTotals/{yyyy-mm}`** that intersects the rolling 30-day window (up to three months). Previously only the first and last month were loaded, so mid-window days in the middle month read the wrong document (often making the chart look like “this month only”).
+
 - **Flutter UI:** Brand typography (**Poppins** bundled under **`assets/fonts/`**), full **`TextTheme`** weights, and shared button/input/navigation themes in **`FinkoTheme`** (`docs/redesign/` design handoff).
 
 - **Telegram DM bot (language + posting flow):** text turns now require strict Gemini language detection (`es`/`en` only) and reply in that detected language; otherwise the bot returns `language_not_understood`. Standard transaction confirm no longer shows recurring follow-up buttons and posts immediately. Category/account picker paths now fail loudly with localized “no categories/accounts” guidance instead of silent dead-ends.

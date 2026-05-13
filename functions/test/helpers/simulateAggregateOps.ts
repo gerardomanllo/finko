@@ -2,8 +2,10 @@ import type { AggregateOp, BalancePolarity } from "../../src/ledgerAggregateMath
 import {
   applyAccountDelta,
   applyMonthDelta,
+  dayKeyFromYmd,
   monthKeyFromYmd,
 } from "../../src/ledgerAggregateMath";
+import { sumNetWorthMinorMainFromAccountStates } from "../../src/netWorthFromAccounts";
 
 export type AccountMapEntry = {
   balanceMinor: number;
@@ -37,12 +39,26 @@ export function simulateAggregateOps(
       acc.balancePolarity ?? "asset"
     );
 
+    const ym = monthKeyFromYmd(op.tx.transactionDate);
+    const base = months[ym];
+    if (!base) {
+      throw new Error(`Unknown month ${ym}`);
+    }
+    const nwStates = Object.values(accounts).map((a) => ({
+      balanceMinor: a.balanceMinor,
+      balanceMinorMain: a.balanceMinorMain,
+      balancePolarity: (a.balancePolarity ?? "asset") as BalancePolarity,
+    }));
+    const nw = sumNetWorthMinorMainFromAccountStates(nwStates);
+    const days =
+      (base.days as Record<string, Record<string, unknown>> | undefined) ?? {};
+    const dd = dayKeyFromYmd(op.tx.transactionDate);
+    const dayObj = { ...(days[dd] ?? {}) };
+    dayObj.netWorthEodMinorMain = nw;
+    const nextDays = { ...days, [dd]: dayObj };
+    base.days = nextDays;
+
     if (op.tx.type !== "transferLeg") {
-      const ym = monthKeyFromYmd(op.tx.transactionDate);
-      const base = months[ym];
-      if (!base) {
-        throw new Error(`Unknown month ${ym}`);
-      }
       applyMonthDelta(base, op.tx, op.sign, op.amountMain);
     }
   }

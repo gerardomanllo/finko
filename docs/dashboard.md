@@ -21,7 +21,7 @@ Horizontal carousel with **exactly two** cards (order as designed):
 
 - **Top left**: label **“Net Worth”**; below it, net worth value **title-sized**.
 - **Top right**: differential vs **latest 30-day period** (sign/format per design system) — **stub copy** in app strings until real period-over-period math ships.
-- **Body**: line/spark chart for **last 30 calendar days** from **`monthlyTotals` → `days.{dd}.netWorthEodMinorMain`** (may span two month docs; missing days forward-filled). If the series is all zeros, the **large amount** falls back to the **sum of all account balances** (main currency).
+- **Body**: line/spark chart for **last 30 calendar days** from **`monthlyTotals` → `days.{dd}.netWorthEodMinorMain`**, each point the **signed sum of all accounts** in main currency (written by Cloud Functions; may span **one to three** month docs; missing days forward-filled). If the series is all zeros, the **large amount** falls back to the **sum of all account balances** (main currency).
 - **Tap entire card** → `/accounts`.
 
 ### Card 2 — Total monthly expense (calendar month)
@@ -110,6 +110,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |
 | 2026-04-18 | **Pull-to-refresh** documents shared **`ledgerAwareAppRefreshProvider`** pipeline (dashboard + other tabs); see **`data-contract.md` §11**. |
 | 2026-04-16 | Próximos include **future-dated `transactions/`** rows (editor), not only `upcomingTransactions` + recurring. |

@@ -77,6 +77,66 @@ void main() {
     },
   );
 
+  test(
+    'netWorthSparklineSeriesProvider loads middle month when window spans 3 months',
+    () async {
+      // 30 calendar days: 2026-01-31 .. 2026-03-01 (Jan, Feb, Mar).
+      final january = MonthlyTotals(
+        yearMonth: '2026-01',
+        incomeMinorMain: 0,
+        expenseMinorMain: 0,
+        byCategoryMinorMain: const {},
+        days: const {
+          '15': MonthlyDayRollup(netWorthEodMinorMain: 9999),
+          '31': MonthlyDayRollup(netWorthEodMinorMain: 1000),
+        },
+      );
+      final february = MonthlyTotals(
+        yearMonth: '2026-02',
+        incomeMinorMain: 0,
+        expenseMinorMain: 0,
+        byCategoryMinorMain: const {},
+        days: const {'15': MonthlyDayRollup(netWorthEodMinorMain: 2000)},
+      );
+      final march = MonthlyTotals(
+        yearMonth: '2026-03',
+        incomeMinorMain: 0,
+        expenseMinorMain: 0,
+        byCategoryMinorMain: const {},
+        days: const {'01': MonthlyDayRollup(netWorthEodMinorMain: 3000)},
+      );
+      final container = ProviderContainer(
+        overrides: [
+          nowProvider.overrideWith((ref) => DateTime(2026, 3, 1)),
+          monthlyTotalsForMonthStreamProvider(
+            '2026-01',
+          ).overrideWith((ref) => Stream.value(january)),
+          monthlyTotalsForMonthStreamProvider(
+            '2026-02',
+          ).overrideWith((ref) => Stream.value(february)),
+          monthlyTotalsForMonthStreamProvider(
+            '2026-03',
+          ).overrideWith((ref) => Stream.value(march)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final sub = container.listen(
+        netWorthSparklineSeriesProvider,
+        (previous, next) {},
+      );
+      addTearDown(sub.close);
+      await Future<void>.delayed(Duration.zero);
+
+      final series = container.read(netWorthSparklineSeriesProvider);
+      expect(series.length, 30);
+      // Index 0 = 2026-01-31
+      expect(series[0], 1000);
+      // Index 15 = 2026-02-15 — must read February doc, not January day "15".
+      expect(series[15], 2000);
+      expect(series[29], 3000);
+    },
+  );
+
   group('mergeUpcomingForUi', () {
     final t0 = DateTime.utc(2026, 4, 10, 12);
 
@@ -137,10 +197,7 @@ void main() {
     test('includeDueToday false omits upcoming and rules due today', () {
       const today = '2026-04-15';
       final merged = mergeUpcomingForUi(
-        [
-          upcoming('u1', '2026-04-15'),
-          upcoming('u2', '2026-04-20'),
-        ],
+        [upcoming('u1', '2026-04-15'), upcoming('u2', '2026-04-20')],
         [rule('r1', '2026-04-15')],
         today,
         ledgerFuture: [ledgerFuture('tx1', '2026-04-18')],
@@ -153,10 +210,7 @@ void main() {
     test('includeDueToday true keeps today and merges ledger preview', () {
       const today = '2026-04-15';
       final merged = mergeUpcomingForUi(
-        [
-          upcoming('u1', '2026-04-15'),
-          upcoming('u2', '2026-04-20'),
-        ],
+        [upcoming('u1', '2026-04-15'), upcoming('u2', '2026-04-20')],
         [rule('r1', '2026-04-16')],
         today,
         ledgerFuture: [ledgerFuture('tx1', '2026-04-18')],

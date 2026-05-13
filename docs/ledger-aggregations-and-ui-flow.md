@@ -43,11 +43,17 @@ flowchart TB
   subgraph deltas["5. Signed ops on in-memory state then Firestore"]
     AD["applyAccountDelta ledgerAggregateMath.ts"]
     AD --> ACC["users/uid/accounts/accountId: balanceMinor balanceMinorMain"]
+    SN["After each op: sumNetWorthMinorMainFromAccountStates netWorthFromAccounts.ts"]
+    SN --> NWD["days two-digit-dd netWorthEodMinorMain snapshot merge"]
     AM["applyMonthDelta ONLY if type is not transferLeg"]
     AM --> MT1["monthlyTotals/yyyy-mm incomeMinorMain expenseMinorMain"]
     AM --> MT2["byCategoryMinorMain categoryId"]
     AM --> MT3["days two-digit-dd incomeMinorMain expenseMinorMain"]
-    AM --> NW["applyNetWorthDelta: days two-digit-dd netWorthEodMinorMain"]
+  end
+
+  subgraph rebuild["8. Async month NW series optional consistency"]
+    RB["rebuildNetWorthSeriesForMonth.ts genesis replay capped"]
+    RB --> NWD
   end
 
   subgraph defer["6. No money yet"]
@@ -66,16 +72,20 @@ flowchart TB
   SB --> RLA
   EFF --> RLA
   RLA --> AD
+  RLA --> SN
   RLA --> AM
   RLU --> AD
+  RLU --> SN
   RLU --> AM
   EFF -->|future date| DEF
   SB -->|skip reverse| DEF
 ```
 
-**`transferLeg`:** Steps **5** still run **`applyAccountDelta`** for each leg’s `accountId`. **`applyMonthDelta` is skipped** for `transferLeg`, so **`monthlyTotals`** cashflow and **`byCategoryMinorMain`** do not change for those rows.
+**`transferLeg`:** Steps **5** still run **`applyAccountDelta`** for each leg’s `accountId`. **`applyMonthDelta` is skipped** for `transferLeg`, so **`monthlyTotals`** cashflow and **`byCategoryMinorMain`** do not change for those rows. **Net worth EOD snapshots** (`days[dd].netWorthEodMinorMain`) are still written after each leg from the **signed sum of all accounts** in main currency.
 
 **Updates:** `runLedgerAggregateUpdate` uses **`computeLedgerUpdateOps`**: optionally **−before** (`sign -1`, `beforeMain`) and optionally **+after** (`sign +1`, `afterMain`). Same delta functions as create/delete.
+
+After a successful aggregate, **`rebuildNetWorthSeriesForMonth`** may run **asynchronously** for each affected `yyyy-mm` (genesis replay of effective transactions, capped) to refresh NW points for backdated edits.
 
 ---
 
@@ -138,7 +148,7 @@ flowchart TB
   PR --> RV
 ```
 
-**Net worth chart:** `netWorthSparklineSeriesProvider` ([`finko_stream_providers.dart`](../lib/core/data/providers/finko_stream_providers.dart)) walks **30 calendar days** ending at **`todayYyyyMmDd`**, reads **`monthlyTotals.days[dd].netWorthEodMinorMain`**, **forward-fills** missing days from the last known value in-window (or `0`).
+**Net worth chart:** `netWorthSparklineSeriesProvider` ([`finko_stream_providers.dart`](../lib/core/data/providers/finko_stream_providers.dart)) walks **30 calendar days** ending at **`todayYyyyMmDd`**, subscribes to **every** **`monthlyTotals/{yyyy-mm}`** that intersects that window (one to three month docs — e.g. **Jan 31 → Mar 1**), reads **`monthlyTotals.days[dd].netWorthEodMinorMain`** (each point is the **signed sum of all account `balanceMinorMain`** in main currency, written by Functions after each aggregate op and optionally refreshed by **`rebuildNetWorthSeriesForMonth`**), **forward-fills** missing days from the last known value in-window (or `0`).
 
 ---
 
@@ -155,7 +165,8 @@ flowchart TB
 | FX hub conversions | `foreignMinorToMainMinor`, `convertMinorBetweenUsdMxnEur` | Used inside `computeAmountMain` | [`forex.test.ts`](../functions/test/forex.test.ts) |
 | Update op list −before/+after | `computeLedgerUpdateOps` | — | [`ledgerAggregateMath.test.ts`](../functions/test/ledgerAggregateMath.test.ts) |
 | Account balance delta | `applyAccountDelta` | `accounts` | [`ledgerAggregateMath.test.ts`](../functions/test/ledgerAggregateMath.test.ts), [`ledgerScenarios.test.ts`](../functions/test/ledgerScenarios.test.ts) |
-| Month / category / day / NW delta | `applyMonthDelta`, `applyNetWorthDelta` | `monthlyTotals` | [`ledgerAggregateMath.test.ts`](../functions/test/ledgerAggregateMath.test.ts), [`ledgerScenarios.test.ts`](../functions/test/ledgerScenarios.test.ts) |
+| Month / category / day cashflow | `applyMonthDelta` | `monthlyTotals` (no NW inside `applyMonthDelta`) | [`ledgerAggregateMath.test.ts`](../functions/test/ledgerAggregateMath.test.ts), [`ledgerScenarios.test.ts`](../functions/test/ledgerScenarios.test.ts) |
+| Net worth EOD snapshots + month replay | `runAggregateOpsTransaction`, `rebuildNetWorthSeriesForMonth`, `sumNetWorthMinorMainFromAccountStates` | `monthlyTotals.days.*.netWorthEodMinorMain` | [`netWorthFromAccounts.test.ts`](../functions/test/netWorthFromAccounts.test.ts), [`aggregateNetWorthSnapshot.test.ts`](../functions/test/aggregateNetWorthSnapshot.test.ts), [`ledgerScenarios.test.ts`](../functions/test/ledgerScenarios.test.ts) |
 | Materialize schedule dates (related) | `computeNextTransactionDate`, `resolveAsOfYmd` | Not ledger aggregate | [`scheduleNext.test.ts`](../functions/test/scheduleNext.test.ts) |
 
 **Propagation scenarios (Jest):** [`ledgerScenarios.test.ts`](../functions/test/ledgerScenarios.test.ts) — past expense applies to account + month + category + day; **full reversal**; **transfer legs** move two accounts only; **cross-month update** after prior apply; **past→future** update removes month/account effect; **salary inflow**. [`ledgerAggregateMath.test.ts`](../functions/test/ledgerAggregateMath.test.ts) covers **computeLedgerUpdateOps** edge cases.
@@ -195,9 +206,9 @@ Liabilities: **positive balance = amount owed** (`out` increases owed, `in` decr
 - Month totals: add `sign * amountMain` to **`incomeMinorMain`** or **`expenseMinorMain`** according to direction.
 - **Category:** if `categoryId` set: `byCategory[cat] += sign * amountMain` for **in**, `− sign * amountMain` for **out**.
 - **Day:** same increment to **`days[dd].incomeMinorMain`** / **`expenseMinorMain`** where **`dd`** is `transactionDate` day-of-month two-digit string.
-- **Net worth EOD:** delta on `days[dd].netWorthEodMinorMain` is `sign * amountMain` for **in**, `− sign * amountMain` for **out**, then **`applyNetWorthDelta`** propagates to later days in the month that already had NW points.
+- **Net worth EOD:** **not** updated inside `applyMonthDelta`. **`runAggregateOpsTransaction`** reads **all** `accounts` in the Firestore transaction, applies each op, then sets **`days[dd].netWorthEodMinorMain`** to the **signed sum of every account’s `balanceMinorMain`** (assets add, liabilities subtract). **`rebuildNetWorthSeriesForMonth`** (async) may replay effective transactions (capped) to refresh NW for the month after backdated edits.
 
-Full code: [`ledgerAggregateMath.ts`](../functions/src/ledgerAggregateMath.ts). Orchestration and FX: [`aggregateLedger.ts`](../functions/src/aggregateLedger.ts).
+Full code: [`ledgerAggregateMath.ts`](../functions/src/ledgerAggregateMath.ts), [`netWorthFromAccounts.ts`](../functions/src/netWorthFromAccounts.ts), [`rebuildNetWorthSeriesForMonth.ts`](../functions/src/rebuildNetWorthSeriesForMonth.ts). Orchestration and FX: [`aggregateLedger.ts`](../functions/src/aggregateLedger.ts).
 
 ---
 
@@ -230,6 +241,7 @@ The Flutter app uses these fields (plus a short local throttle) to **gate** **`r
 
 | Date | Change |
 |------|--------|
+| 2026-05-12 | Net worth: **`applyNetWorthDelta` removed**; **`runAggregateOpsTransaction`** snapshots **`netWorthEodMinorMain`** as signed sum of all accounts after each op (incl. transfer legs); async **`rebuildNetWorthSeriesForMonth`** (capped genesis replay) refreshes NW for affected months; Flutter sparkline loads **all** intersecting **`monthlyTotals`** month docs (up to three). Diagram §1 + §4 + traceability table updated. |
 | 2026-04-18 | **§5.1** `users/{uid}` **`ledgerSourcesLastChangedAt`** / **`aggregateLastCompletedAt`** (CF maintenance + app pull-to-refresh gating). |
 | 2026-04-18 | §3.2 / §4: **Liability-aware** `applyAccountDelta` (`m` factor from account `type`); Flutter net worth / net cash **signed** sums; migration note in [`references/liability-balance-migration.md`](references/liability-balance-migration.md). |
 | 2026-04-16 | Budget teaser: **BT** uses **`totalExpenseBudgetMinor`** on **`userProfileStreamProvider.budgets`**; **PP** stream + **RG** edges; **`commitOnboarding`** writes budgets on profile only. |

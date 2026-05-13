@@ -92,6 +92,9 @@ describe("ledger scenarios (mock world)", () => {
     expect(months["2026-04"].expenseMinorMain).toBe(0);
     expect(months["2026-04"].incomeMinorMain).toBe(0);
     expect(Object.keys((months["2026-04"].byCategoryMinorMain as object) ?? {})).toHaveLength(0);
+    const days = months["2026-04"].days as Record<string, Record<string, unknown>>;
+    expect(typeof days["12"]?.netWorthEodMinorMain).toBe("number");
+    expect(days["12"]?.netWorthEodMinorMain).toBe(2_000_000);
   });
 
   it("cross-month update moves buckets between March and April", () => {
@@ -164,6 +167,8 @@ describe("ledger scenarios (mock world)", () => {
       amountMain
     );
     expect(accounts[ACC.checking].balanceMinor).toBe(1_000_000 + amountMain);
+    const days = months["2026-04"].days as Record<string, Record<string, unknown>>;
+    expect(days["01"]?.netWorthEodMinorMain).toBe(2_000_000 + amountMain);
   });
 
   it("credit card expense increases balance owed (liability)", () => {
@@ -176,6 +181,8 @@ describe("ledger scenarios (mock world)", () => {
 
     expect(accounts[ACC.creditCard].balanceMinor).toBe(amountMain);
     expect(months["2026-04"].expenseMinorMain).toBe(amountMain);
+    const days = months["2026-04"].days as Record<string, Record<string, unknown>>;
+    expect(days["11"]?.netWorthEodMinorMain).toBe(2_000_000 - amountMain);
   });
 
   it("transfer payment to credit card reduces balance owed", () => {

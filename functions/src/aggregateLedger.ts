@@ -7,11 +7,13 @@ import {
   applyAccountDelta,
   applyMonthDelta as applyMonthDeltaPure,
   computeLedgerUpdateOps,
+  dayKeyFromYmd,
   monthKeyFromYmd,
   type AggregateOp,
   type BalancePolarity,
   type TxPayload,
 } from "./ledgerAggregateMath";
+import { sumNetWorthMinorMainFromAccountStates } from "./netWorthFromAccounts";
 import { getUserTodayYmd, isLedgerDateEffectiveForAggregate } from "./userToday";
 import { touchAggregateLastCompletedAt } from "./userLedgerSync";
 
@@ -156,7 +158,7 @@ export type LedgerAggregateSourceOptions = {
   beforeLedgerSnapshot?: Record<string, unknown>;
 };
 
-async function computeAmountMain(
+export async function computeAmountMain(
   db: Firestore,
   mainCurrency: string,
   tx: TxPayload
@@ -185,40 +187,60 @@ async function computeAmountMain(
   return main;
 }
 
+function mergeNetWorthSnapshotDay(
+  monthBase: Record<string, unknown>,
+  dd: string,
+  nw: number
+): void {
+  const days =
+    (monthBase.days as Record<string, Record<string, unknown>> | undefined) ?? {};
+  const next = { ...days };
+  const dayObj = { ...(next[dd] as Record<string, unknown> | undefined) };
+  dayObj.netWorthEodMinorMain = nw;
+  next[dd] = dayObj;
+  monthBase.days = next;
+}
+
+/**
+ * Applies aggregate ops and returns affected `yyyy-MM` month keys for net-worth series rebuild.
+ * Empty set when idempotency short-circuits.
+ */
 async function runAggregateOpsTransaction(
   db: Firestore,
   uid: string,
   eventId: string,
   ops: AggregateOp[],
   ledgerTxRef?: DocumentReference
-): Promise<void> {
+): Promise<Set<string>> {
+  const plannedMonths = new Set(ops.map((op) => monthKeyFromYmd(op.tx.transactionDate)));
   let aggregateAppliedMoney = false;
   await db.runTransaction(async (t) => {
     const idemRef = db.doc(`users/${uid}/_processedAggregateEvents/${eventId}`);
-    const accountRefs = new Map<string, FirebaseFirestore.DocumentReference>();
-    const monthRefs = new Map<string, FirebaseFirestore.DocumentReference>();
+    const idemSnap = await t.get(idemRef);
+    if (idemSnap.exists) {
+      return;
+    }
 
+    const accountsCol = db.collection(`users/${uid}/accounts`);
+    const accountsQuery = accountsCol.limit(500);
+    const accountsSnap = await t.get(accountsQuery);
+
+    const monthRefs = new Map<string, FirebaseFirestore.DocumentReference>();
     for (const op of ops) {
-      const { tx } = op;
-      if (!accountRefs.has(tx.accountId)) {
-        accountRefs.set(tx.accountId, db.doc(`users/${uid}/accounts/${tx.accountId}`));
-      }
-      if (tx.type !== "transferLeg") {
-        const ym = monthKeyFromYmd(tx.transactionDate);
-        if (!monthRefs.has(ym)) {
-          monthRefs.set(ym, db.doc(`users/${uid}/monthlyTotals/${ym}`));
-        }
+      const ym = monthKeyFromYmd(op.tx.transactionDate);
+      if (!monthRefs.has(ym)) {
+        monthRefs.set(ym, db.doc(`users/${uid}/monthlyTotals/${ym}`));
       }
     }
 
-    const readRefs: FirebaseFirestore.DocumentReference[] = [
-      idemRef,
-      ...accountRefs.values(),
-      ...monthRefs.values(),
-    ];
-    const readSnaps = await t.getAll(...readRefs);
-    const [idemSnap, ...entitySnaps] = readSnaps;
-    if (idemSnap.exists) return;
+    const monthReadSnaps: FirebaseFirestore.DocumentSnapshot[] = [];
+    for (const ref of monthRefs.values()) {
+      monthReadSnaps.push(await t.get(ref));
+    }
+
+    if (accountsSnap.size >= 500) {
+      logger.warn("aggregateLedger: account count at Firestore query limit (500)", { uid });
+    }
 
     const accountData = new Map<
       string,
@@ -229,29 +251,31 @@ async function runAggregateOpsTransaction(
         balancePolarity: BalancePolarity;
       }
     >();
-    const monthData = new Map<string, { ref: FirebaseFirestore.DocumentReference; base: Record<string, unknown> }>();
 
-    let idx = 0;
-    for (const [accountId, ref] of accountRefs) {
-      const snap = entitySnaps[idx++];
-      if (!snap.exists) {
-        throw new Error(`Missing account ${accountId}`);
-      }
-      const data = snap.data()!;
+    for (const doc of accountsSnap.docs) {
+      const data = doc.data()!;
       const rawType = typeof data.type === "string" ? data.type : "";
       const balancePolarity: BalancePolarity = isLiabilityAccountType(rawType)
         ? "liability"
         : "asset";
-      accountData.set(accountId, {
-        ref,
+      accountData.set(doc.id, {
+        ref: doc.ref,
         balanceMinor: (data.balanceMinor as number) ?? 0,
         balanceMinorMain: (data.balanceMinorMain as number | undefined) ?? 0,
         balancePolarity,
       });
     }
 
+    for (const op of ops) {
+      if (!accountData.has(op.tx.accountId)) {
+        throw new Error(`Missing account ${op.tx.accountId} (not in users/${uid}/accounts query)`);
+      }
+    }
+
+    const monthData = new Map<string, { ref: FirebaseFirestore.DocumentReference; base: Record<string, unknown> }>();
+    let mi = 0;
     for (const [ym, ref] of monthRefs) {
-      const snap = entitySnaps[idx++];
+      const snap = monthReadSnaps[mi++];
       const base = snap.exists
         ? { ...(snap.data() as Record<string, unknown>) }
         : defaultMonthly(ym);
@@ -263,9 +287,16 @@ async function runAggregateOpsTransaction(
       const account = accountData.get(tx.accountId)!;
       applyAccountDelta(account, tx, sign, amountMain, account.balancePolarity);
 
+      const ym = monthKeyFromYmd(tx.transactionDate);
+      const month = monthData.get(ym);
+      if (!month) {
+        throw new Error(`Missing month data for ${ym}`);
+      }
+      const nw = sumNetWorthMinorMainFromAccountStates(accountData.values());
+      mergeNetWorthSnapshotDay(month.base, dayKeyFromYmd(tx.transactionDate), nw);
+      month.base.updatedAt = FieldValue.serverTimestamp();
+
       if (tx.type !== "transferLeg") {
-        const ym = monthKeyFromYmd(tx.transactionDate);
-        const month = monthData.get(ym)!;
         applyMonthDeltaPure(month.base, tx, sign, amountMain);
         month.base.updatedAt = FieldValue.serverTimestamp();
       }
@@ -299,6 +330,7 @@ async function runAggregateOpsTransaction(
   if (aggregateAppliedMoney) {
     await touchAggregateLastCompletedAt(db, uid);
   }
+  return aggregateAppliedMoney ? plannedMonths : new Set();
 }
 
 /**
@@ -330,6 +362,21 @@ async function markLedgerDeferredNoMoney(
       );
     }
   });
+}
+
+async function scheduleNetWorthMonthRebuilds(
+  db: Firestore,
+  uid: string,
+  userData: Record<string, unknown> | undefined,
+  months: Set<string>
+): Promise<void> {
+  if (months.size === 0) return;
+  const { rebuildNetWorthSeriesForMonth } = await import("./rebuildNetWorthSeriesForMonth");
+  for (const ym of months) {
+    void rebuildNetWorthSeriesForMonth(db, uid, ym, userData).catch((e) => {
+      logger.error("rebuildNetWorthSeriesForMonth failed", { uid, ym, err: e });
+    });
+  }
 }
 
 /**
@@ -367,13 +414,14 @@ export async function runLedgerAggregate(
   }
 
   const amountMain = await computeAmountMain(db, mainCurrency, tx);
-  await runAggregateOpsTransaction(
+  const affected = await runAggregateOpsTransaction(
     db,
     uid,
     eventId,
     [{ tx, sign, amountMain }],
     sign === 1 ? ledgerTxRef : undefined
   );
+  await scheduleNetWorthMonthRebuilds(db, uid, userData, affected);
 }
 
 /** Replace `beforeTx` with `afterTx` under a single idempotency key (document updates). */
@@ -416,7 +464,8 @@ export async function runLedgerAggregateUpdate(
     return;
   }
 
-  await runAggregateOpsTransaction(db, uid, eventId, ops, ledgerTxRef);
+  const affected = await runAggregateOpsTransaction(db, uid, eventId, ops, ledgerTxRef);
+  await scheduleNetWorthMonthRebuilds(db, uid, userData, affected);
 
   if (ledgerTxRef && !afterIn) {
     await ledgerTxRef.set(

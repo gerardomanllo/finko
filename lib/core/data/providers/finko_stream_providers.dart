@@ -128,7 +128,9 @@ final ledgerFromTodayForUpcomingMergeStreamProvider =
         return;
       }
       final today = ref.watch(todayYyyyMmDdProvider);
-      yield* ref.watch(firestoreDataRepositoryProvider).watchLedgerTransactionsAfterDate(
+      yield* ref
+          .watch(firestoreDataRepositoryProvider)
+          .watchLedgerTransactionsAfterDate(
             uid,
             today,
             limit: 40,
@@ -314,33 +316,41 @@ final forexRatesForDateStreamProvider =
 
 /// Last 30 daily net-worth points from `monthlyTotals.days.*.netWorthEodMinorMain`.
 ///
+/// Each value is the **signed sum of all account balances in main currency**
+/// (`balanceMinorMain`) written by Cloud Functions after ledger aggregates
+/// (see `sumNetWorthMinorMainFromAccountStates` / `rebuildNetWorthSeriesForMonth` in `functions/`).
+///
 /// Missing days use forward-fill inside the 30-day window; if no prior value
 /// exists in-window yet, the point is `0`.
 ///
 /// Window ends on profile-aware **today** ([`todayYyyyMmDdProvider`]) so points
 /// are not tied to device-local midnight when the user has a timezone set.
+///
+/// Loads every `monthlyTotals/{yyyy-mm}` that intersects the window (one to
+/// three months — e.g. Jan 31 through Mar 1 spans three).
 final netWorthSparklineSeriesProvider = Provider<List<double>>((ref) {
   final endDate = _dateOnlyFromYyyyMmDd(ref.watch(todayYyyyMmDdProvider));
   final startDate = endDate.subtract(const Duration(days: 29));
-  final endMonthKey = _yearMonthKey(endDate);
-  final startMonthKey = _yearMonthKey(startDate);
 
-  final endMonth = ref.watch(monthlyTotalsForMonthStreamProvider(endMonthKey));
-  final startMonth = startMonthKey == endMonthKey
-      ? endMonth
-      : ref.watch(monthlyTotalsForMonthStreamProvider(startMonthKey));
+  final monthKeys = <String>{};
+  for (var i = 0; i < 30; i++) {
+    monthKeys.add(_yearMonthKey(startDate.add(Duration(days: i))));
+  }
 
-  final endMonthData = endMonth.valueOrNull;
-  final startMonthData = startMonth.valueOrNull;
+  final monthData = <String, MonthlyTotals?>{};
+  for (final mk in monthKeys) {
+    monthData[mk] = ref
+        .watch(monthlyTotalsForMonthStreamProvider(mk))
+        .valueOrNull;
+  }
+
   var hasPrevious = false;
   var previousValue = 0;
   final series = <double>[];
 
   for (var i = 0; i < 30; i++) {
     final day = startDate.add(Duration(days: i));
-    final month = _yearMonthKey(day) == endMonthKey
-        ? endMonthData
-        : startMonthData;
+    final month = monthData[_yearMonthKey(day)];
     final key = day.day.toString().padLeft(2, '0');
     final point = month?.days[key]?.netWorthEodMinorMain;
     if (point != null) {

@@ -180,7 +180,7 @@ Implementation lives in **`functions/src/index.ts`** + **`functions/src/aggregat
 | **Net worth** | **Signed** sum over all accounts in **main currency** (`balanceMinorMain` when set, else `balanceMinor` per account): **add** asset balances, **subtract** liability balances (owed reduces net worth). |
 | **Net cash** | Same **signing** as net worth, but only for accounts with **`includeInNetCash: true`** (liquid cash-flow accounts). |
 
-Charts and cards must label which metric they show. `monthlyTotals.days.*.netWorthEodMinorMain` follows **net worth** unless you split series later.
+Charts and cards must label which metric they show. **`monthlyTotals.days.*.netWorthEodMinorMain`** is the **signed sum of all accounts in main currency** at end-of-step after each ledger aggregate (and may be refreshed by **`rebuildNetWorthSeriesForMonth`**), not a raw incremental tx delta.
 
 ---
 
@@ -384,6 +384,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-05-12 | §4.2: **`monthlyTotals.days.*.netWorthEodMinorMain`** = signed sum of all accounts in main currency after aggregates (Functions snapshot + optional **`rebuildNetWorthSeriesForMonth`** replay), not incremental tx-only NW deltas. |
 | 2026-05-01 | §2 / §3 / §3.2: **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`** (Functions-only); **`users/{uid}.telegramBotPreferences`** for DM bot defaults; linking path unchanged. See [`references/telegram-bot-testing.md`](references/telegram-bot-testing.md). |
 | 2026-04-27 | §8: **`materializeDueUpcoming`** deterministic **`transactions`** ids; Callable **`createRecurringFromTransaction`** seeds **`recurring`** + **`upcomingTransactions`** from a **standard** ledger row. |
 | 2026-04-21 | §5: Account type **`cash`** (physical wallet); optional **`creditLimitMinor`** (credit cards); optional **`isSystem`** for non-deletable rows (onboarding Cash). §4.2: **`cash`** is an **asset**. |
