@@ -11,13 +11,13 @@
 ## UI — top
 
 - **App bar title**: **today’s date** only — short format matching spec example: `**Tue, Apr 14`** (locale-aware `DateFormat`), **centered** in the bar (settings remains leading; trailing uses a width placeholder so the title centers on screen).
-- **Body** opens with the dashboard **headline** (no duplicate date line).
+- **Body** opens with the **two-card metric carousel** (no duplicate date line under the app bar).
 
 ## UI — two-card carousel
 
 Horizontal carousel with **exactly two** cards (order as designed):
 
-- **Screen layout**: Carousel row is **full-bleed** (no list horizontal padding) so the **peek** reaches the screen edges; headline, “Cuentas”, upcoming/recent/budget blocks keep the **standard body gutter** (20pt horizontal).
+- **Screen layout**: Carousel row is **full-bleed** (no list horizontal padding) so the **peek** reaches the screen edges; **“Cuentas”**, upcoming/recent/budget blocks keep the **standard body gutter** (20pt horizontal).
 - **Gutter**: horizontal inset on each page so the cards **do not touch**; **viewport fraction below 1.0** keeps a **thin sliver** of the adjacent card visible.
 - **Pagination**: **two centered dots** under the carousel track the active card.
 
@@ -115,7 +115,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
-| 2026-05-13 | Two-metric **carousel**: **full-bleed** on the screen; body gutter (`20`) on headline + sections below only; per-page **gutter** between cards, **viewportFraction** peek, **dots**; net worth **footer** bottom-aligned (`expandChartVertically`). |
+| 2026-05-13 | Two-metric **carousel**: **full-bleed**; body gutter (`20`) on sections **below** the carousel only; per-page **gutter**, **viewportFraction** peek, **dots**; net worth **footer** bottom-aligned (`expandChartVertically`); removed body **headline** (“Resumen…” / EN). |
 | 2026-05-13 | App bar: **date** as centered title (removed separate “Panel” / screen title and duplicate date in body). |
 | 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |

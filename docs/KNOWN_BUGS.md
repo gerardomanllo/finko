@@ -112,16 +112,16 @@ Search this file for **`KB-00N`** to jump to a bug.
 | **Tipo** | Bug |
 | **Reporter summary** | Net worth total does not match expectation from accounts list. |
 | **Discussed fix** | No |
-| **Ready to fix** | No — decide after confirming whether headline is “wrong” or **accounts list interpretation** differs from product definition. |
+| **Ready to fix** | No — decide after confirming whether the **net worth card amount** is “wrong” or **accounts list interpretation** differs from product definition. |
 | **Likely code / product area** | [`lib/features/dashboard/presentation/dashboard_screen.dart`](../lib/features/dashboard/presentation/dashboard_screen.dart) (~lines 139–144); `netWorthFromAccountsMinor` vs sparkline; [`docs/data-model.md`](data-model.md) §4.2 signed net worth. |
 
 **Acceptance (from sheet):** Explanation in UI (tutorial or info icon).
 
 **Engineering notes**
 
-- Dashboard **headline** uses **`netWorthSparklineSeriesProvider`’s last point** when any sparkline point is non-zero; **otherwise** it uses **`netWorthFromAccountsMinor(accounts)`**. If sparkline series is **stale or differently defined** than live account balances, the big number can disagree with the **accounts accordion** below (still sum of accounts).
+- The **net worth metric card value** uses **`netWorthSparklineSeriesProvider`’s last point** when any sparkline point is non-zero; **otherwise** it uses **`netWorthFromAccountsMinor(accounts)`**. If sparkline series is **stale or differently defined** than live account balances, the big number can disagree with the **accounts accordion** below (still sum of accounts).
 - **Hypothesis:** Mismatch is often **sparkline path vs accounts path**, not raw arithmetic on the accordion.
-- **Open questions:** If sparkline is disabled or empty, does headline match sum of accounts? Do we want headline to **always** equal `netWorthFromAccounts` and move history to a secondary widget?
+- **Open questions:** If sparkline is disabled or empty, does the card amount match sum of accounts? Should the card **always** equal `netWorthFromAccounts` and move history to a secondary widget?
 
 ---
 

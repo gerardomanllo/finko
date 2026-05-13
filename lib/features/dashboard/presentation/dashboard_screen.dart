@@ -169,20 +169,6 @@ class DashboardScreen extends ConsumerWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
-            Padding(
-              padding: _kDashboardHorizontalPadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    l10n.dashboardHeadline,
-                    style: theme.textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
             FinkoTwoMetricCarousel(
               first: FinkoMetricCarouselCard(
                 label: l10n.metricNetWorth,

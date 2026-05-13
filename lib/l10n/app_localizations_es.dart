@@ -15,9 +15,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboardTitle => 'Panel';
 
   @override
-  String get dashboardHeadline => 'Resumen de tu dinero';
-
-  @override
   String get openSettings => 'Ajustes';
 
   @override

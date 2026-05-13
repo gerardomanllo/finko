@@ -15,9 +15,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardTitle => 'Dashboard';
 
   @override
-  String get dashboardHeadline => 'Your money at a glance';
-
-  @override
   String get openSettings => 'Settings';
 
   @override

@@ -110,12 +110,6 @@ abstract class AppLocalizations {
   /// **'Panel'**
   String get dashboardTitle;
 
-  /// No description provided for @dashboardHeadline.
-  ///
-  /// In es, this message translates to:
-  /// **'Resumen de tu dinero'**
-  String get dashboardHeadline;
-
   /// No description provided for @openSettings.
   ///
   /// In es, this message translates to:
