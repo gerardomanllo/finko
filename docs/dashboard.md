@@ -17,6 +17,10 @@
 
 Horizontal carousel with **exactly two** cards (order as designed):
 
+- **Screen layout**: Carousel row is **full-bleed** (no list horizontal padding) so the **peek** reaches the screen edges; headline, “Cuentas”, upcoming/recent/budget blocks keep the **standard body gutter** (20pt horizontal).
+- **Gutter**: horizontal inset on each page so the cards **do not touch**; **viewport fraction below 1.0** keeps a **thin sliver** of the adjacent card visible.
+- **Pagination**: **two centered dots** under the carousel track the active card.
+
 ### Card 1 — Net worth (last 30 days)
 
 - **Top left**: label **“Net Worth”**; below it, net worth value **title-sized**.
@@ -111,7 +115,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
-| 2026-05-13 | Net worth card **footer** at **card bottom**: `expandChartVertically` + expanded sparkline slot (chart fills space; no dead band); paired card keeps same bottom strip height. |
+| 2026-05-13 | Two-metric **carousel**: **full-bleed** on the screen; body gutter (`20`) on headline + sections below only; per-page **gutter** between cards, **viewportFraction** peek, **dots**; net worth **footer** bottom-aligned (`expandChartVertically`). |
 | 2026-05-13 | App bar: **date** as centered title (removed separate “Panel” / screen title and duplicate date in body). |
 | 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |

@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Dashboard:** Net worth **footer** bottom-aligned on the card; sparkline **fills** the slot above it (no empty band between graph and copy).
+- **Dashboard:** Metric carousel is **full-bleed**; **20px** horizontal gutter applies only to the headline and to sections **below** the carousel (list no longer uses a single horizontal padding for the whole screen).
 
 - **Cloud Functions (ledger):** Net worth EOD on **`monthlyTotals.days.*.netWorthEodMinorMain`** is now the **signed sum of all accounts** after each aggregate op (including **transfer** legs), not an incremental tx delta; **`rebuildNetWorthSeriesForMonth`** (async, capped tx replay) refreshes affected months after writes.
 
