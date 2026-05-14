@@ -165,6 +165,9 @@ class _ExpandableTypeSection extends StatefulWidget {
 }
 
 class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
+  static const Duration _kExpandDuration = Duration(milliseconds: 220);
+  static const Curve _kExpandCurve = Curves.easeInOutCubic;
+
   bool _open = false;
 
   @override
@@ -197,37 +200,58 @@ class _ExpandableTypeSectionState extends State<_ExpandableTypeSection> {
                 ),
                 style: theme.textTheme.titleSmall,
               ),
-              Icon(
-                widget.accounts.isEmpty
-                    ? Icons.expand_more
-                    : (_open ? Icons.expand_less : Icons.expand_more),
-              ),
+              if (widget.accounts.isEmpty)
+                const Icon(Icons.expand_more)
+              else
+                AnimatedRotation(
+                  turns: _open ? 0.5 : 0,
+                  duration: _kExpandDuration,
+                  curve: _kExpandCurve,
+                  child: const Icon(Icons.expand_more),
+                ),
             ],
           ),
           onTap: widget.accounts.isEmpty
               ? null
               : () => setState(() => _open = !_open),
         ),
-        if (_open)
-          ...widget.accounts.map(
-            (a) => Padding(
-              padding: const EdgeInsets.only(left: 24, bottom: 4),
-              child: ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text(a.name),
-                trailing: _AccountAmount(
-                  mainAmountText: widget.formatMoney(
-                    a.balanceMinorMain ?? a.balanceMinor,
-                    widget.mainCurrencyCode,
-                  ),
-                  actualAmountText: a.currency == widget.mainCurrencyCode
-                      ? null
-                      : widget.formatMoneyWithCode(a.balanceMinor, a.currency),
-                ),
-              ),
-            ),
-          ),
+        AnimatedSize(
+          duration: _kExpandDuration,
+          curve: _kExpandCurve,
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.hardEdge,
+          child: _open
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: widget.accounts
+                      .map(
+                        (a) => Padding(
+                          padding: const EdgeInsets.only(left: 24, bottom: 4),
+                          child: ListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(a.name),
+                            trailing: _AccountAmount(
+                              mainAmountText: widget.formatMoney(
+                                a.balanceMinorMain ?? a.balanceMinor,
+                                widget.mainCurrencyCode,
+                              ),
+                              actualAmountText:
+                                  a.currency == widget.mainCurrencyCode
+                                  ? null
+                                  : widget.formatMoneyWithCode(
+                                      a.balanceMinor,
+                                      a.currency,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                )
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

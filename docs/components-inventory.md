@@ -48,7 +48,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Month summary bottom sheets** | `showFinkoCategoryMonthSummarySheet` / `showFinkoAccountMonthSummarySheet`: header + **this month** total + recent transactions + **Edit** (reuses onboarding bottom-sheet editors); invalidates related streams on save | Categories, Accounts |
-| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable, **info** icon → calculation dialog); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account. Wrapped in **paper card** on cloud scaffold | Dashboard |
+| **Accounts accordion (cash-flow ordered)** | Sections: checking, credit cards, **net cash** (aggregate, not clickable, **info** icon → calculation dialog); spacer; savings, investments. Row: icon, label, balance, expand. Expanded: one row per account; **animated** open/close (height + chevron). Wrapped in **paper card** on cloud scaffold | Dashboard |
 | **Income + fixed + variable accordion** | Three rows (income \| fixed expense \| variable expense), **not clickable** | Spending (`FinkoSpendingIncomeFixedVariableAccordion`) |
 | **Income / expense accordion** | Two rows (income \| expense), **not clickable** | Reusable (`FinkoIncomeExpenseAccordion`) |
 | **Fixed / variable expense accordion** | Two rows (fixed \| variable), **not clickable** | Reusable (`FinkoFixedVariableExpenseAccordion`) |

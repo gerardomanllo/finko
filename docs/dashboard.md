@@ -51,6 +51,8 @@ Horizontal carousel with **exactly two** cards (order as designed):
 
 Each row: **icon** (left), **label**, **amount** (right), **chevron/down** to expand.
 
+Expand/collapse uses a short **height** animation (`AnimatedSize`) and **chevron rotation** so the section does not pop in/out instantly.
+
 Expanded: **one row per real account** matching that type. **Net cash**: show aggregate behavior only (no child rows that imply a single account unless product says otherwise).
 
 ## UI — upcoming transactions
@@ -119,6 +121,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Accounts accordion:** animated expand/collapse (height + chevron rotation) on dashboard account-type rows. |
 | 2026-05-13 | **Upcoming** preview cards: **tap** opens **`LedgerTransactionEditorSheet`** (merged row resolves to future-dated ledger, `upcomingTransactions/`, or **`recurring/`** preview — `openMergedUpcomingEditor`). |
 | 2026-05-13 | **Monthly budget card — category rings:** arc progress uses **positive expense** from signed `byCategoryMinorMain` (`positiveExpenseMinorFromSignedNet`); ring **track** matches `/budgets` compact bar (`FinkoColors.grayLight`). |
 | 2026-05-13 | **Monthly budget card (dashboard):** category grid shows **expense categories only** (income omitted from top-6 selection). |

@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Dashboard:** Cash-flow **accounts accordion** sections animate open/close (height + chevron rotation).
+
 - **Recurring “Coming up” calendar:** **Green** dot for income days, **blue** (primary) dot for expense days; **both** shown **side by side** when a day has both (replaces overlapping dot + `$`).
 
 - **Spending:** Donut colors for categories **without** stored `colorArgb` now use the same **deterministic palette** as other category UI (`categoryAccentColor` by `categoryId`), not list index.
