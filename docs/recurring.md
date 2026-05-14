@@ -25,15 +25,17 @@
 ## UI — “Due soon” section
 
 - **Paper list** of recurring items with next occurrence **within 7 days from now** (inclusive window per product; document chosen rule in code).
+- **Tap** a row → **`LedgerTransactionEditorSheet`** (same resolution as dashboard upcoming cards: `openMergedUpcomingEditor` with **`ledgerFromTodayForUpcomingMergeStreamProvider`** for ledger candidates).
 
 ## UI — “Coming later” section
 
 - **Paper list** of recurring items with next occurrence **within 15 days from now** but outside “due soon” if overlapping — **clarify**: typically **(7, 15]** days, or “8–15 days”. Implement **8–15 days** unless product overrides (avoid duplicate with due soon).
+- **Tap** a row → same **transaction editor** bottom sheet as “Due soon” (`openMergedUpcomingEditor`).
 
 ## Navigation
 
-- **In**: Bottom tab **Recurring**.
-- **Out**: Tapping a row may go to detail/edit — **TBD** (not specified); tracked in [`references/product-todos.md`](references/product-todos.md).
+- **In:** Bottom tab **Recurring**.
+- **Out:** Row tap opens **`LedgerTransactionEditorSheet`** for the merged upcoming row (ledger / `upcomingTransactions` / recurring rule), same pattern as the dashboard upcoming strip.
 
 ## Reuse
 
@@ -57,6 +59,7 @@
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Due soon / Coming later:** row **tap** opens **`LedgerTransactionEditorSheet`** via `openMergedUpcomingEditor` (parity with dashboard upcoming cards). |
 | 2026-05-13 | **Coming up calendar:** green dot = income, blue dot = expense, **non-overlapping** row when both. |
 | 2026-04-27 | **Data:** `recurringMergedUpcomingProvider` + future ledger previews; **`createRecurringFromTransaction`** + editor CTA. |
 | 2026-04-16 | Firestore-backed screen: profile timezone “today,” `upcomingTransactions` + `recurring` + `categories` streams, refresh/error/retry, row titles/icons; linked deferred row navigation in `docs/references/product-todos.md`. |

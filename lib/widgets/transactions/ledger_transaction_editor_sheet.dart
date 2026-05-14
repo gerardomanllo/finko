@@ -10,6 +10,8 @@ import '../../core/data/models/finko_category.dart';
 import '../../core/data/models/finko_enums.dart';
 import '../../core/data/ledger_category_ids.dart';
 import '../../core/data/models/ledger_transaction.dart';
+import '../../core/data/models/recurring_rule.dart';
+import '../../core/data/models/upcoming_transaction.dart';
 import '../../core/data/providers/finko_stream_providers.dart';
 import '../../core/data/repositories/firestore_data_repository.dart';
 import '../../core/formatting/amount_input.dart';
@@ -23,22 +25,53 @@ import '../../l10n/app_localizations.dart';
 ///   existing adjustment — never created from this UI).
 /// - **Transfers** use two accounts (from → to); the app writes both **`transferLeg`**
 ///   documents in one batch.
+/// - **Upcoming / recurring** (merged próximos rows): optional [editingUpcoming] /
+///   [editingRecurringRule] update `upcomingTransactions/` or `recurring/` directly.
 class LedgerTransactionEditorSheet extends ConsumerStatefulWidget {
-  const LedgerTransactionEditorSheet({super.key, this.transaction});
+  const LedgerTransactionEditorSheet({
+    super.key,
+    this.transaction,
+    this.editingUpcoming,
+    this.editingRecurringRule,
+  }) : assert(
+         (transaction != null ? 1 : 0) +
+                 (editingUpcoming != null ? 1 : 0) +
+                 (editingRecurringRule != null ? 1 : 0) <=
+             1,
+         'At most one edit target.',
+       );
 
   /// `null` = create; non-null = edit existing row.
   final LedgerTransaction? transaction;
 
+  /// Edit `users/{uid}/upcomingTransactions/{id}` (not a ledger row).
+  final UpcomingTransaction? editingUpcoming;
+
+  /// Edit `users/{uid}/recurring/{id}` (from a merged preview row).
+  final RecurringRule? editingRecurringRule;
+
   static Future<void> show(
     BuildContext context, {
     LedgerTransaction? transaction,
+    UpcomingTransaction? editingUpcoming,
+    RecurringRule? editingRecurringRule,
   }) {
+    assert(
+      (transaction != null ? 1 : 0) +
+              (editingUpcoming != null ? 1 : 0) +
+              (editingRecurringRule != null ? 1 : 0) <=
+          1,
+    );
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       useSafeArea: true,
-      builder: (ctx) => LedgerTransactionEditorSheet(transaction: transaction),
+      builder: (ctx) => LedgerTransactionEditorSheet(
+        transaction: transaction,
+        editingUpcoming: editingUpcoming,
+        editingRecurringRule: editingRecurringRule,
+      ),
     );
   }
 
@@ -77,16 +110,27 @@ class _LedgerTransactionEditorSheetState
   /// After the first failed save, invalid fields show error styling until the user fixes them.
   bool _submitAttempted = false;
 
-  bool get _editing => widget.transaction != null;
+  bool get _editingLedger => widget.transaction != null;
+
+  bool get _editingUpcoming => widget.editingUpcoming != null;
+
+  bool get _editingRecurring => widget.editingRecurringRule != null;
+
+  bool get _editing => _editingLedger || _editingUpcoming || _editingRecurring;
 
   bool get _isTransferContext =>
       _sheetMode == _SheetMode.transfer ||
-      (widget.transaction?.type == LedgerTransactionKind.transferLeg);
+      (_editingLedger &&
+          widget.transaction!.type == LedgerTransactionKind.transferLeg) ||
+      (_editingUpcoming &&
+          widget.editingUpcoming!.kind == UpcomingKind.transfer) ||
+      (_editingRecurring &&
+          widget.editingRecurringRule!.kind == UpcomingKind.transfer);
 
   bool get _canMakeRecurring =>
-      _editing &&
+      _editingLedger &&
       !_isTransferContext &&
-      widget.transaction?.type == LedgerTransactionKind.standard;
+      widget.transaction!.type == LedgerTransactionKind.standard;
 
   @override
   void initState() {
@@ -109,6 +153,10 @@ class _LedgerTransactionEditorSheetState
         _accountId = t.accountId;
         _categoryId = t.categoryId;
       }
+    } else if (widget.editingUpcoming != null) {
+      _initFromUpcoming(widget.editingUpcoming!);
+    } else if (widget.editingRecurringRule != null) {
+      _initFromRecurringRule(widget.editingRecurringRule!);
     } else {
       _sheetMode = _SheetMode.incomeExpense;
       _dateYmd = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -121,6 +169,40 @@ class _LedgerTransactionEditorSheetState
     }
     _amountController.addListener(_onAmountChanged);
     _toAmountController.addListener(_onAmountChanged);
+  }
+
+  void _initFromUpcoming(UpcomingTransaction u) {
+    _dateYmd = u.transactionDate;
+    _amountController.text = _minorToDecimalString(u.amountMinor);
+    _memoController.text = u.memo ?? '';
+    _direction = u.direction;
+    if (u.kind == UpcomingKind.transfer) {
+      _sheetMode = _SheetMode.transfer;
+      _fromAccountId = u.fromAccountId;
+      _toAccountId = u.toAccountId;
+      _peerLoadDone = true;
+    } else {
+      _sheetMode = _SheetMode.incomeExpense;
+      _accountId = u.accountId;
+      _categoryId = u.categoryId;
+    }
+  }
+
+  void _initFromRecurringRule(RecurringRule r) {
+    _dateYmd = r.nextTransactionDate;
+    _amountController.text = _minorToDecimalString(r.amountMinor);
+    _memoController.text = r.memo ?? '';
+    _direction = r.direction;
+    if (r.kind == UpcomingKind.transfer) {
+      _sheetMode = _SheetMode.transfer;
+      _fromAccountId = r.fromAccountId;
+      _toAccountId = r.toAccountId;
+      _peerLoadDone = true;
+    } else {
+      _sheetMode = _SheetMode.incomeExpense;
+      _accountId = r.accountId;
+      _categoryId = r.categoryId;
+    }
   }
 
   Future<void> _loadPeerLeg() async {
@@ -263,7 +345,7 @@ class _LedgerTransactionEditorSheetState
   }
 
   LedgerTransactionKind _ledgerKindForIncomeExpenseSave() {
-    if (_editing &&
+    if (_editingLedger &&
         widget.transaction!.type == LedgerTransactionKind.adjustment) {
       return LedgerTransactionKind.adjustment;
     }
@@ -410,6 +492,16 @@ class _LedgerTransactionEditorSheetState
     ref.invalidate(accountsStreamProvider);
   }
 
+  void _invalidateAfterUpcomingOrRuleWrite() {
+    ref.invalidate(upcomingTransactionsStreamProvider);
+    ref.invalidate(recurringMergedUpcomingProvider);
+    ref.invalidate(dashboardUpcomingStripProvider);
+    ref.invalidate(futureDatedLedgerTransactionsStreamProvider);
+    ref.invalidate(ledgerFromTodayForUpcomingMergeStreamProvider);
+    ref.invalidate(recurringRulesStreamProvider);
+    _invalidateAfterWrite();
+  }
+
   void _applyDefaultTransferAccountsIfNeeded(List<FinkoAccount> accounts) {
     if (_sheetMode != _SheetMode.transfer ||
         _editing ||
@@ -435,7 +527,306 @@ class _LedgerTransactionEditorSheetState
     }
   }
 
+  Future<void> _saveEditingUpcomingStandard() async {
+    final l10n = AppLocalizations.of(context);
+    final uid = ref.read(authUidProvider);
+    if (uid == null || _saving) return;
+
+    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
+    final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
+    final filteredCats = _categoriesForDirection(categories, _direction);
+
+    setState(() => _submitAttempted = true);
+    if (!_isValidCalendarDateYmd(_dateYmd)) return;
+
+    late final int minor;
+    try {
+      minor = parseAmountStringToMinorUnits(_amountController.text);
+    } catch (_) {
+      return;
+    }
+
+    final acc = _accountFor(accounts, _accountId);
+    if (_accountId == null || acc == null) return;
+
+    if (filteredCats.isEmpty ||
+        _categoryId == null ||
+        !filteredCats.any((c) => c.id == _categoryId)) {
+      return;
+    }
+    final categoryId = _categoryId!;
+    final prev = widget.editingUpcoming!;
+
+    setState(() {
+      _submitAttempted = false;
+      _saving = true;
+    });
+    try {
+      final repo = ref.read(firestoreDataRepositoryProvider);
+      final memoTrim = _memoController.text.trim();
+      final memo = memoTrim.isEmpty ? null : memoTrim;
+
+      final next = UpcomingTransaction(
+        id: prev.id,
+        transactionDate: _dateYmd,
+        kind: prev.kind,
+        amountMinor: minor,
+        direction: _direction,
+        currency: acc.currency,
+        accountId: _accountId,
+        fromAccountId: null,
+        toAccountId: null,
+        transferGroupId: null,
+        categoryId: categoryId,
+        memo: memo,
+        recurringRuleId: prev.recurringRuleId,
+        cadence: prev.cadence,
+        daysOfMonth: prev.daysOfMonth,
+        weekday: prev.weekday,
+        amountMinorMain: prev.amountMinorMain,
+        fxRateDateUsed: prev.fxRateDateUsed,
+        loadedAt: prev.loadedAt,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await repo.updateUpcomingTransaction(uid, next);
+      _invalidateAfterUpcomingOrRuleWrite();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.transactionEditorErrorSave} ($e)')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _saveEditingRecurringStandard() async {
+    final l10n = AppLocalizations.of(context);
+    final uid = ref.read(authUidProvider);
+    if (uid == null || _saving) return;
+
+    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
+    final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
+    final filteredCats = _categoriesForDirection(categories, _direction);
+
+    setState(() => _submitAttempted = true);
+    if (!_isValidCalendarDateYmd(_dateYmd)) return;
+
+    late final int minor;
+    try {
+      minor = parseAmountStringToMinorUnits(_amountController.text);
+    } catch (_) {
+      return;
+    }
+
+    final acc = _accountFor(accounts, _accountId);
+    if (_accountId == null || acc == null) return;
+
+    if (filteredCats.isEmpty ||
+        _categoryId == null ||
+        !filteredCats.any((c) => c.id == _categoryId)) {
+      return;
+    }
+    final categoryId = _categoryId!;
+    final prev = widget.editingRecurringRule!;
+
+    setState(() {
+      _submitAttempted = false;
+      _saving = true;
+    });
+    try {
+      final repo = ref.read(firestoreDataRepositoryProvider);
+      final memoTrim = _memoController.text.trim();
+      final memo = memoTrim.isEmpty ? null : memoTrim;
+
+      final next = RecurringRule(
+        id: prev.id,
+        name: prev.name,
+        kind: prev.kind,
+        amountMinor: minor,
+        direction: _direction,
+        currency: acc.currency,
+        categoryId: categoryId,
+        memo: memo,
+        accountId: _accountId,
+        fromAccountId: null,
+        toAccountId: null,
+        cadence: prev.cadence,
+        daysOfMonth: prev.daysOfMonth,
+        weekday: prev.weekday,
+        active: prev.active,
+        nextTransactionDate: _dateYmd,
+        createdAt: prev.createdAt,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await repo.updateRecurringRule(uid, next);
+      _invalidateAfterUpcomingOrRuleWrite();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.transactionEditorErrorSave} ($e)')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _saveEditingUpcomingTransfer() async {
+    final l10n = AppLocalizations.of(context);
+    final uid = ref.read(authUidProvider);
+    if (uid == null || _saving) return;
+
+    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
+    setState(() => _submitAttempted = true);
+    if (!_isValidCalendarDateYmd(_dateYmd)) return;
+
+    final fromAcc = _accountFor(accounts, _fromAccountId);
+    final toAcc = _accountFor(accounts, _toAccountId);
+    if (fromAcc == null || toAcc == null) return;
+    if (_transferPairErrorText(l10n, accounts) != null) return;
+
+    final crossCurrency = fromAcc.currency != toAcc.currency;
+    late final int fromMinor;
+    try {
+      fromMinor = parseAmountStringToMinorUnits(_amountController.text);
+      if (crossCurrency) {
+        parseAmountStringToMinorUnits(_toAmountController.text);
+      }
+    } catch (_) {
+      return;
+    }
+
+    setState(() {
+      _submitAttempted = false;
+      _saving = true;
+    });
+    try {
+      final repo = ref.read(firestoreDataRepositoryProvider);
+      final memoTrim = _memoController.text.trim();
+      final memo = memoTrim.isEmpty ? null : memoTrim;
+      final prev = widget.editingUpcoming!;
+
+      final next = UpcomingTransaction(
+        id: prev.id,
+        transactionDate: _dateYmd,
+        kind: prev.kind,
+        amountMinor: fromMinor,
+        direction: prev.direction,
+        currency: fromAcc.currency,
+        accountId: null,
+        fromAccountId: _fromAccountId,
+        toAccountId: _toAccountId,
+        transferGroupId: prev.transferGroupId,
+        categoryId: prev.categoryId,
+        memo: memo,
+        recurringRuleId: prev.recurringRuleId,
+        cadence: prev.cadence,
+        daysOfMonth: prev.daysOfMonth,
+        weekday: prev.weekday,
+        amountMinorMain: prev.amountMinorMain,
+        fxRateDateUsed: prev.fxRateDateUsed,
+        loadedAt: prev.loadedAt,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await repo.updateUpcomingTransaction(uid, next);
+      _invalidateAfterUpcomingOrRuleWrite();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.transactionEditorErrorSave} ($e)')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _saveEditingRecurringTransfer() async {
+    final l10n = AppLocalizations.of(context);
+    final uid = ref.read(authUidProvider);
+    if (uid == null || _saving) return;
+
+    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
+    setState(() => _submitAttempted = true);
+    if (!_isValidCalendarDateYmd(_dateYmd)) return;
+
+    final fromAcc = _accountFor(accounts, _fromAccountId);
+    final toAcc = _accountFor(accounts, _toAccountId);
+    if (fromAcc == null || toAcc == null) return;
+    if (_transferPairErrorText(l10n, accounts) != null) return;
+
+    final crossCurrency = fromAcc.currency != toAcc.currency;
+    late final int fromMinor;
+    try {
+      fromMinor = parseAmountStringToMinorUnits(_amountController.text);
+      if (crossCurrency) {
+        parseAmountStringToMinorUnits(_toAmountController.text);
+      }
+    } catch (_) {
+      return;
+    }
+
+    setState(() {
+      _submitAttempted = false;
+      _saving = true;
+    });
+    try {
+      final repo = ref.read(firestoreDataRepositoryProvider);
+      final memoTrim = _memoController.text.trim();
+      final memo = memoTrim.isEmpty ? null : memoTrim;
+      final prev = widget.editingRecurringRule!;
+
+      final next = RecurringRule(
+        id: prev.id,
+        name: prev.name,
+        kind: prev.kind,
+        amountMinor: fromMinor,
+        direction: prev.direction,
+        currency: fromAcc.currency,
+        categoryId: prev.categoryId,
+        memo: memo,
+        accountId: null,
+        fromAccountId: _fromAccountId,
+        toAccountId: _toAccountId,
+        cadence: prev.cadence,
+        daysOfMonth: prev.daysOfMonth,
+        weekday: prev.weekday,
+        active: prev.active,
+        nextTransactionDate: _dateYmd,
+        createdAt: prev.createdAt,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await repo.updateRecurringRule(uid, next);
+      _invalidateAfterUpcomingOrRuleWrite();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.transactionEditorErrorSave} ($e)')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   Future<void> _saveIncomeExpense() async {
+    if (_editingUpcoming &&
+        widget.editingUpcoming!.kind == UpcomingKind.standard) {
+      await _saveEditingUpcomingStandard();
+      return;
+    }
+    if (_editingRecurring &&
+        widget.editingRecurringRule!.kind == UpcomingKind.standard) {
+      await _saveEditingRecurringStandard();
+      return;
+    }
+
     final l10n = AppLocalizations.of(context);
     final uid = ref.read(authUidProvider);
     if (uid == null || _saving) return;
@@ -475,7 +866,7 @@ class _LedgerTransactionEditorSheetState
       final memoTrim = _memoController.text.trim();
       final memo = memoTrim.isEmpty ? null : memoTrim;
 
-      if (_editing) {
+      if (_editingLedger) {
         final prev = widget.transaction!;
         final next = LedgerTransaction(
           id: prev.id,
@@ -572,11 +963,22 @@ class _LedgerTransactionEditorSheetState
   }
 
   Future<void> _saveTransfer() async {
+    if (_editingUpcoming &&
+        widget.editingUpcoming!.kind == UpcomingKind.transfer) {
+      await _saveEditingUpcomingTransfer();
+      return;
+    }
+    if (_editingRecurring &&
+        widget.editingRecurringRule!.kind == UpcomingKind.transfer) {
+      await _saveEditingRecurringTransfer();
+      return;
+    }
+
     final l10n = AppLocalizations.of(context);
     final uid = ref.read(authUidProvider);
     if (uid == null || _saving) return;
 
-    if (_editing &&
+    if (_editingLedger &&
         (widget.transaction?.linkedTransactionId == null || _peerLeg == null)) {
       ScaffoldMessenger.of(
         context,
@@ -617,7 +1019,7 @@ class _LedgerTransactionEditorSheetState
       final memoTrim = _memoController.text.trim();
       final memo = memoTrim.isEmpty ? null : memoTrim;
 
-      if (_editing) {
+      if (_editingLedger) {
         final cur = widget.transaction!;
         final peer = _peerLeg!;
         final groupId = cur.transferGroupId ?? peer.transferGroupId;
@@ -680,8 +1082,52 @@ class _LedgerTransactionEditorSheetState
   Future<void> _confirmDelete() async {
     final l10n = AppLocalizations.of(context);
     final uid = ref.read(authUidProvider);
+    if (uid == null || _deleting) return;
+
+    if (_editingUpcoming) {
+      final upcomingId = widget.editingUpcoming!.id;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.transactionEditorDeleteConfirmTitle),
+          content: Text(l10n.transactionEditorDeleteConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.transactionEditorCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.transactionEditorDeleteConfirm),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+
+      setState(() => _deleting = true);
+      try {
+        await ref
+            .read(firestoreDataRepositoryProvider)
+            .deleteUpcomingTransaction(uid, upcomingId);
+        _invalidateAfterUpcomingOrRuleWrite();
+        if (mounted) Navigator.of(context).pop();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${l10n.transactionEditorErrorDelete} ($e)'),
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _deleting = false);
+      }
+      return;
+    }
+
     final id = widget.transaction?.id;
-    if (uid == null || id == null || _deleting) return;
+    if (id == null) return;
 
     final ok = await showDialog<bool>(
       context: context,
@@ -728,7 +1174,7 @@ class _LedgerTransactionEditorSheetState
 
   Widget _buildModeSelector(AppLocalizations l10n, ThemeData theme) {
     final t = widget.transaction;
-    if (_editing && t?.type == LedgerTransactionKind.transferLeg) {
+    if (_editingLedger && t?.type == LedgerTransactionKind.transferLeg) {
       return Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -738,7 +1184,27 @@ class _LedgerTransactionEditorSheetState
       );
     }
 
-    if (_editing) {
+    if ((_editingUpcoming &&
+            widget.editingUpcoming!.kind == UpcomingKind.transfer) ||
+        (_editingRecurring &&
+            widget.editingRecurringRule!.kind == UpcomingKind.transfer)) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          l10n.transactionEditorEntryTransfer,
+          style: theme.textTheme.labelLarge,
+        ),
+      );
+    }
+
+    final showEditingDirectionChips =
+        (_editingLedger && t?.type != LedgerTransactionKind.transferLeg) ||
+        (_editingUpcoming &&
+            widget.editingUpcoming!.kind == UpcomingKind.standard) ||
+        (_editingRecurring &&
+            widget.editingRecurringRule!.kind == UpcomingKind.standard);
+
+    if (showEditingDirectionChips) {
       return Row(
         children: [
           Expanded(
@@ -920,10 +1386,29 @@ class _LedgerTransactionEditorSheetState
                       ),
                     ),
                   ],
-                  if (_editing && widget.transaction != null) ...[
+                  if (_editingLedger && widget.transaction != null) ...[
                     const SizedBox(height: 6),
                     Text(
                       '${widget.transaction!.transactionDate} · ${widget.transaction!.id}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if (_editingUpcoming && widget.editingUpcoming != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${widget.editingUpcoming!.transactionDate} · ${widget.editingUpcoming!.id}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                  if (_editingRecurring &&
+                      widget.editingRecurringRule != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${widget.editingRecurringRule!.nextTransactionDate} · ${widget.editingRecurringRule!.name}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -970,7 +1455,7 @@ class _LedgerTransactionEditorSheetState
                           : _accountFor(accounts, _accountId)?.currency;
                       final secondaryAmountCurrency = toAccPick?.currency;
 
-                      if (_editing &&
+                      if (_editingLedger &&
                           widget.transaction?.type ==
                               LedgerTransactionKind.transferLeg &&
                           !_peerLoadDone) {
@@ -1299,7 +1784,8 @@ class _LedgerTransactionEditorSheetState
                                         : l10n.transactionEditorSave,
                                   ),
                           ),
-                          if (_editing) ...[
+                          if (_editing &&
+                              (_editingLedger || _editingUpcoming)) ...[
                             const SizedBox(height: 12),
                             TextButton(
                               onPressed:

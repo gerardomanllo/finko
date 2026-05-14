@@ -14,6 +14,7 @@ import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/calendar/finko_two_week_calendar.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
+import '../../../widgets/transactions/open_merged_upcoming_editor.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
 DateTime _mondayOfCalendarDay(DateTime dateOnly) {
@@ -222,6 +223,16 @@ class RecurringScreen extends ConsumerWidget {
                 mainCurrency: mainCurrency,
                 ruleById: ruleById,
                 catById: catById,
+                onRowTap: (u) => openMergedUpcomingEditor(
+                  context,
+                  ref,
+                  u,
+                  ledgerCandidates:
+                      ref
+                          .read(ledgerFromTodayForUpcomingMergeStreamProvider)
+                          .valueOrNull ??
+                      const [],
+                ),
               ),
               loading: () => const LinearProgressIndicator(),
               error: (Object e, StackTrace stack) => const SizedBox.shrink(),
@@ -242,6 +253,16 @@ class RecurringScreen extends ConsumerWidget {
                 mainCurrency: mainCurrency,
                 ruleById: ruleById,
                 catById: catById,
+                onRowTap: (u) => openMergedUpcomingEditor(
+                  context,
+                  ref,
+                  u,
+                  ledgerCandidates:
+                      ref
+                          .read(ledgerFromTodayForUpcomingMergeStreamProvider)
+                          .valueOrNull ??
+                      const [],
+                ),
               ),
               loading: () => const LinearProgressIndicator(),
               error: (Object e, StackTrace stack) => const SizedBox.shrink(),
@@ -260,6 +281,7 @@ class _DueList extends StatelessWidget {
     required this.mainCurrency,
     required this.ruleById,
     required this.catById,
+    required this.onRowTap,
   });
 
   final List<UpcomingTransaction> list;
@@ -267,6 +289,7 @@ class _DueList extends StatelessWidget {
   final String mainCurrency;
   final Map<String, RecurringRule> ruleById;
   final Map<String, FinkoCategory> catById;
+  final void Function(UpcomingTransaction u) onRowTap;
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +310,7 @@ class _DueList extends StatelessWidget {
               amountText: row.amountText,
               secondaryAmountText: row.secondaryAmountText,
               leading: _rowLeading(u, catById),
+              onTap: () => onRowTap(u),
             );
           }),
         ],

@@ -26,6 +26,7 @@ import '../../../widgets/metrics/finko_two_metric_carousel.dart';
 import '../../../widgets/transactions/finko_paper_see_more_list.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
+import '../../../widgets/transactions/open_merged_upcoming_editor.dart';
 import '../../../widgets/transactions/finko_upcoming_transaction_strip.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
@@ -353,6 +354,18 @@ class DashboardScreen extends ConsumerWidget {
                                         ? catById[u.categoryId!]
                                         : null;
                                     return FinkoUpcomingTransactionCard(
+                                      onTap: () => openMergedUpcomingEditor(
+                                        context,
+                                        ref,
+                                        u,
+                                        ledgerCandidates:
+                                            ref
+                                                .read(
+                                                  futureDatedLedgerTransactionsStreamProvider,
+                                                )
+                                                .valueOrNull ??
+                                            const [],
+                                      ),
                                       category: cat,
                                       title: u.memo ?? u.kind.wireName,
                                       amountText: _upcomingAmount(

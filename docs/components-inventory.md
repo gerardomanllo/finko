@@ -59,7 +59,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Upcoming transaction card** | Category avatar; name; **bold** amount; footer “days until” | Dashboard |
+| **Upcoming transaction card** | Category avatar; name; **bold** amount; footer “days until”; **tap** → `LedgerTransactionEditorSheet` / `openMergedUpcomingEditor` | Dashboard |
+| **Open merged upcoming editor** | `openMergedUpcomingEditor` — resolves merged `UpcomingTransaction` to ledger / `upcomingTransactions` / `recurring` and shows `LedgerTransactionEditorSheet` | Dashboard, Recurring |
 | **Upcoming “see all” card** | Trailing strip tile: **chevron** + label using **`labelMedium` / `onSurfaceVariant`** (same as metric card footers); tap → **`/recurring`** | Dashboard |
 | **Transaction row (compact)** | For lists: icon/avatar, title, subtitle/amount as per screen | Recent, recurring lists, top transactions |
 | **Category icon avatar** | `CircleAvatar` + Material icon from `iconKey`; icon tint from `colorArgb` or deterministic theme fallback by `categoryId` (`FinkoCategoryIconAvatar`) | Transaction lists, upcoming strip, recurring |

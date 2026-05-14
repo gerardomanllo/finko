@@ -62,6 +62,7 @@ class FinkoUpcomingSeeAllCard extends StatelessWidget {
 class FinkoUpcomingTransactionCard extends StatelessWidget {
   const FinkoUpcomingTransactionCard({
     super.key,
+    required this.onTap,
     required this.title,
     required this.amountText,
     required this.footerText,
@@ -70,6 +71,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
     this.avatarLetter,
   });
 
+  final VoidCallback onTap;
   final String title;
   final String amountText;
   final String? secondaryAmountText;
@@ -100,47 +102,51 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(child: avatar),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium,
-              ),
-              const Spacer(),
-              Text(
-                amountText,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (secondaryAmountText != null) ...[
-                const SizedBox(height: 2),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(child: avatar),
+                const SizedBox(height: 8),
                 Text(
-                  secondaryAmountText!,
+                  title,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelMedium,
+                ),
+                const Spacer(),
+                Text(
+                  amountText,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (secondaryAmountText != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    secondaryAmountText!,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Text(
+                  footerText,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
-              const SizedBox(height: 4),
-              Text(
-                footerText,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

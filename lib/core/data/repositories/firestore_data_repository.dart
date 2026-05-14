@@ -182,6 +182,15 @@ abstract class FirestoreDataRepository {
   /// Hard-deletes a transaction ([`docs/data-model.md`] §4).
   Future<void> deleteTransaction(String uid, String transactionId);
 
+  /// Merges fields into `upcomingTransactions/{data.id}` ([`docs/data-model.md`] §8).
+  Future<void> updateUpcomingTransaction(String uid, UpcomingTransaction data);
+
+  /// Hard-deletes `upcomingTransactions/{upcomingId}`.
+  Future<void> deleteUpcomingTransaction(String uid, String upcomingId);
+
+  /// Merges fields into `recurring/{data.id}` ([`docs/data-model.md`] §9).
+  Future<void> updateRecurringRule(String uid, RecurringRule data);
+
   /// User metadata on `categories/{id}` — does not touch aggregates.
   Future<void> updateCategory(String uid, FinkoCategory category);
 
@@ -294,10 +303,10 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
               .orderBy('transactionDate')
               .limit(limit);
     return query.snapshots().map(
-          (snapshot) => snapshot.docs
-              .map((d) => LedgerTransaction.fromFirestore(d.id, d.data()))
-              .toList(),
-        );
+      (snapshot) => snapshot.docs
+          .map((d) => LedgerTransaction.fromFirestore(d.id, d.data()))
+          .toList(),
+    );
   }
 
   @override
@@ -520,6 +529,34 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
   @override
   Future<void> deleteTransaction(String uid, String transactionId) async {
     await _db.doc(FirestorePaths.transactionDoc(uid, transactionId)).delete();
+  }
+
+  @override
+  Future<void> updateUpcomingTransaction(
+    String uid,
+    UpcomingTransaction data,
+  ) async {
+    final map = Map<String, dynamic>.from(data.toJson());
+    map['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .doc(FirestorePaths.upcomingTransactionDoc(uid, data.id))
+        .set(map, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteUpcomingTransaction(String uid, String upcomingId) async {
+    await _db
+        .doc(FirestorePaths.upcomingTransactionDoc(uid, upcomingId))
+        .delete();
+  }
+
+  @override
+  Future<void> updateRecurringRule(String uid, RecurringRule data) async {
+    final map = Map<String, dynamic>.from(data.toJson());
+    map['updatedAt'] = FieldValue.serverTimestamp();
+    await _db
+        .doc(FirestorePaths.recurringDoc(uid, data.id))
+        .set(map, SetOptions(merge: true));
   }
 
   @override

@@ -168,6 +168,18 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
   Future<void> deleteTransaction(String uid, String transactionId) async {}
 
   @override
+  Future<void> updateUpcomingTransaction(
+    String uid,
+    UpcomingTransaction data,
+  ) async {}
+
+  @override
+  Future<void> deleteUpcomingTransaction(String uid, String upcomingId) async {}
+
+  @override
+  Future<void> updateRecurringRule(String uid, RecurringRule data) async {}
+
+  @override
   Future<void> updateCategory(String uid, FinkoCategory category) async {}
 
   @override

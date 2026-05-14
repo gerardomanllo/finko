@@ -101,7 +101,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | **Main currency** | `userProfileStreamProvider` (`mainCurrency`) | Fallback: first account currency or `MXN`. |
 | **Accounts + net cash** | `accountsStreamProvider` | Net cash = sum of `balanceMinorMain` / `balanceMinor` for accounts with **`includeInNetCash`** (Firestore field; client infers checking/creditCard when omitted — see `data-model.md` §5 / §4.2). |
 | **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored; ring **fill** uses **`positiveExpenseMinorFromSignedNet`** on that scaled map (signed net → positive expense), matching budget rollups. |
-| **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). **Dashboard UI:** section hidden when empty; **≤5** preview + **see all** → **`/recurring`**. |
+| **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). **Dashboard UI:** section hidden when empty; **≤5** preview + **see all** → **`/recurring`**. **Tap** a preview card → same **`LedgerTransactionEditorSheet`** as recent transactions (ledger row, `upcomingTransactions/` row, or recurring rule preview — see `openMergedUpcomingEditor`). |
 | **Recent list** | `recentTransactionsStreamProvider` | Last **5** with `transactionDate` **on or before** profile **today** (excludes future-dated ledger rows). |
 | **Pull-to-refresh** | `RefreshIndicator` | Calls **`ledgerAwareAppRefreshProvider.runPullToRefresh`** (shared with Recurring / Transactions): throttle, server profile gate, **`materializeDueUpcoming`**, conditional **`reconcileDeferredLedgerForUser`**, canonical provider invalidation — see **`data-contract.md` §11**. |
 
@@ -111,7 +111,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 - Date format matches short weekday + month + day style.
 - Net cash is aggregate and non-clickable; info icon explains the calculation.
-- Upcoming: **hidden** when none; otherwise sorted ascending, future dates only, **max five** preview cards + **see all** → Recurring.
+- Upcoming: **hidden** when none; otherwise sorted ascending, future dates only, **max five** preview cards + **see all** → Recurring; **each preview card** opens the **transaction editor** bottom sheet (same entry point as recent transactions — future ledger, scheduled upcoming, or recurring preview).
 - Recent capped at 5 with see more.
 - Monthly expense chart: **one point per calendar day** in `dashboardYearMonth` (28–31 points); each value is **running total** spend from day 1 through that day (`dashboardMonthDailyExpenseSeriesProvider`).
 
@@ -119,6 +119,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Upcoming** preview cards: **tap** opens **`LedgerTransactionEditorSheet`** (merged row resolves to future-dated ledger, `upcomingTransactions/`, or **`recurring/`** preview — `openMergedUpcomingEditor`). |
 | 2026-05-13 | **Monthly budget card — category rings:** arc progress uses **positive expense** from signed `byCategoryMinorMain` (`positiveExpenseMinorFromSignedNet`); ring **track** matches `/budgets` compact bar (`FinkoColors.grayLight`). |
 | 2026-05-13 | **Monthly budget card (dashboard):** category grid shows **expense categories only** (income omitted from top-6 selection). |
 | 2026-05-13 | **Monthly budget card:** top-6 category cells are a **2×3** grid; each shows **category icon** (`FinkoCategoryIconAvatar`) inside the existing **progress ring** (`FinkoCategoryAvatarRing` + `FinkoBudgetTeaserCategoryRing` data). |
