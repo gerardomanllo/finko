@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Dashboard:** Metric carousel uses the **same horizontal gutter** as the rest of the dashboard; **viewportFraction** (~0.98) + smaller per-page inset keeps the **second card** barely visible while maximizing card width.
+- **Dashboard:** Monthly expense metric card — line chart is **running total** spend through each day of **`dashboardYearMonth`** (`dashboardMonthDailyExpenseSeriesProvider`; cumulative **`days.{dd}.expenseMinorMain`**).
 
 - **Cloud Functions (ledger):** Net worth EOD on **`monthlyTotals.days.*.netWorthEodMinorMain`** is now the **signed sum of all accounts** after each aggregate op (including **transfer** legs), not an incremental tx delta; **`rebuildNetWorthSeriesForMonth`** (async, capped tx replay) refreshes affected months after writes.
 

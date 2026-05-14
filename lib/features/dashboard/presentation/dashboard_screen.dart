@@ -127,6 +127,9 @@ class DashboardScreen extends ConsumerWidget {
     final upcomingAsync = ref.watch(dashboardUpcomingStripProvider);
     final todayKey = ref.watch(todayYyyyMmDdProvider);
     final sparkline = ref.watch(netWorthSparklineSeriesProvider);
+    final dailyExpenseSeries = ref.watch(
+      dashboardMonthDailyExpenseSeriesProvider,
+    );
 
     final locale = Localizations.localeOf(context).toString();
     final dateLine = DateFormat('E, MMM d', locale).format(DateTime.now());
@@ -219,7 +222,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   deltaText: l10n.metricDeltaStubDown,
                   expandChartVertically: true,
-                  chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
+                  chart: FinkoNetWorthSparkline(values: dailyExpenseSeries),
                   onTap: () => context.go('/spending'),
                 ),
               ),

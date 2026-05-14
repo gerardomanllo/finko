@@ -150,6 +150,8 @@ flowchart TB
 
 **Net worth chart:** `netWorthSparklineSeriesProvider` ([`finko_stream_providers.dart`](../lib/core/data/providers/finko_stream_providers.dart)) walks **30 calendar days** ending at **`todayYyyyMmDd`**, subscribes to **every** **`monthlyTotals/{yyyy-mm}`** that intersects that window (one to three month docs — e.g. **Jan 31 → Mar 1**), reads **`monthlyTotals.days[dd].netWorthEodMinorMain`** (each point is the **signed sum of all account `balanceMinorMain`** in main currency, written by Functions after each aggregate op and optionally refreshed by **`rebuildNetWorthSeriesForMonth`**), **forward-fills** missing days from the last known value in-window (or `0`).
 
+**Monthly expense chart (dashboard):** `dashboardMonthDailyExpenseSeriesProvider` walks **every calendar day** in **`dashboardYearMonth`** (series length = days in month). Each point is **cumulative** spend through that day: sum of **`days.{01}.expenseMinorMain` … `days.{dd}.expenseMinorMain`** (missing days add `0`). Same line/area widget shell as net worth.
+
 ---
 
 ## 3. Traceability: calculation → implementation → test
@@ -179,11 +181,12 @@ flowchart TB
 
 | UI output | Formula / function | Inputs from Firestore | Test |
 |-----------|---------------------|------------------------|------|
-| MTD expense card | `expenseMinorMainThroughDate` | `monthlyTotals.days.*.expenseMinorMain`, `expenseMinorMain` | [`test/core/monthly_totals_as_of_date_test.dart`](../test/core/monthly_totals_as_of_date_test.dart) |
+| MTD expense card (headline amount) | `expenseMinorMainThroughDate` | `monthlyTotals.days.*.expenseMinorMain`, `expenseMinorMain` | [`test/core/monthly_totals_as_of_date_test.dart`](../test/core/monthly_totals_as_of_date_test.dart) |
+| Full-month **running total** expense chart | `dashboardMonthDailyExpenseSeriesProvider` | Same month doc: cumulative **`days.{01..dd}.expenseMinorMain`** | [`test/core/stream_providers_test.dart`](../test/core/stream_providers_test.dart) |
 | Category ring scaling | `byCategoryMinorMainThroughDate` | `expenseMinorMain`, `byCategoryMinorMain`, `days` | [`test/core/monthly_totals_as_of_date_test.dart`](../test/core/monthly_totals_as_of_date_test.dart) |
 | Net worth headline when sparkline empty | **Signed** sum: add asset accounts, subtract liability (`creditCard`, `loan`, `mortgage`) using `balanceMinorMain ?? balanceMinor` | `accounts` | [`finko_account_kind.dart`](../lib/core/data/models/finko_account_kind.dart) |
 | Net cash line | Same **signing** for accounts where `includeInNetCash` | `accounts` | *Same* |
-| Sparkline 30 points | `netWorthSparklineSeriesProvider` | `monthlyTotals.days.*.netWorthEodMinorMain` | *Add `test/core/net_worth_sparkline_test.dart` if you want strict coverage* |
+| Sparkline 30 points | `netWorthSparklineSeriesProvider` | `monthlyTotals.days.*.netWorthEodMinorMain` | [`test/core/stream_providers_test.dart`](../test/core/stream_providers_test.dart) |
 | Recent row amounts | Format `LedgerTransaction` | `transactions` | Canonical **per-tx** amounts, not `monthlyTotals` |
 
 ---
@@ -241,6 +244,7 @@ The Flutter app uses these fields (plus a short local throttle) to **gate** **`r
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **§2** / **§3.2**: Monthly expense chart = **running total** (cumulative by day) via **`dashboardMonthDailyExpenseSeriesProvider`**; supersedes per-day-only description. |
 | 2026-05-12 | Net worth: **`applyNetWorthDelta` removed**; **`runAggregateOpsTransaction`** snapshots **`netWorthEodMinorMain`** as signed sum of all accounts after each op (incl. transfer legs); async **`rebuildNetWorthSeriesForMonth`** (capped genesis replay) refreshes NW for affected months; Flutter sparkline loads **all** intersecting **`monthlyTotals`** month docs (up to three). Diagram §1 + §4 + traceability table updated. |
 | 2026-04-18 | **§5.1** `users/{uid}` **`ledgerSourcesLastChangedAt`** / **`aggregateLastCompletedAt`** (CF maintenance + app pull-to-refresh gating). |
 | 2026-04-18 | §3.2 / §4: **Liability-aware** `applyAccountDelta` (`m` factor from account `type`); Flutter net worth / net cash **signed** sums; migration note in [`references/liability-balance-migration.md`](references/liability-balance-migration.md). |

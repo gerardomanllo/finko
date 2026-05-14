@@ -112,6 +112,7 @@ void _invalidateAggregateBackedProviders(WidgetRef ref) {
   ref.invalidate(dashboardUpcomingStripProvider);
   ref.invalidate(recurringMergedUpcomingProvider);
   ref.invalidate(netWorthSparklineSeriesProvider);
+  ref.invalidate(dashboardMonthDailyExpenseSeriesProvider);
   ref.invalidate(transactionsListNotifierProvider);
 
   final today = ref.read(todayYyyyMmDdProvider);

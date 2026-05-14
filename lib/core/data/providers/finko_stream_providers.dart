@@ -364,6 +364,35 @@ final netWorthSparklineSeriesProvider = Provider<List<double>>((ref) {
   return series;
 });
 
+/// One point per calendar day in [dashboardYearMonthProvider]: **cumulative**
+/// expense through that day (running total), i.e. sum of
+/// **`days.{01}.expenseMinorMain` … `days.{dd}.expenseMinorMain`** in main currency.
+///
+/// Length is always **days in that month**; a missing day key counts as **0** for
+/// that day (the total carries forward unchanged until a later day adds spend).
+final dashboardMonthDailyExpenseSeriesProvider = Provider<List<double>>((ref) {
+  final ym = ref.watch(dashboardYearMonthProvider);
+  final parts = ym.split('-');
+  if (parts.length != 2) {
+    return <double>[];
+  }
+  final y = int.tryParse(parts[0]) ?? 2000;
+  final m = int.tryParse(parts[1]) ?? 1;
+  final daysInMonth = DateTime(y, m + 1, 0).day;
+
+  final totals = ref.watch(monthlyTotalsForMonthStreamProvider(ym)).valueOrNull;
+
+  var running = 0;
+  final series = <double>[];
+  for (var d = 1; d <= daysInMonth; d++) {
+    final key = d.toString().padLeft(2, '0');
+    final raw = totals?.days[key]?.expenseMinorMain;
+    running += raw ?? 0;
+    series.add(running.toDouble());
+  }
+  return series;
+});
+
 DateTime _dateOnlyFromYyyyMmDd(String yyyyMmDd) {
   final parts = yyyyMmDd.split('-');
   if (parts.length != 3) {

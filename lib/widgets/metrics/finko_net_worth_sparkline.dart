@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-/// ~30 day series inside a metric card.
+/// ~30 day series or **any length** series (e.g. full-month **cumulative** expense) inside a metric card.
 class FinkoNetWorthSparkline extends StatelessWidget {
   const FinkoNetWorthSparkline({
     super.key,

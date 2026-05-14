@@ -32,8 +32,8 @@ Horizontal carousel with **exactly two** cards (order as designed):
 ### Card 2 — Total monthly expense (calendar month)
 
 - Same header structure: label (e.g. monthly expense), large amount, top-right **period differential** (still **stub copy** — not yet computed vs prior month).
-- **Amount** comes from **`monthlyTotals/{yyyy-mm}.expenseMinorMain`** (device-local calendar month via `currentYearMonthProvider`).
-- **Body**: placeholder **bar chart icon** (not a live series yet).
+- **Amount** (large number): **MTD expense** through profile **today** — **`expenseMinorMainThroughDate`** on **`monthlyTotals/{dashboardYearMonth}`** (same month key as the net worth card’s calendar context).
+- **Body**: **line/area chart** — **one point per calendar day** in that month (28–31 points on the X axis); each Y value is **cumulative spend from day 1 through that day** (sum of **`monthlyTotals.days.{01..dd}.expenseMinorMain`**; missing days count as `0` so the curve **holds flat** until more spend appears). Same chart widget shell as net worth (`FinkoNetWorthSparkline`).
 - **Tap entire card** → `/spending` (via `go_router`).
 
 **Reuse**: `Metric carousel card` + chart slot; see `**components-inventory.md`**.
@@ -94,15 +94,15 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | Area | Source | Notes |
 |------|--------|--------|
 | **Net worth value + sparkline** | `netWorthSparklineSeriesProvider` | Last 30 calendar days ending on profile **today** (`todayYyyyMmDdProvider`), from `monthlyTotals.days` (+ forward-fill). |
+| **Monthly expense card + running-total chart** | `monthlyTotalsForMonthStreamProvider(dashboardYearMonthProvider)` + **`dashboardMonthDailyExpenseSeriesProvider`** | Large amount: **MTD** via `expenseMinorMainThroughDate` (same day-sum as budget teaser); chart: **cumulative** spend through each calendar day (full month length 28–31). |
 | **Main currency** | `userProfileStreamProvider` (`mainCurrency`) | Fallback: first account currency or `MXN`. |
-| **Monthly expense card** | `monthlyTotalsForMonthStreamProvider(dashboardYearMonthProvider)` | **Month-to-date** expense: sum of `days.{dd}.expenseMinorMain` for `dd` ≤ today (same month as profile today); `dashboardYearMonthProvider` is `yyyy-MM` from `todayYyyyMmDdProvider`. |
 | **Accounts + net cash** | `accountsStreamProvider` | Net cash = sum of `balanceMinorMain` / `balanceMinor` for accounts with **`includeInNetCash`** (Firestore field; client infers checking/creditCard when omitted — see `data-model.md` §5 / §4.2). |
 | **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored. |
 | **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). |
 | **Recent list** | `recentTransactionsStreamProvider` | Last **5** with `transactionDate` **on or before** profile **today** (excludes future-dated ledger rows). |
 | **Pull-to-refresh** | `RefreshIndicator` | Calls **`ledgerAwareAppRefreshProvider.runPullToRefresh`** (shared with Recurring / Transactions): throttle, server profile gate, **`materializeDueUpcoming`**, conditional **`reconcileDeferredLedgerForUser`**, canonical provider invalidation — see **`data-contract.md` §11**. |
 
-**Still stub / placeholder:** metric card **delta** strings (both cards), monthly expense **chart** (icon only).
+**Still stub / placeholder:** metric card **delta** strings (both cards).
 
 ## Acceptance
 
@@ -110,11 +110,13 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 - Net cash is aggregate and non-clickable; info icon explains the calculation.
 - Upcoming sorted ascending; only future dates.
 - Recent capped at 5 with see more.
+- Monthly expense chart: **one point per calendar day** in `dashboardYearMonth` (28–31 points); each value is **running total** spend from day 1 through that day (`dashboardMonthDailyExpenseSeriesProvider`).
 
 ## Revision log
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Monthly expense card**: full-month line chart via `dashboardMonthDailyExpenseSeriesProvider` — **running total** spend (cumulative `expenseMinorMain` by day); earlier same-day **per-day** chart superseded. |
 | 2026-05-13 | Metric carousel defaults: **`viewportFraction` 0.98**, **`cardHorizontalInset` 4** — wider cards, thinner sibling peek. |
 | 2026-05-13 | Metric carousel: `PageView` + dashboard `ListView` use **`clipBehavior: Clip.none`** so rounded cards are not clipped at viewport edges. |
 | 2026-05-13 | Two-metric **carousel**: same **20pt body gutter** as lists below; **viewportFraction** + per-page inset for sibling **peek**; **dots**; net worth **footer** bottom-aligned; removed body **headline**. |
@@ -125,5 +127,5 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | 2026-04-16 | Próximos include **future-dated `transactions/`** rows (editor), not only `upcomingTransactions` + recurring. |
 | 2026-04-16 | Recent transactions exclude future-dated rows; próximos merge **upcoming** + **recurring**; dashboard month key follows profile today; expense/budget rings use **MTD through today**; net-worth window ends on profile today. |
 | 2026-04-16 | Net cash row: **info** icon + dialog with localized explanation of how net cash is summed (`includeInNetCash`, defaults, `balanceMinorMain` / `balanceMinor`). |
-| 2026-04-16 | Replaced “frontend mock” section with **live Firestore-backed** dashboard mapping (streams, fallbacks, stubs). Documented net worth series, monthly totals, accounts/net cash, budget teaser, refresh + materialization, and remaining UI stubs (deltas, expense chart). |
+| 2026-04-16 | Replaced “frontend mock” section with **live Firestore-backed** dashboard mapping (streams, fallbacks, stubs). Documented net worth series, monthly totals, accounts/net cash, budget teaser, refresh + materialization, and remaining UI stubs (**deltas** only). |
 

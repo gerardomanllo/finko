@@ -78,6 +78,47 @@ void main() {
   );
 
   test(
+    'dashboardMonthDailyExpenseSeriesProvider emits running total per calendar day',
+    () async {
+      final april = MonthlyTotals(
+        yearMonth: '2026-04',
+        incomeMinorMain: 0,
+        expenseMinorMain: 500,
+        byCategoryMinorMain: const {},
+        days: const {
+          '01': MonthlyDayRollup(expenseMinorMain: 100),
+          '02': MonthlyDayRollup(expenseMinorMain: 50),
+          '15': MonthlyDayRollup(expenseMinorMain: 25),
+        },
+      );
+      final container = ProviderContainer(
+        overrides: [
+          todayYyyyMmDdProvider.overrideWith((ref) => '2026-04-15'),
+          monthlyTotalsForMonthStreamProvider(
+            '2026-04',
+          ).overrideWith((ref) => Stream.value(april)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final sub = container.listen(
+        dashboardMonthDailyExpenseSeriesProvider,
+        (previous, next) {},
+      );
+      addTearDown(sub.close);
+      await Future<void>.delayed(Duration.zero);
+
+      final series = container.read(dashboardMonthDailyExpenseSeriesProvider);
+      expect(series.length, 30); // April
+      expect(series[0], 100); // day 1
+      expect(series[1], 150); // +50
+      expect(series[2], 150);
+      expect(series[13], 150);
+      expect(series[14], 175); // +25 on day 15
+      expect(series[29], 175);
+    },
+  );
+
+  test(
     'netWorthSparklineSeriesProvider loads middle month when window spans 3 months',
     () async {
       // 30 calendar days: 2026-01-31 .. 2026-03-01 (Jan, Feb, Mar).
