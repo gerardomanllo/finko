@@ -2,21 +2,24 @@ import 'package:flutter/material.dart';
 
 /// Horizontal swipe hosting two [FinkoMetricCarouselCard] children, with inset
 /// between cards, a peek of the adjacent page, and dot pagination under the chart area.
+///
+/// Place inside the same horizontal gutter as other dashboard content; use
+/// [viewportFraction] slightly below 1.0 so the sibling card stays partly visible.
 class FinkoTwoMetricCarousel extends StatefulWidget {
   const FinkoTwoMetricCarousel({
     super.key,
     required this.first,
     required this.second,
     this.height = 244,
-    this.viewportFraction = 0.88,
-    this.cardHorizontalInset = 8,
+    this.viewportFraction = 1,
+    this.cardHorizontalInset = 4,
   });
 
   final Widget first;
   final Widget second;
   final double height;
 
-  /// Each page width as a fraction of the viewport; slightly below 1.0 keeps the next card barely visible.
+  /// Each page width as a fraction of the carousel viewport (already inset by the parent).
   final double viewportFraction;
 
   /// Horizontal padding inside each page so neighboring cards do not visually touch.
@@ -66,6 +69,7 @@ class _FinkoTwoMetricCarouselState extends State<FinkoTwoMetricCarousel> {
         SizedBox(
           height: widget.height,
           child: PageView(
+            clipBehavior: Clip.none,
             controller: _pageController,
             padEnds: true,
             onPageChanged: (int index) {

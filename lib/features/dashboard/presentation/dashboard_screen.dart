@@ -167,57 +167,61 @@ class DashboardScreen extends ConsumerWidget {
         },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
+          clipBehavior: Clip.none,
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
-            FinkoTwoMetricCarousel(
-              first: FinkoMetricCarouselCard(
-                label: l10n.metricNetWorth,
-                valueText: _formatMoney(
-                  context,
-                  netWorthDisplayMinor,
-                  mainCurrency,
-                ),
-                deltaText: l10n.metricDeltaStubUp,
-                expandChartVertically: true,
-                chart: FinkoNetWorthSparkline(values: sparkline),
-                footer: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.metricNetWorthSeeAccountsFooter,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+            Padding(
+              padding: _kDashboardHorizontalPadding,
+              child: FinkoTwoMetricCarousel(
+                first: FinkoMetricCarouselCard(
+                  label: l10n.metricNetWorth,
+                  valueText: _formatMoney(
+                    context,
+                    netWorthDisplayMinor,
+                    mainCurrency,
+                  ),
+                  deltaText: l10n.metricDeltaStubUp,
+                  expandChartVertically: true,
+                  chart: FinkoNetWorthSparkline(values: sparkline),
+                  footer: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.metricNetWorthSeeAccountsFooter,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ],
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                  onTap: () => context.push('/accounts'),
                 ),
-                onTap: () => context.push('/accounts'),
-              ),
-              second: FinkoMetricCarouselCard(
-                label: l10n.metricMonthlyExpense,
-                valueText: monthAsync.maybeWhen(
-                  data: (m) => m == null
-                      ? '—'
-                      : _formatMoney(
-                          context,
-                          expenseMinorMainThroughDate(m, todayKey),
-                          mainCurrency,
-                        ),
-                  orElse: () => '—',
+                second: FinkoMetricCarouselCard(
+                  label: l10n.metricMonthlyExpense,
+                  valueText: monthAsync.maybeWhen(
+                    data: (m) => m == null
+                        ? '—'
+                        : _formatMoney(
+                            context,
+                            expenseMinorMainThroughDate(m, todayKey),
+                            mainCurrency,
+                          ),
+                    orElse: () => '—',
+                  ),
+                  deltaText: l10n.metricDeltaStubDown,
+                  expandChartVertically: true,
+                  chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
+                  onTap: () => context.go('/spending'),
                 ),
-                deltaText: l10n.metricDeltaStubDown,
-                expandChartVertically: true,
-                chart: const Center(child: Icon(Icons.bar_chart, size: 48)),
-                onTap: () => context.go('/spending'),
               ),
             ),
             Padding(

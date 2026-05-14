@@ -30,7 +30,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Metric carousel card** | Top-left label, large value, top-right period delta; optional **`expandChartVertically`** + **footer** (bottom-aligned in a fixed bottom strip); tappable | Dashboard (Net Worth, Monthly expense) |
-| **Two-card horizontal carousel** | `PageView` with **viewport fraction** + per-page horizontal inset (gap between cards, peek of sibling); **centered dot** indicators under the chart block | Dashboard |
+| **Two-card horizontal carousel** | `PageView` inside dashboard **body gutter**; **viewport fraction** + per-page horizontal inset (gap between cards, peek of sibling); **centered dot** indicators under the chart block | Dashboard |
 | **Net worth sparkline / line chart** | ~30 days series inside Net Worth card | Dashboard |
 | **Mini income vs expense chart** | Two columns (income \| expense) “graph-ish” per period; optional **selected** border + tap | Spending (row of vertical period cards) |
 | **Donut / ring pie chart** | Colored **ring only**; white center with title + bold total | Legacy / reuse |

@@ -17,8 +17,8 @@
 
 Horizontal carousel with **exactly two** cards (order as designed):
 
-- **Screen layout**: Carousel row is **full-bleed** (no list horizontal padding) so the **peek** reaches the screen edges; **“Cuentas”**, upcoming/recent/budget blocks keep the **standard body gutter** (20pt horizontal).
-- **Gutter**: horizontal inset on each page so the cards **do not touch**; **viewport fraction below 1.0** keeps a **thin sliver** of the adjacent card visible.
+- **Screen layout**: Carousel uses the **same 20pt horizontal gutter** as **“Cuentas”** and the blocks below; **`viewportFraction` below 1.0** shows a **thin sliver** of the sibling card inside that content width (not edge-to-edge on the phone).
+- **Gutter**: small horizontal inset on each page so the two cards **do not touch** when side by side.
 - **Pagination**: **two centered dots** under the carousel track the active card.
 
 ### Card 1 — Net worth (last 30 days)
@@ -115,7 +115,9 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
-| 2026-05-13 | Two-metric **carousel**: **full-bleed**; body gutter (`20`) on sections **below** the carousel only; per-page **gutter**, **viewportFraction** peek, **dots**; net worth **footer** bottom-aligned (`expandChartVertically`); removed body **headline** (“Resumen…” / EN). |
+| 2026-05-13 | Metric carousel defaults: **`viewportFraction` 0.98**, **`cardHorizontalInset` 4** — wider cards, thinner sibling peek. |
+| 2026-05-13 | Metric carousel: `PageView` + dashboard `ListView` use **`clipBehavior: Clip.none`** so rounded cards are not clipped at viewport edges. |
+| 2026-05-13 | Two-metric **carousel**: same **20pt body gutter** as lists below; **viewportFraction** + per-page inset for sibling **peek**; **dots**; net worth **footer** bottom-aligned; removed body **headline**. |
 | 2026-05-13 | App bar: **date** as centered title (removed separate “Panel” / screen title and duplicate date in body). |
 | 2026-05-12 | Net worth card: chart points are **signed sum of all accounts** (`netWorthEodMinorMain` from Functions + optional month replay); sparkline may load **up to three** intersecting **`monthlyTotals`** month docs. |
 | 2026-04-27 | **Upcoming strip** row: documents **`mergeUpcomingForUi`** (`includeDueToday: false`). |
