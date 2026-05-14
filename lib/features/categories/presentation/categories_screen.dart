@@ -189,7 +189,9 @@ class _CategoryRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: FinkoPaperCard(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
         child: ListTile(
+          contentPadding: const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
           leading: FinkoCategoryIconAvatar.fromCategory(category),
           title: Text(category.name),
           trailing: Text(

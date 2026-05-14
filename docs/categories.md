@@ -39,6 +39,7 @@
 
 ## Revision log
 
+- **2026-05-13**: Category rows: `FinkoPaperCard` horizontal inner padding **8** (was default **16**) and `ListTile` horizontal `contentPadding` **8** (was default tile inset), matching accounts list cards.
 - **2026-04-18**: Add category CTA as **center-floating extended FAB** (was inline list button); delete from editor with cascade (`deleteCategoryCascade`); reserved **`ledger-transfer`** category omitted from list stream.
 - **2026-04-16**: Summary transaction lines use the same **main / native** amount rules as the transactions list (`amountMinorMain` or same-currency `amountMinor` fallback).
 - **2026-04-16**: List driven by `categories` collection (with icons); row opens summary sheet + onboarding-style editor; `FirestoreDataRepository.updateCategory`.

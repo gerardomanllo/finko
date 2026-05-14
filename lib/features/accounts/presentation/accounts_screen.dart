@@ -102,7 +102,7 @@ class AccountsScreen extends ConsumerWidget {
           if (accounts.isEmpty) {
             return Center(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, bottomInset),
+                padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset),
                 child: Text(l10n.emptyNoAccounts),
               ),
             );
@@ -147,7 +147,7 @@ class AccountsScreen extends ConsumerWidget {
           }
 
           return ListView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset),
+            padding: EdgeInsets.fromLTRB(12, 16, 12, bottomInset),
             children: children,
           );
         },
@@ -208,7 +208,9 @@ class _AccountRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: FinkoPaperCard(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
         child: ListTile(
+          contentPadding: const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
           leading: leading,
           title: Text(account.name),
           subtitle: Text(

@@ -39,6 +39,7 @@
 
 ## Revision log
 
+- **2026-05-13**: Accounts list **12** horizontal screen gutter and empty state padding (was 16 / 24). Account rows: `FinkoPaperCard` horizontal inner padding **8** (was 16 default, briefly 12) and `ListTile` horizontal `contentPadding` **8** (was default tile inset).
 - **2026-04-18**: Add account CTA as **center-floating extended FAB** (was inline list / empty-state button); delete from editor with cascade (`deleteAccountCascade`).
 - **2026-04-17**: Account **Edit** from the summary sheet no longer allows changing **account type** or **currency** (UI + merge path); only name, icon, and color are editable.
 - **2026-04-16**: Month net in account summary sums **main-currency comparable** ledger amounts (`amountMinorMain`, or `amountMinor` when row currency equals profile main); foreign rows without a main stamp are omitted from that sum and show **native** signed amounts per line (matches transactions list semantics).
