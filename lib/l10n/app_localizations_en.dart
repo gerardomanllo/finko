@@ -775,6 +775,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get drawerAccounts => 'Accounts';
 
   @override
+  String get drawerPlanFree => 'Free plan';
+
+  @override
+  String get drawerStatsIncomeLabel => 'Income';
+
+  @override
+  String get drawerStatsExpenseLabel => 'Expenses';
+
+  @override
+  String get drawerStatsSavingsLabel => 'Savings';
+
+  @override
+  String get drawerNavSectionTitle => 'Menu';
+
+  @override
+  String get drawerNetWorthDeltaStub => '+2.1% this month';
+
+  @override
   String get drawerUserPlaceholderName => 'You';
 
   @override

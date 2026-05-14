@@ -779,6 +779,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get drawerAccounts => 'Cuentas';
 
   @override
+  String get drawerPlanFree => 'Plan gratuito';
+
+  @override
+  String get drawerStatsIncomeLabel => 'Ingresos';
+
+  @override
+  String get drawerStatsExpenseLabel => 'Gastos';
+
+  @override
+  String get drawerStatsSavingsLabel => 'Ahorro';
+
+  @override
+  String get drawerNavSectionTitle => 'Menú';
+
+  @override
+  String get drawerNetWorthDeltaStub => '+2,1 % este mes';
+
+  @override
   String get drawerUserPlaceholderName => 'Tú';
 
   @override

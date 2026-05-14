@@ -1500,6 +1500,42 @@ abstract class AppLocalizations {
   /// **'Cuentas'**
   String get drawerAccounts;
 
+  /// No description provided for @drawerPlanFree.
+  ///
+  /// In es, this message translates to:
+  /// **'Plan gratuito'**
+  String get drawerPlanFree;
+
+  /// No description provided for @drawerStatsIncomeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresos'**
+  String get drawerStatsIncomeLabel;
+
+  /// No description provided for @drawerStatsExpenseLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Gastos'**
+  String get drawerStatsExpenseLabel;
+
+  /// No description provided for @drawerStatsSavingsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahorro'**
+  String get drawerStatsSavingsLabel;
+
+  /// No description provided for @drawerNavSectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Menú'**
+  String get drawerNavSectionTitle;
+
+  /// No description provided for @drawerNetWorthDeltaStub.
+  ///
+  /// In es, this message translates to:
+  /// **'+2,1 % este mes'**
+  String get drawerNetWorthDeltaStub;
+
   /// No description provided for @drawerUserPlaceholderName.
   ///
   /// In es, this message translates to:

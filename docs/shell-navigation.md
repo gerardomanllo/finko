@@ -24,16 +24,27 @@
 
 ## Drawer
 
+Implementation: [`FinkoShellDrawer`](../lib/features/shell/presentation/finko_shell_drawer.dart) inside [`AppShell`](../lib/features/shell/presentation/app_shell.dart).
+
 ### Header
 
-- **Avatar** (left or top as per design)
-- **User name** (display name)
+- **Avatar** (initial from display name, or placeholder)
+- **User name** — `UserProfile.displayName` when set, else placeholder copy
+- **Plan** — stub chip (e.g. free plan) until subscriptions exist
+
+### Month snapshot (drawer body)
+
+- **Net worth** — compact **paper** surface (same vocabulary as dashboard metric cards: `ColorScheme.surface`, label `onSurfaceVariant`, value uses headline style, stub delta in **primary**). Value matches dashboard logic (sparkline EOD when series has non-zero points, else sum from accounts). **Month delta** is stub copy (no real MoM % yet).
+- **Income / Expenses / Savings** — three compact cells on the **cloud** / **navy** muted fills used elsewhere (`FinkoColors.cloud` light, `navy700` dark) for the **dashboard month** (`dashboardYearMonthProvider`): income and expense are **month-to-date** via day rollups when the doc matches the current calendar month; **savings rate** is `(income − expense) / income` clamped to 0…1 when income > 0, else em dash.
 
 ### Menu items
 
+- **Dashboard** — switches to shell branch 0 with `initialLocation: true` (does not `push` a route)
 - **Categories** → `/categories`
 - **Accounts** → `/accounts`
 - **Settings** → `/settings`
+
+**Active row** highlights from `GoRouterState.matchedLocation` (e.g. Dashboard only on `/dashboard`, not on other shell tabs).
 
 Close drawer on selection or scrim tap.
 
@@ -47,7 +58,7 @@ Close drawer on selection or scrim tap.
 
 ## Data (frontend phase)
 
-- Stub user name/avatar.
+- Drawer reads the same **Riverpod** streams as the dashboard for accounts, profile, monthly totals, and net-worth sparkline where applicable. **Plan tier** remains stub UI until billing.
 
 ## Pull-to-refresh
 
@@ -58,11 +69,13 @@ Close drawer on selection or scrim tap.
 - [ ] Five bottom items in this order: Dashboard, Recurring, New transaction (+), Spending, Transactions.
 - [x] Center plus action opens new-transaction **slide-up** ([`LedgerTransactionEditorSheet`](../lib/widgets/transactions/ledger_transaction_editor_sheet.dart)), not a separate route.
 - [ ] Top-left settings cog toggles drawer.
-- [ ] Drawer lists three destinations and navigates correctly.
+- [x] Drawer lists **Dashboard** (shell), **Categories**, **Accounts**, and **Settings**; navigates correctly; highlights the active row when applicable.
 - [ ] Current tab state visible.
 
 ## Revision log
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Drawer colors:** net worth block uses **paper** surface + primary accent (like metric cards); stats and nav selection use **cloud** / **navy** tints consistent with bottom nav indicator. |
+| 2026-05-13 | **Rich drawer:** profile + plan stub, month snapshot (net worth, MTD income/expense, savings rate), styled menu including **Dashboard** shortcut; implementation in **`finko_shell_drawer.dart`**. |
 | 2026-04-18 | **Pull-to-refresh** convention: use **`ledgerAwareAppRefreshProvider`** on any new refresh surface (`data-contract.md` §11). |

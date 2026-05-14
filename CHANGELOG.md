@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Shell drawer:** Finko-themed drawer with profile + free-plan stub, **paper-style Net worth** block (stub month delta in primary, matching dashboard metric cards), month-to-date **income / expenses / savings** on **cloud**/**navy** fills, and nav rows using the same **tints as the bottom bar** for **Dashboard** (shell tab), **Categories**, **Accounts**, and **Settings** ([`finko_shell_drawer.dart`](lib/features/shell/presentation/finko_shell_drawer.dart)).
+
 - **Budgets:** **Spending by category** list is ordered by **category budget** (largest first), not by current spend; rows **over budget** show a small **warning** on the category avatar; row subtitle is **`{amount} available` / `{amount} disponible`** when spend is within budget, else **`{amount} over` / `{amount} de más`**.
 
 - **Dashboard:** Cash-flow **accounts accordion** sections animate open/close (height + chevron rotation).

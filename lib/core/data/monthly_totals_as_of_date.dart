@@ -25,6 +25,27 @@ int expenseMinorMainThroughDate(MonthlyTotals totals, String throughYyyyMmDd) {
   return sum;
 }
 
+/// Like [expenseMinorMainThroughDate], but sums day-level **income** through [throughYyyyMmDd].
+int incomeMinorMainThroughDate(MonthlyTotals totals, String throughYyyyMmDd) {
+  if (totals.yearMonth.length < 7 || throughYyyyMmDd.length < 10) {
+    return totals.incomeMinorMain;
+  }
+  final monthPrefix = throughYyyyMmDd.substring(0, 7);
+  if (totals.yearMonth != monthPrefix) {
+    return totals.incomeMinorMain;
+  }
+  final dayCap = int.tryParse(throughYyyyMmDd.substring(8, 10)) ?? 31;
+  var sum = 0;
+  for (final e in totals.days.entries) {
+    final dk = e.key;
+    if (!_isDayKey(dk)) continue;
+    final d = int.parse(dk);
+    if (d > dayCap) continue;
+    sum += e.value.incomeMinorMain ?? 0;
+  }
+  return sum;
+}
+
 /// Scales [MonthlyTotals.byCategoryMinorMain] by the ratio of MTD expense to full-month
 /// expense so category rings match **through [throughYyyyMmDd]** when day-level category
 /// rollups are absent.

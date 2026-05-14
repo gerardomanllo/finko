@@ -5,12 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 MonthlyTotals _totals({
   required String yearMonth,
   required int expenseMinorMain,
+  int incomeMinorMain = 0,
   Map<String, int> byCategory = const {},
   Map<String, MonthlyDayRollup> days = const {},
 }) {
   return MonthlyTotals(
     yearMonth: yearMonth,
-    incomeMinorMain: 0,
+    incomeMinorMain: incomeMinorMain,
     expenseMinorMain: expenseMinorMain,
     byCategoryMinorMain: byCategory,
     days: days,
@@ -37,6 +38,34 @@ void main() {
       () {
         final m = _totals(yearMonth: '2026-03', expenseMinorMain: 5000);
         expect(expenseMinorMainThroughDate(m, '2026-04-10'), 5000);
+      },
+    );
+  });
+
+  group('incomeMinorMainThroughDate', () {
+    test('sums day income for days 01 through cap inclusive', () {
+      final m = _totals(
+        yearMonth: '2026-04',
+        expenseMinorMain: 0,
+        incomeMinorMain: 999,
+        days: {
+          '05': const MonthlyDayRollup(incomeMinorMain: 1000),
+          '10': const MonthlyDayRollup(incomeMinorMain: 2000),
+          '20': const MonthlyDayRollup(incomeMinorMain: 4000),
+        },
+      );
+      expect(incomeMinorMainThroughDate(m, '2026-04-15'), 3000);
+    });
+
+    test(
+      'returns full month income when totals month differs from through date',
+      () {
+        final m = _totals(
+          yearMonth: '2026-03',
+          expenseMinorMain: 0,
+          incomeMinorMain: 5000,
+        );
+        expect(incomeMinorMainThroughDate(m, '2026-04-10'), 5000);
       },
     );
   });

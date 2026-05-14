@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
+import 'finko_shell_drawer.dart';
 import 'shell_drawer_controller.dart';
 
 /// App shell: [Scaffold] + bottom navigation + [Drawer].
@@ -49,54 +50,7 @@ class _AppShellState extends State<AppShell> {
         body: widget.navigationShell,
         drawer: Drawer(
           child: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              children: [
-                Builder(
-                  builder: (context) {
-                    final theme = Theme.of(context);
-                    return Theme(
-                      data: theme.copyWith(primaryTextTheme: theme.textTheme),
-                      child: UserAccountsDrawerHeader(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                        ),
-                        arrowColor: theme.colorScheme.onSurface,
-                        accountName: Text(l10n.drawerUserPlaceholderName),
-                        accountEmail: Text(l10n.drawerUserPlaceholderEmail),
-                        currentAccountPicture: CircleAvatar(
-                          child: Text(l10n.drawerUserPlaceholderInitial),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.category_outlined),
-                  title: Text(l10n.drawerCategories),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    context.push('/categories');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.account_balance_wallet_outlined),
-                  title: Text(l10n.drawerAccounts),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    context.push('/accounts');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.settings_outlined),
-                  title: Text(l10n.settingsTitle),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    context.push('/settings');
-                  },
-                ),
-              ],
-            ),
+            child: FinkoShellDrawer(navigationShell: widget.navigationShell),
           ),
         ),
         bottomNavigationBar: NavigationBar(
