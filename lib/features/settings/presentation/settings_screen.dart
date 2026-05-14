@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +14,7 @@ import '../../onboarding/presentation/onboarding_messaging_sheet.dart';
 import '../../../widgets/language_locale_dropdown.dart';
 import '../../../widgets/layout/finko_settings_section.dart';
 import '../../../widgets/settings/finko_theme_mode_toggle.dart';
+import '../data/account_deletion_service.dart';
 import '../data/user_settings_writer.dart';
 import 'settings_messaging_sheets.dart';
 import 'telegram_bot_preferences_sheet.dart';
@@ -170,6 +172,123 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  static Future<void> _runDeleteAccountFlow(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final uid = ref.read(authUidProvider);
+    if (uid == null) return;
+
+    final step1 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsDeleteAccountDialog1Title),
+        content: Text(l10n.settingsDeleteAccountDialog1Body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.settingsDeleteAccountCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.settingsDeleteAccountContinue),
+          ),
+        ],
+      ),
+    );
+    if (step1 != true || !context.mounted) return;
+
+    final step2 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsDeleteAccountDialog2Title),
+        content: Text(l10n.settingsDeleteAccountDialog2Body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.settingsDeleteAccountCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.settingsDeleteAccountContinue),
+          ),
+        ],
+      ),
+    );
+    if (step2 != true || !context.mounted) return;
+
+    final step3 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final scheme = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          title: Text(l10n.settingsDeleteAccountDialog3Title),
+          content: Text(l10n.settingsDeleteAccountDialog3Body),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.settingsDeleteAccountCancel),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: scheme.error,
+                foregroundColor: scheme.onError,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.settingsDeleteAccountConfirmDelete),
+            ),
+          ],
+        );
+      },
+    );
+    if (step3 != true || !context.mounted) return;
+
+    final navigator = Navigator.of(context, rootNavigator: true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+              const SizedBox(width: 20),
+              Expanded(child: Text(l10n.settingsDeleteAccountDeleting)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      await ref.read(accountDeletionServiceProvider).deleteMyAccount();
+      if (context.mounted) {
+        navigator.pop();
+      }
+      await ref.read(authRepositoryProvider).signOut();
+    } on FirebaseFunctionsException catch (_) {
+      if (context.mounted) {
+        navigator.pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.settingsDeleteAccountError)),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        navigator.pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.settingsDeleteAccountError)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -281,19 +400,34 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
-          FilledButton.tonal(
-            onPressed: () async {
-              try {
-                await ref.read(authRepositoryProvider).signOut();
-              } catch (_) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.loginErrorGeneric)),
-                  );
-                }
-              }
-            },
-            child: Text(l10n.settingsSignOut),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton.tonal(
+                onPressed: () async {
+                  try {
+                    await ref.read(authRepositoryProvider).signOut();
+                  } catch (_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.loginErrorGeneric)),
+                      );
+                    }
+                  }
+                },
+                child: Text(l10n.settingsSignOut),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: ref.watch(authUidProvider) == null
+                    ? null
+                    : () => _runDeleteAccountFlow(context, ref),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: Text(l10n.settingsDeleteAccount),
+              ),
+            ],
           ),
         ],
       ),

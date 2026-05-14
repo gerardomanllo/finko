@@ -629,6 +629,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSignOut => 'Sign out';
 
   @override
+  String get settingsDeleteAccount => 'Delete my account';
+
+  @override
+  String get settingsDeleteAccountDialog1Title => 'Delete your account?';
+
+  @override
+  String get settingsDeleteAccountDialog1Body =>
+      'This will permanently remove your Finko profile, ledger data, and messaging integrations. You cannot undo this.';
+
+  @override
+  String get settingsDeleteAccountDialog2Title => 'Are you sure?';
+
+  @override
+  String get settingsDeleteAccountDialog2Body =>
+      'All transactions, accounts, categories, and backups tied to this account will be erased from our servers.';
+
+  @override
+  String get settingsDeleteAccountDialog3Title => 'Final confirmation';
+
+  @override
+  String get settingsDeleteAccountDialog3Body =>
+      'Your Firebase sign-in will be deleted and you will lose access immediately. Tap only if you intend to leave Finko forever.';
+
+  @override
+  String get settingsDeleteAccountContinue => 'Continue';
+
+  @override
+  String get settingsDeleteAccountCancel => 'Cancel';
+
+  @override
+  String get settingsDeleteAccountConfirmDelete => 'Delete my account';
+
+  @override
+  String get settingsDeleteAccountDeleting => 'Deleting account…';
+
+  @override
+  String get settingsDeleteAccountError =>
+      'Could not delete account. Try again or contact support.';
+
+  @override
   String get settingsAppearanceSection => 'Appearance';
 
   @override

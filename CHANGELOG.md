@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Settings — Delete my account:** destructive action below **Sign out** with **three** confirmation dialogs, then Cloud Callable **`deleteMyAccount`** (Admin: recursive Firestore delete under **`users/{uid}`**, Telegram **`telegramChatBindings`** / bot session cleanup when linked, **`deleteUser`** on Firebase Auth). Flutter: **`AccountDeletionService`** + localized copy (EN/ES).
+
 - **Categories:** Add and edit category sheets include **monthly budget (main currency)**; values are stored on **`users/{uid}.budgets.{categoryId}`** (`FirestoreDataRepository.setCategoryBudgetTarget`). Clearing the amount removes the budget row.
 
 - **Category colors:** Shared add/edit category sheet includes a **named color** control; `colorArgb` is saved on **`users/{uid}/categories/{id}`** (create + update) and included in **`commitOnboarding`** when the client sends it. **`FinkoCategoryIconAvatar`** + **`categoryAccentColor`** drive list avatars (transactions, recurring, spending top, summaries), dashboard **recent** and **upcoming** cards, and **Categories** list rows; Spending donut fallbacks use the same id-based palette as unset colors.

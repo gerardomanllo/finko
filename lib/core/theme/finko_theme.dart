@@ -73,7 +73,7 @@ abstract final class FinkoTheme {
       // ── Text theme — brand spec:
       //   Titles/Headlines → w500 (Medium)
       //   Subtitles/Labels → w400 (Regular)
-      //   Body/Paragraphs  → w300 (Light)
+      //   Body/Paragraphs  → w400 (Regular)
       // ────────────────────────────────────────────────────────────────────────
       textTheme: const TextTheme(
         // Display
@@ -129,20 +129,20 @@ abstract final class FinkoTheme {
           fontWeight: FontWeight.w500,
           color: FinkoColors.grayDark,
         ),
-        // Body → Light (300)
+        // Body → Regular (400)
         bodyLarge: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.grayDark,
         ),
         bodyMedium: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.gray,
         ),
         bodySmall: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.gray,
         ),
         // Labels → Regular/Medium
@@ -263,6 +263,9 @@ abstract final class FinkoTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
         indicatorColor: FinkoColors.cloud,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         labelTextStyle: const WidgetStatePropertyAll(
           TextStyle(
             fontFamily: _font,
@@ -411,17 +414,17 @@ abstract final class FinkoTheme {
         ),
         bodyLarge: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.textOnDark,
         ),
         bodyMedium: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.grayLight,
         ),
         bodySmall: TextStyle(
           fontFamily: _font,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
           color: FinkoColors.grayLight,
         ),
         labelLarge: TextStyle(
@@ -528,6 +531,9 @@ abstract final class FinkoTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: FinkoColors.navy800,
         indicatorColor: FinkoColors.navy700,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         labelTextStyle: const WidgetStatePropertyAll(
           TextStyle(
             fontFamily: _font,

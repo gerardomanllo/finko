@@ -13,6 +13,7 @@ import { ingestDailyForexRates } from "./dailyForex";
 import { createRecurringFromTransaction } from "./createRecurringFromTransaction";
 import { materializeDueUpcoming } from "./materialize";
 import { commitOnboarding } from "./onboardingCommit";
+import { deleteMyAccount } from "./deleteMyAccount";
 import { disconnectMessagingIntegration } from "./disconnectMessagingIntegration";
 import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
 import { telegramWebhook } from "./telegramWebhook";
@@ -30,6 +31,7 @@ export {
   materializeDueUpcoming,
   createRecurringFromTransaction,
   commitOnboarding,
+  deleteMyAccount,
   disconnectMessagingIntegration,
   requestMessagingOtp,
   verifyMessagingOtp,

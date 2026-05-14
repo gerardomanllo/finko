@@ -1236,6 +1236,78 @@ abstract class AppLocalizations {
   /// **'Cerrar sesión'**
   String get settingsSignOut;
 
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @settingsDeleteAccountDialog1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar tu cuenta?'**
+  String get settingsDeleteAccountDialog1Title;
+
+  /// No description provided for @settingsDeleteAccountDialog1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminarán de forma permanente tu perfil de Finko, datos del libro y las integraciones de mensajería. No se puede deshacer.'**
+  String get settingsDeleteAccountDialog1Body;
+
+  /// No description provided for @settingsDeleteAccountDialog2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Seguro?'**
+  String get settingsDeleteAccountDialog2Title;
+
+  /// No description provided for @settingsDeleteAccountDialog2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borrarán de nuestros servidores todas las transacciones, cuentas, categorías y copias vinculadas a esta cuenta.'**
+  String get settingsDeleteAccountDialog2Body;
+
+  /// No description provided for @settingsDeleteAccountDialog3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmación final'**
+  String get settingsDeleteAccountDialog3Title;
+
+  /// No description provided for @settingsDeleteAccountDialog3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminará tu inicio de sesión en Firebase y perderás el acceso de inmediato. Solo continúa si quieres salir de Finko para siempre.'**
+  String get settingsDeleteAccountDialog3Body;
+
+  /// No description provided for @settingsDeleteAccountContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get settingsDeleteAccountContinue;
+
+  /// No description provided for @settingsDeleteAccountCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get settingsDeleteAccountCancel;
+
+  /// No description provided for @settingsDeleteAccountConfirmDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get settingsDeleteAccountConfirmDelete;
+
+  /// No description provided for @settingsDeleteAccountDeleting.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminando cuenta…'**
+  String get settingsDeleteAccountDeleting;
+
+  /// No description provided for @settingsDeleteAccountError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo eliminar la cuenta. Inténtalo de nuevo o contacta a soporte.'**
+  String get settingsDeleteAccountError;
+
   /// No description provided for @settingsAppearanceSection.
   ///
   /// In es, this message translates to:

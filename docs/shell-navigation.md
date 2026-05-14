@@ -17,6 +17,8 @@
 4. **Spending**
 5. **Transactions**
 
+- **Chrome:** The shell wraps the bar in a `DecoratedBox` with an **upward** `BoxShadow` stack plus a **top hairline** so it reads above scrolling content. (`Material` elevation mostly draws shadow below the bar, which is often off-screen.)
+
 ## App bar action
 
 - **Settings cog** in the top-left acts as the **drawer toggle**.
@@ -76,6 +78,7 @@ Close drawer on selection or scrim tap.
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Bottom nav lift:** shell applies explicit **upward** shadow + top border around `NavigationBar` (theme nav `elevation: 0`); Material shadow alone was barely visible at the screen edge. Shadow/hairline strengths tuned for visibility without heaviness. |
 | 2026-05-13 | **Drawer colors:** net worth block uses **paper** surface + primary accent (like metric cards); stats and nav selection use **cloud** / **navy** tints consistent with bottom nav indicator. |
 | 2026-05-13 | **Rich drawer:** profile + plan stub, month snapshot (net worth, MTD income/expense, savings rate), styled menu including **Dashboard** shortcut; implementation in **`finko_shell_drawer.dart`**. |
 | 2026-04-18 | **Pull-to-refresh** convention: use **`ledgerAwareAppRefreshProvider`** on any new refresh surface (`data-contract.md` §11). |

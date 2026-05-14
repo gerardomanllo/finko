@@ -33,6 +33,11 @@
 - User may connect **one, both, or neither** — do not require both.
 - Copy must **not** imply WhatsApp/Telegram are sign-in methods (they are **messaging** integrations only).
 
+## Account actions (bottom of screen)
+
+- **Sign out** — ends the Firebase session locally (same as elsewhere).
+- **Delete my account** — below **Sign out**; requires **three** consecutive confirmation dialogs (Cancel stops the flow). Then the app calls Cloud Callable **`deleteMyAccount`**, shows a blocking progress state, **`signOut`** on success, and a snackbar on failure. The callable removes **all** data under **`users/{uid}`** (recursive delete), clears **Telegram** server-side binding/session docs when **`integrations.telegram.chatId`** is present, and deletes the **Firebase Auth** user (Admin SDK). Irreversible.
+
 ## Navigation
 
 - **In**: Drawer → **Settings**.
@@ -52,9 +57,11 @@
 - [ ] **Manage your plan** opens a server-generated Stripe portal link (UI placeholder until backend).
 - [x] **At least two** distinct CTAs: WhatsApp and Telegram (WhatsApp OTP; Telegram magic link; disconnect via **`disconnectMessagingIntegration`** callable).
 - [x] Copy does **not** imply WhatsApp/Telegram are sign-in methods.
+- [x] **Delete my account** below **Sign out** with triple confirmation + **`deleteMyAccount`** callable (Firestore + Auth teardown).
 
 ## Revision log
 
+- **2026-05-13** — **Delete my account:** triple-confirm flow, **`deleteMyAccount`** callable (Admin recursive `users/{uid}` delete, Telegram binding/session cleanup, Auth user delete); see **`docs/data-model.md`** revision log.
 - **2026-05-01** — Telegram **connected** sheet: **Bot defaults** → optional **`users/{uid}.telegramBotPreferences`** (`UserSettingsWriter`); revision cross-ref [`data-model.md`](data-model.md) §3 / §3.2 and [`telegram-bot-webhook.md`](references/telegram-bot-webhook.md).
 - **2026-04-22** — Telegram not-connected sheet: **phone/username** toggle, **`_telegramLink`** listener, multi-step copy; **Firestore** rules allow owner **read** on `_telegramLink`.
 - **2026-04-21** — Messaging: **Telegram** uses magic link + webhook only (no OTP); **disconnect** uses **`disconnectMessagingIntegration`** callable instead of client-only Firestore merge for integration removal.

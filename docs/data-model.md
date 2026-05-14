@@ -384,6 +384,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | Account teardown: Callable **`deleteMyAccount`** (authenticated `uid`) — Admin **`recursiveDelete`** on **`users/{uid}`** (profile + all subcollections), **`deleteTelegramChatBinding`** / **`deleteTelegramBotSession`** / **`deleteTelegramLinkState`** when Telegram is linked, then **`auth.deleteUser(uid)`** (idempotent on `auth/user-not-found`). Clients cannot delete the profile doc (`firestore.rules`); full wipe is server-only. |
 | 2026-05-12 | §4.2: **`monthlyTotals.days.*.netWorthEodMinorMain`** = signed sum of all accounts in main currency after aggregates (Functions snapshot + optional **`rebuildNetWorthSeriesForMonth`** replay), not incremental tx-only NW deltas. |
 | 2026-05-01 | §2 / §3 / §3.2: **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`** (Functions-only); **`users/{uid}.telegramBotPreferences`** for DM bot defaults; linking path unchanged. See [`references/telegram-bot-testing.md`](references/telegram-bot-testing.md). |
 | 2026-04-27 | §8: **`materializeDueUpcoming`** deterministic **`transactions`** ids; Callable **`createRecurringFromTransaction`** seeds **`recurring`** + **`upcomingTransactions`** from a **standard** ledger row. |
