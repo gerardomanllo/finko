@@ -299,18 +299,21 @@ class _DueList extends StatelessWidget {
       return const Text('—');
     }
     return FinkoPaperCard(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
           ...filtered.map((u) {
             final row = _upcomingRowAmounts(context, u, mainCurrency);
-            return FinkoTransactionRowCompact(
-              title: _rowTitle(u, ruleById, catById),
-              subtitle: u.transactionDate,
-              amountText: row.amountText,
-              secondaryAmountText: row.secondaryAmountText,
-              leading: _rowLeading(u, catById),
-              onTap: () => onRowTap(u),
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: FinkoTransactionRowCompact(
+                title: _rowTitle(u, ruleById, catById),
+                subtitle: u.transactionDate,
+                amountText: row.amountText,
+                secondaryAmountText: row.secondaryAmountText,
+                leading: _rowLeading(u, catById),
+                onTap: () => onRowTap(u),
+              ),
             );
           }),
         ],
