@@ -26,15 +26,30 @@ class FinkoPaperSeeMoreList extends StatelessWidget {
           ...children,
           if (seeMoreLabel != null && onSeeMore != null) ...[
             const Divider(height: 24),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: onSeeMore,
-                child: Text(
-                  seeMoreLabel!,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
+            InkWell(
+              onTap: onSeeMore,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        seeMoreLabel!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
                 ),
               ),
             ),
