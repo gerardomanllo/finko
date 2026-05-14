@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/finko_theme.dart';
 
-/// Two rows: this week (top) and next week (bottom); [markedDays] get a dot;
-/// [incomeDays] also show a green `$` marker.
+/// Two rows: this week (top) and next week (bottom).
+///
+/// Days in [incomeDays] show a small **green** dot; days in [expenseDays] a
+/// **blue** (primary) dot. When a day has both, two dots are shown side by side.
 class FinkoTwoWeekCalendar extends StatelessWidget {
   const FinkoTwoWeekCalendar({
     super.key,
     required this.weekStart,
-    required this.markedDays,
     required this.incomeDays,
+    required this.expenseDays,
     required this.thisWeekLabel,
     required this.nextWeekLabel,
   });
 
   /// Monday (or locale week start) of the visible window.
   final DateTime weekStart;
-  final Set<String> markedDays;
   final Set<String> incomeDays;
+  final Set<String> expenseDays;
   final String thisWeekLabel;
   final String nextWeekLabel;
 
@@ -37,8 +39,8 @@ class FinkoTwoWeekCalendar extends StatelessWidget {
       nextWeekLabel: nextWeekLabel,
       thisWeekDays: thisWeek,
       nextWeekDays: nextWeek,
-      markedDays: markedDays,
       incomeDays: incomeDays,
+      expenseDays: expenseDays,
       theme: theme,
     );
   }
@@ -52,8 +54,8 @@ class FinkoTwoWeekCalendarContent extends StatelessWidget {
     required this.nextWeekLabel,
     required this.thisWeekDays,
     required this.nextWeekDays,
-    required this.markedDays,
     required this.incomeDays,
+    required this.expenseDays,
     required this.theme,
   });
 
@@ -61,8 +63,8 @@ class FinkoTwoWeekCalendarContent extends StatelessWidget {
   final String nextWeekLabel;
   final List<DateTime> thisWeekDays;
   final List<DateTime> nextWeekDays;
-  final Set<String> markedDays;
   final Set<String> incomeDays;
+  final Set<String> expenseDays;
   final ThemeData theme;
 
   static String _key(DateTime d) {
@@ -87,8 +89,8 @@ class FinkoTwoWeekCalendarContent extends StatelessWidget {
             const SizedBox(height: 8),
             _WeekRow(
               days: thisWeekDays,
-              markedDays: markedDays,
               incomeDays: incomeDays,
+              expenseDays: expenseDays,
               keyOf: _key,
             ),
             const SizedBox(height: 16),
@@ -96,8 +98,8 @@ class FinkoTwoWeekCalendarContent extends StatelessWidget {
             const SizedBox(height: 8),
             _WeekRow(
               days: nextWeekDays,
-              markedDays: markedDays,
               incomeDays: incomeDays,
+              expenseDays: expenseDays,
               keyOf: _key,
             ),
           ],
@@ -110,20 +112,22 @@ class FinkoTwoWeekCalendarContent extends StatelessWidget {
 class _WeekRow extends StatelessWidget {
   const _WeekRow({
     required this.days,
-    required this.markedDays,
     required this.incomeDays,
+    required this.expenseDays,
     required this.keyOf,
   });
 
   final List<DateTime> days;
-  final Set<String> markedDays;
   final Set<String> incomeDays;
+  final Set<String> expenseDays;
   final String Function(DateTime d) keyOf;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final semantic = theme.extension<FinkoSemanticColors>();
+    final incomeColor = semantic?.income ?? FinkoColors.income;
+    final expenseColor = theme.colorScheme.primary;
     return Row(
       children: [
         for (final d in days)
@@ -132,33 +136,73 @@ class _WeekRow extends StatelessWidget {
               children: [
                 Text('${d.day}', style: theme.textTheme.labelMedium),
                 const SizedBox(height: 4),
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (markedDays.contains(keyOf(d)))
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    if (incomeDays.contains(keyOf(d)))
-                      Text(
-                        r'$',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color:
-                              semantic?.income ?? theme.colorScheme.secondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                  ],
+                _DayFlowDots(
+                  dayKey: keyOf(d),
+                  incomeDays: incomeDays,
+                  expenseDays: expenseDays,
+                  incomeColor: incomeColor,
+                  expenseColor: expenseColor,
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+class _DayFlowDots extends StatelessWidget {
+  const _DayFlowDots({
+    required this.dayKey,
+    required this.incomeDays,
+    required this.expenseDays,
+    required this.incomeColor,
+    required this.expenseColor,
+  });
+
+  final String dayKey;
+  final Set<String> incomeDays;
+  final Set<String> expenseDays;
+  final Color incomeColor;
+  final Color expenseColor;
+
+  static const double _dotSize = 6;
+  static const double _gap = 3;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasIncome = incomeDays.contains(dayKey);
+    final hasExpense = expenseDays.contains(dayKey);
+    if (!hasIncome && !hasExpense) {
+      return const SizedBox(height: _dotSize);
+    }
+    return SizedBox(
+      height: _dotSize,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasIncome)
+            Container(
+              width: _dotSize,
+              height: _dotSize,
+              decoration: BoxDecoration(
+                color: incomeColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+          if (hasIncome && hasExpense) const SizedBox(width: _gap),
+          if (hasExpense)
+            Container(
+              width: _dotSize,
+              height: _dotSize,
+              decoration: BoxDecoration(
+                color: expenseColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

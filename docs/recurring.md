@@ -17,8 +17,10 @@
 - **Minimalist calendar** covering **current two weeks**:
   - **This week** on **top**
   - **Next week** on **bottom**
-- **Very small dot** on any day that has **one or more** recurring transactions.
-- **Small green `$` icon** on days with **scheduled income** (subset of dot days).
+- **Very small dots** under the day number:
+  - **Green** dot if that day has **scheduled income** (one or more `in` upcoming rows).
+  - **Blue** dot (theme primary) if that day has **scheduled expense** (`out`).
+  - **Both** dots **side by side** when the day has income and expense.
 
 ## UI — “Due soon” section
 
@@ -48,12 +50,13 @@
 ## Acceptance
 
 - [x] Two-week grid matches “this week / next week” layout.
-- [x] Dot vs green `$` distinction for income days.
+- [x] Green income dot vs blue expense dot; both visible when a day has both.
 - [x] Two lists do not duplicate the same item (define date boundaries explicitly in code).
 
 ## Revision log
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Coming up calendar:** green dot = income, blue dot = expense, **non-overlapping** row when both. |
 | 2026-04-27 | **Data:** `recurringMergedUpcomingProvider` + future ledger previews; **`createRecurringFromTransaction`** + editor CTA. |
 | 2026-04-16 | Firestore-backed screen: profile timezone “today,” `upcomingTransactions` + `recurring` + `categories` streams, refresh/error/retry, row titles/icons; linked deferred row navigation in `docs/references/product-todos.md`. |

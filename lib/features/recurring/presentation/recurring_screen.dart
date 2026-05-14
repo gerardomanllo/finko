@@ -183,21 +183,22 @@ class RecurringScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             upcomingAsync.when(
               data: (list) {
-                final marked = <String>{};
                 final income = <String>{};
+                final expense = <String>{};
                 for (final u in list) {
                   final days = daysBetweenYyyyMmDd(todayYmd, u.transactionDate);
                   if (days >= 0 && days < 14) {
-                    marked.add(u.transactionDate);
                     if (u.direction == MoneyDirection.in_) {
                       income.add(u.transactionDate);
+                    } else if (u.direction == MoneyDirection.out_) {
+                      expense.add(u.transactionDate);
                     }
                   }
                 }
                 return FinkoTwoWeekCalendar(
                   weekStart: monday,
-                  markedDays: marked,
                   incomeDays: income,
+                  expenseDays: expense,
                   thisWeekLabel: l10n.recurringThisWeek,
                   nextWeekLabel: l10n.recurringNextWeek,
                 );

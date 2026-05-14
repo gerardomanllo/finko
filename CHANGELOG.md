@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Recurring “Coming up” calendar:** **Green** dot for income days, **blue** (primary) dot for expense days; **both** shown **side by side** when a day has both (replaces overlapping dot + `$`).
+
 - **Spending:** Donut colors for categories **without** stored `colorArgb` now use the same **deterministic palette** as other category UI (`categoryAccentColor` by `categoryId`), not list index.
 
 - **Dashboard:** “This month’s budget” teaser — top **6** **expense** categories only (income excluded); **2×3** grid with **`FinkoCategoryIconAvatar`** inside the same **progress ring** as before (`FinkoCategoryAvatarRing`).

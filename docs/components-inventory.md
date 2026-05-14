@@ -96,7 +96,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
-| **Two-week mini calendar** | This week on top, next below; **dot** if any tx that day; **green `$`** marker for scheduled **income** days | Recurring “Coming up” card |
+| **Two-week mini calendar** | This week on top, next below; **green** dot = income, **blue** (primary) dot = expense, side-by-side if both | Recurring “Coming up” card |
 
 ---
 
