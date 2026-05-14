@@ -8,6 +8,7 @@ import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/monthly_totals.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
+import '../../../core/ui/category_accent_color.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/budgets/finko_budget_compact_summary_card.dart';
 import '../../../widgets/budgets/finko_budget_progress_block.dart';
@@ -294,8 +295,20 @@ class _CategoryRow extends StatelessWidget {
     final left = (target - actualPositive).clamp(0, 1 << 62);
     final titleName = category?.name ?? categoryId;
     final avatarLabel = titleName.isNotEmpty ? titleName : categoryId;
+    final ringColor = categoryAccentColor(
+      theme.colorScheme,
+      categoryId,
+      colorArgb: category?.colorArgb,
+    );
     return ListTile(
-      leading: FinkoCategoryAvatarRing(label: avatarLabel, progress: ring),
+      leading: FinkoCategoryAvatarRing(
+        label: avatarLabel,
+        iconKey: category?.iconKey ?? 'category',
+        categoryId: categoryId,
+        colorArgb: category?.colorArgb,
+        progress: ring,
+        ringColor: ringColor,
+      ),
       title: Text(titleName),
       subtitle: Text(subtitleForRow(formatMoney(left))),
       trailing: Text(

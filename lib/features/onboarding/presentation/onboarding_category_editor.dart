@@ -5,10 +5,44 @@ import '../../../core/ui/finko_modal_sheet_extent.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/onboarding_models.dart';
 import 'onboarding_category_icons.dart';
+import 'onboarding_color_palette.dart';
 import 'onboarding_icon_labels.dart';
 
 double _onboardingCategoryDropdownItemMaxWidth(BuildContext context) {
   return (MediaQuery.sizeOf(context).width - 64).clamp(200.0, 560.0);
+}
+
+Widget _categoryColorMenuRow(BuildContext context, OnboardingNamedColor color) {
+  return ConstrainedBox(
+    constraints: BoxConstraints(
+      maxWidth: _onboardingCategoryDropdownItemMaxWidth(context),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: Color(color.argb),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            onboardingColorLabel(color, Localizations.localeOf(context)),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// See account editor: [ListTile] in dropdowns breaks the collapsed "selected" row
@@ -90,6 +124,7 @@ class _OnboardingCategoryEditorSheetState
   late final TextEditingController _nameController;
   late OnboardingCategoryKind _kind;
   late String _iconKey;
+  late int _colorArgb;
 
   @override
   void initState() {
@@ -98,6 +133,9 @@ class _OnboardingCategoryEditorSheetState
     _nameController = TextEditingController(text: e?.name ?? '');
     _kind = e?.kind ?? OnboardingCategoryKind.expense;
     _iconKey = e?.iconKey ?? 'home';
+    _colorArgb = e?.colorArgb != null
+        ? onboardingNearestNamedColor(e!.colorArgb!).argb
+        : kOnboardingNamedColors.first.argb;
   }
 
   @override
@@ -207,6 +245,37 @@ class _OnboardingCategoryEditorSheetState
                       setState(() => _iconKey = v);
                     },
                   ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.onboardingSectionColor,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    key: ValueKey<int>(_colorArgb),
+                    initialValue: onboardingNearestNamedColor(_colorArgb).argb,
+                    decoration: InputDecoration(
+                      labelText: l10n.onboardingSectionColor,
+                    ),
+                    isExpanded: true,
+                    selectedItemBuilder: (BuildContext c) {
+                      return [
+                        for (final named in kOnboardingNamedColors)
+                          _categoryColorMenuRow(c, named),
+                      ];
+                    },
+                    items: [
+                      for (final named in kOnboardingNamedColors)
+                        DropdownMenuItem<int>(
+                          value: named.argb,
+                          child: _categoryColorMenuRow(context, named),
+                        ),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() => _colorArgb = v);
+                    },
+                  ),
                   const SizedBox(height: 24),
                   if (widget.onDelete != null &&
                       existing != null &&
@@ -244,6 +313,7 @@ class _OnboardingCategoryEditorSheetState
                           kind: _kind,
                           iconKey: _iconKey,
                           isSystem: existing?.isSystem ?? false,
+                          colorArgb: _colorArgb,
                         ),
                       );
                       Navigator.of(context).pop();

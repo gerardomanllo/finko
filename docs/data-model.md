@@ -242,7 +242,7 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `kind` | `string` | `income` \| `expense` |
 | `currency` | `string?` | If category is constrained to one currency; else null. |
 | `iconKey` | `string` | Key into a **fixed Material icon map** (see [`onboarding.md`](onboarding.md)); stable across platforms. |
-| `colorArgb` | `int?` | |
+| `colorArgb` | `int?` | Optional UI tint (ARGB); set from **Categories** add/edit or onboarding when provided. Clients use it for list avatars, spending charts, and budget rings; when omitted, UI picks a **stable** fallback from `categoryId`. |
 | `sortOrder` | `int` | |
 
 ---

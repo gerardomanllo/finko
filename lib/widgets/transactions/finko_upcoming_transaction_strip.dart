@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/data/models/finko_category.dart';
+import '../categories/finko_category_icon_avatar.dart';
+
 /// Trailing card in the dashboard upcoming row: tap opens the full upcoming list (Recurring tab).
 class FinkoUpcomingSeeAllCard extends StatelessWidget {
   const FinkoUpcomingSeeAllCard({
@@ -63,6 +66,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
     required this.amountText,
     required this.footerText,
     this.secondaryAmountText,
+    this.category,
     this.avatarLetter,
   });
 
@@ -70,12 +74,25 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
   final String amountText;
   final String? secondaryAmountText;
   final String footerText;
+
+  /// When set, shows category icon + accent; otherwise [avatarLetter] / [title].
+  final FinkoCategory? category;
   final String? avatarLetter;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final letter = (avatarLetter ?? title).trim();
+    final c = category;
+    final Widget avatar = c != null
+        ? FinkoCategoryIconAvatar.fromCategory(c, radius: 19)
+        : CircleAvatar(
+            radius: 19,
+            child: Text(
+              letter.isNotEmpty ? letter[0].toUpperCase() : '?',
+              style: theme.textTheme.labelLarge,
+            ),
+          );
     return SizedBox(
       width: 132,
       child: Card(
@@ -88,15 +105,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: CircleAvatar(
-                  radius: 16,
-                  child: Text(
-                    letter.isNotEmpty ? letter[0].toUpperCase() : '?',
-                    style: theme.textTheme.labelLarge,
-                  ),
-                ),
-              ),
+              Center(child: avatar),
               const SizedBox(height: 8),
               Text(
                 title,

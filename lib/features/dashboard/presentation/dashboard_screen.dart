@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/budget/monthly_budget_rollup.dart';
 import '../../../core/data/models/finko_account.dart';
 import '../../../core/data/models/finko_account_kind.dart';
+import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/models/monthly_totals.dart';
@@ -14,9 +15,11 @@ import '../../../core/data/monthly_totals_as_of_date.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/refresh/ledger_aware_app_refresh.dart';
+import '../../../core/ui/category_accent_color.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
 import '../../../widgets/budgets/finko_monthly_budget_teaser.dart';
+import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/metrics/finko_metric_carousel_card.dart';
 import '../../../widgets/metrics/finko_net_worth_sparkline.dart';
 import '../../../widgets/metrics/finko_two_metric_carousel.dart';
@@ -80,19 +83,33 @@ class DashboardScreen extends ConsumerWidget {
     return l10n.upcomingInDays(d);
   }
 
-  static List<({String label, double ringProgress})> _topCategoryRings(
+  static List<FinkoBudgetTeaserCategoryRing> _topCategoryRings(
     MonthlyTotals? m,
     Map<String, MonthlyBudgetEntry> budgets,
     String throughYyyyMmDd,
+    Map<String, FinkoCategory> catById,
+    ColorScheme scheme,
   ) {
     if (m == null) return [];
     final byCat = byCategoryMinorMainThroughDate(m, throughYyyyMmDd);
-    final sorted = byCat.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final top = sorted.take(6).toList();
+    // `byCategoryMinorMain` is signed net; expense outflows are negative — same
+    // convention as `monthly_budget_rollup` (`positiveExpenseMinorFromSignedNet`).
+    final expenseEntries =
+        byCat.entries
+            .map(
+              (e) =>
+                  MapEntry(e.key, positiveExpenseMinorFromSignedNet(e.value)),
+            )
+            .where((e) {
+              final cat = catById[e.key];
+              return cat != null && cat.kind == CategoryKind.expense;
+            })
+            .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+    final top = expenseEntries.take(6).toList();
     if (top.isEmpty) return [];
     final maxSpend = top.first.value;
-    final out = <({String label, double ringProgress})>[];
+    final out = <FinkoBudgetTeaserCategoryRing>[];
     for (final e in top) {
       final budget = budgets[e.key];
       final spent = e.value;
@@ -102,10 +119,23 @@ class DashboardScreen extends ConsumerWidget {
       } else if (maxSpend > 0) {
         ring = (spent / maxSpend).clamp(0.0, 1.0);
       } else {
-        ring = 0.5;
+        ring = 0.0;
       }
-      final label = e.key.length > 8 ? e.key.substring(0, 8) : e.key;
-      out.add((label: label, ringProgress: ring));
+      final cat = catById[e.key];
+      final rawIcon = cat?.iconKey.trim() ?? '';
+      final iconKey = rawIcon.isNotEmpty ? rawIcon : 'category';
+      final ringColor = categoryAccentColor(
+        scheme,
+        e.key,
+        colorArgb: cat?.colorArgb,
+      );
+      out.add((
+        categoryId: e.key,
+        iconKey: iconKey,
+        colorArgb: cat?.colorArgb,
+        ringProgress: ring,
+        ringColor: ringColor,
+      ));
     }
     return out;
   }
@@ -116,6 +146,7 @@ class DashboardScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final accountsAsync = ref.watch(accountsStreamProvider);
+    final categoriesAsync = ref.watch(categoriesStreamProvider);
     final userProfileAsync = ref.watch(userProfileStreamProvider);
     final monthAsync = ref.watch(
       monthlyTotalsForMonthStreamProvider(
@@ -138,6 +169,10 @@ class DashboardScreen extends ConsumerWidget {
         accountsAsync.valueOrNull?.firstOrNull?.currency ??
         'MXN';
     final accounts = accountsAsync.valueOrNull ?? const <FinkoAccount>[];
+    final catById = <String, FinkoCategory>{
+      for (final c in categoriesAsync.valueOrNull ?? const <FinkoCategory>[])
+        c.id: c,
+    };
     final netWorthFromAccounts = netWorthFromAccountsMinor(accounts);
     final hasSparklinePoints = sparkline.any((point) => point != 0);
     final netWorthDisplayMinor = hasSparklinePoints
@@ -314,7 +349,11 @@ class DashboardScreen extends ConsumerWidget {
                                 itemBuilder: (context, i) {
                                   if (i < preview.length) {
                                     final u = preview[i];
+                                    final cat = u.categoryId != null
+                                        ? catById[u.categoryId!]
+                                        : null;
                                     return FinkoUpcomingTransactionCard(
+                                      category: cat,
                                       title: u.memo ?? u.kind.wireName,
                                       amountText: _upcomingAmount(
                                         context,
@@ -378,6 +417,10 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           for (final t in recent)
                             FinkoTransactionRowCompact(
+                              leading: ledgerTransactionCategoryLeading(
+                                t,
+                                catById,
+                              ),
                               title: t.memo ?? t.type.wireName,
                               subtitle: t.transactionDate,
                               amountText: _ledgerAmount(
@@ -425,7 +468,13 @@ class DashboardScreen extends ConsumerWidget {
                           mainCurrency,
                         ),
                         progress: progress,
-                        categoryRings: _topCategoryRings(m, budgets, todayKey),
+                        categoryRings: _topCategoryRings(
+                          m,
+                          budgets,
+                          todayKey,
+                          catById,
+                          theme.colorScheme,
+                        ),
                         onTap: () => context.push('/budgets'),
                       );
                     },

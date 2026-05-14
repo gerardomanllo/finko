@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'finko_category_avatar_ring.dart';
 
-/// Dashboard monthly budget teaser: left “left for spending” + progress; right top category rings.
+/// One cell in the dashboard “this month’s budget” category grid.
+typedef FinkoBudgetTeaserCategoryRing = ({
+  String categoryId,
+  String iconKey,
+  int? colorArgb,
+  double ringProgress,
+  Color ringColor,
+});
+
+/// Dashboard monthly budget teaser: left “left for spending” + progress; right 2×3 category rings.
 class FinkoMonthlyBudgetTeaser extends StatelessWidget {
   const FinkoMonthlyBudgetTeaser({
     super.key,
@@ -18,8 +27,31 @@ class FinkoMonthlyBudgetTeaser extends StatelessWidget {
   final String leftForSpendingLabel;
   final String leftForSpendingText;
   final double progress;
-  final List<({String label, double ringProgress})> categoryRings;
+  final List<FinkoBudgetTeaserCategoryRing> categoryRings;
   final VoidCallback? onTap;
+
+  static const double _kRingCell = 46;
+
+  Widget _ringAt(int index) {
+    if (index >= categoryRings.length) {
+      return const SizedBox.shrink();
+    }
+    final c = categoryRings[index];
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Center(
+        child: FinkoCategoryAvatarRing(
+          label: '',
+          iconKey: c.iconKey,
+          categoryId: c.categoryId,
+          colorArgb: c.colorArgb,
+          progress: c.ringProgress,
+          ringColor: c.ringColor,
+          cellSize: _kRingCell,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,17 +120,32 @@ class FinkoMonthlyBudgetTeaser extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    flex: 2,
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      alignment: WrapAlignment.end,
+                    flex: 3,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        for (final c in categoryRings.take(6))
-                          FinkoCategoryAvatarRing(
-                            label: c.label,
-                            progress: c.ringProgress,
-                          ),
+                        Row(
+                          children: [
+                            for (var i = 0; i < 3; i++)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: _ringAt(i),
+                                ),
+                              ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            for (var i = 3; i < 6; i++)
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: _ringAt(i),
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

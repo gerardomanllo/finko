@@ -14,9 +14,11 @@ import '../../../core/spending/spending_period_descriptor.dart';
 import '../../../core/spending/spending_period_filter.dart';
 import '../../../core/spending/spending_period_generator.dart';
 import '../../../core/spending/spending_transaction_aggregate.dart';
+import '../../../core/ui/category_accent_color.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_spending_income_fixed_variable_accordion.dart';
 import '../../../widgets/charts/finko_donut_with_side_legend.dart';
+import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/layout/pill_toggle_group.dart';
 import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
@@ -357,14 +359,6 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
               ..sort((a, b) => b.value.compareTo(a.value));
             final topEntries = entries.take(5).toList();
 
-            final palette = <Color>[
-              theme.colorScheme.primary,
-              theme.colorScheme.secondary,
-              theme.colorScheme.tertiary,
-              theme.colorScheme.primaryContainer,
-              theme.colorScheme.secondaryContainer,
-            ];
-
             FinkoCategory? catById(String id) {
               if (id.isEmpty) return null;
               for (final c in categories) {
@@ -373,25 +367,25 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
               return null;
             }
 
-            Color colorAt(int i, String catId) {
+            Color colorAt(String catId) {
               final c = catById(catId);
-              final argb = c?.colorArgb;
-              if (argb != null) return Color(argb);
-              return palette[i % palette.length];
+              return categoryAccentColor(
+                theme.colorScheme,
+                catId,
+                colorArgb: c?.colorArgb,
+              );
             }
 
             final sections = <PieChartSectionData>[];
-            var si = 0;
             for (final e in topEntries) {
               sections.add(
                 PieChartSectionData(
                   value: e.value.toDouble().clamp(1, 1e15),
-                  color: colorAt(si, e.key),
+                  color: colorAt(e.key),
                   radius: kDonutSectionOuterRadius,
                   title: '',
                 ),
               );
-              si++;
             }
             if (sections.isEmpty) {
               sections.add(
@@ -405,7 +399,6 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
             }
 
             final legendRows = <FinkoDonutLegendRow>[];
-            var li = 0;
             for (final e in topEntries) {
               final name = e.key.isEmpty
                   ? l10n.spendingUncategorized
@@ -415,13 +408,12 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                   : null;
               legendRows.add(
                 FinkoDonutLegendRow(
-                  color: colorAt(li, e.key),
+                  color: colorAt(e.key),
                   title: name,
                   valueText: _format(context, e.value, mainCurrency),
                   percentText: pct,
                 ),
               );
-              li++;
             }
 
             final periodLabel = spendingPeriodCardLabel(localeTag, selected);
@@ -458,6 +450,9 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
               selectedTxs,
               mainCurrency: mainCurrency,
             );
+            final catById = <String, FinkoCategory>{
+              for (final c in categories) c.id: c,
+            };
             final top = rollup.topOutflows;
             if (top.isEmpty) {
               return FinkoPaperCard(
@@ -483,6 +478,10 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                   for (var i = 0; i < top.length; i++) ...[
                     if (i > 0) const Divider(height: 1),
                     FinkoTransactionRowCompact(
+                      leading: ledgerTransactionCategoryLeading(
+                        top[i],
+                        catById,
+                      ),
                       title: top[i].memo ?? top[i].type.wireName,
                       subtitle: top[i].transactionDate,
                       amountText: _tx(context, top[i]),

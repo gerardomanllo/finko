@@ -14,8 +14,8 @@ import '../../features/onboarding/domain/onboarding_models.dart';
 import '../../features/onboarding/presentation/onboarding_account_editor.dart';
 import '../../features/onboarding/presentation/onboarding_account_icons.dart';
 import '../../features/onboarding/presentation/onboarding_category_editor.dart';
-import '../../features/onboarding/presentation/onboarding_category_icons.dart';
 import '../../l10n/app_localizations.dart';
+import '../categories/finko_category_icon_avatar.dart';
 import '../transactions/finko_transaction_row_compact.dart';
 
 Future<bool> _confirmAndDeleteCategory({
@@ -195,6 +195,7 @@ OnboardingCategoryDraft _categoryDraftFromFinko(FinkoCategory c) {
         : OnboardingCategoryKind.expense,
     iconKey: c.iconKey,
     isSystem: c.id == kFixedExpensesCategoryId,
+    colorArgb: c.colorArgb,
   );
 }
 
@@ -210,7 +211,7 @@ FinkoCategory _finkoCategoryFromDraft(
         : CategoryKind.expense,
     currency: previous.currency,
     iconKey: d.iconKey,
-    colorArgb: previous.colorArgb,
+    colorArgb: d.colorArgb ?? previous.colorArgb,
     sortOrder: previous.sortOrder,
   );
 }
@@ -303,8 +304,9 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            child: Icon(onboardingIconForKey(category.iconKey)),
+                          FinkoCategoryIconAvatar.fromCategory(
+                            category,
+                            radius: 22,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -362,6 +364,9 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                                   locale: locale,
                                 );
                                 return FinkoTransactionRowCompact(
+                                  leading: FinkoCategoryIconAvatar.fromCategory(
+                                    category,
+                                  ),
                                   title: _transactionTitle(t),
                                   subtitle: t.transactionDate,
                                   amountText: lines.primary,
@@ -491,6 +496,12 @@ Future<void> showFinkoAccountMonthSummarySheet({
                   data: (list) => _recentForAccount(list, account.id),
                   orElse: () => const <LedgerTransaction>[],
                 );
+                final categoriesList =
+                    sheetRef.watch(categoriesStreamProvider).valueOrNull ??
+                    const <FinkoCategory>[];
+                final catById = <String, FinkoCategory>{
+                  for (final c in categoriesList) c.id: c,
+                };
 
                 return SizedBox(
                   height: maxH,
@@ -566,6 +577,10 @@ Future<void> showFinkoAccountMonthSummarySheet({
                                   locale: locale,
                                 );
                                 return FinkoTransactionRowCompact(
+                                  leading: ledgerTransactionCategoryLeading(
+                                    t,
+                                    catById,
+                                  ),
                                   title: _transactionTitle(t),
                                   subtitle: t.transactionDate,
                                   amountText: lines.primary,

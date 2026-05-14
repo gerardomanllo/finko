@@ -9,8 +9,8 @@ import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/datetime/user_calendar_date.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/refresh/ledger_aware_app_refresh.dart';
-import '../../../features/onboarding/presentation/onboarding_category_icons.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/calendar/finko_two_week_calendar.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
@@ -77,7 +77,7 @@ Widget? _rowLeading(UpcomingTransaction u, Map<String, FinkoCategory> catById) {
   if (cid == null) return null;
   final c = catById[cid];
   if (c == null) return null;
-  return Icon(onboardingIconForKey(c.iconKey));
+  return FinkoCategoryIconAvatar.fromCategory(c);
 }
 
 class RecurringScreen extends ConsumerWidget {

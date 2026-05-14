@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/refresh/ledger_aware_app_refresh.dart';
+import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_search_filter_bar.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
@@ -141,11 +143,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final listState = ref.watch(transactionsListNotifierProvider);
     final notifier = ref.read(transactionsListNotifierProvider.notifier);
     final accountsAsync = ref.watch(accountsStreamProvider);
+    final categoriesAsync = ref.watch(categoriesStreamProvider);
     final profileAsync = ref.watch(userProfileStreamProvider);
     final mainCurrency =
         profileAsync.valueOrNull?.mainCurrency ??
         accountsAsync.valueOrNull?.firstOrNull?.currency ??
         'MXN';
+
+    final catById = <String, FinkoCategory>{
+      for (final c in categoriesAsync.valueOrNull ?? const <FinkoCategory>[])
+        c.id: c,
+    };
 
     final filtered = notifier.filteredItems();
 
@@ -259,6 +267,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                       horizontal: 16,
                                     ),
                                     child: FinkoTransactionRowCompact(
+                                      leading: ledgerTransactionCategoryLeading(
+                                        t,
+                                        catById,
+                                      ),
                                       title: t.memo ?? t.type.wireName,
                                       subtitle: t.transactionDate,
                                       amountText: _amount(

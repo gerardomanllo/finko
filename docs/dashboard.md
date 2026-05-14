@@ -59,7 +59,7 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
 - **No** outer paper / tinted surface: the row sits on the **same scaffold background** as the heading; only each **item card** has its own surface.
 - **Horizontal row of vertical cards** (horizontal `ListView`): up to **five** upcoming rows from the merged strip, then a **“See all upcoming”** card → **`/recurring`** (Recurring tab: calendar + due-soon / coming-later lists).
 - Each transaction card (content **horizontally centered** in the card):
-  - Small **category** avatar/icon
+  - **Category icon avatar** (`FinkoCategoryIconAvatar`): Material icon from `iconKey` on a neutral circle; tint from stored **`colorArgb`** or a deterministic theme fallback by `categoryId` when unset.
   - Small label: transaction name
   - **Centered bold**: amount
   - **Footer**: “how many days until” the transaction (copy per design)
@@ -67,7 +67,7 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
 
 ## UI — recent transactions
 
-- **Paper-style list** of **latest 5** transactions (most recent by posted date).
+- **Paper-style list** of **latest 5** transactions (most recent by posted date). Each row leading: **category icon avatar** (same tint rules as upcoming).
 - Last row: **“See more”** button → `/transactions`.
 
 ## UI — monthly budget (single paper card)
@@ -78,7 +78,7 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
     - Label: **“Left for spending”**
     - Larger **bold** number
     - **Progress bar** under the number
-  - **Right column**: **Top 6 categories by spend** for the month (`byCategoryMinorMain`, sorted by amount) — each as **avatar**, white background, **border as progress** toward that category’s budget when **`budgets.{categoryId}.targetMinorMain` > 0**; otherwise progress vs the **max spender** in the top-6 list (fallback). Ring labels may show **truncated category ids** until category names are resolved in-widget.
+  - **Right column**: **Top 6 expense categories** by MTD spend in **`byCategoryMinorMain`** (only rows whose **`categories/{id}`** is **`kind: expense`**; income categories omitted). Shown in a **2 rows × 3 columns** grid. Each cell: **`FinkoCategoryIconAvatar`** inside an **outer progress ring** (same rules as before: vs **`budgets.{categoryId}.targetMinorMain`** when that target is positive, else vs **max spender** among those six). Ring color from **`colorArgb`** or deterministic fallback by `categoryId`.
 - **Tap anywhere on the card** → `/budgets`.
 
 ## Navigation
@@ -100,7 +100,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | **Monthly expense card + running-total chart** | `monthlyTotalsForMonthStreamProvider(dashboardYearMonthProvider)` + **`dashboardMonthDailyExpenseSeriesProvider`** | Large amount: **MTD** via `expenseMinorMainThroughDate` (same day-sum as budget teaser); chart: **cumulative** spend through each calendar day (full month length 28–31). |
 | **Main currency** | `userProfileStreamProvider` (`mainCurrency`) | Fallback: first account currency or `MXN`. |
 | **Accounts + net cash** | `accountsStreamProvider` | Net cash = sum of `balanceMinorMain` / `balanceMinor` for accounts with **`includeInNetCash`** (Firestore field; client infers checking/creditCard when omitted — see `data-model.md` §5 / §4.2). |
-| **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored. |
+| **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored; ring **fill** uses **`positiveExpenseMinorFromSignedNet`** on that scaled map (signed net → positive expense), matching budget rollups. |
 | **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). **Dashboard UI:** section hidden when empty; **≤5** preview + **see all** → **`/recurring`**. |
 | **Recent list** | `recentTransactionsStreamProvider` | Last **5** with `transactionDate` **on or before** profile **today** (excludes future-dated ledger rows). |
 | **Pull-to-refresh** | `RefreshIndicator` | Calls **`ledgerAwareAppRefreshProvider.runPullToRefresh`** (shared with Recurring / Transactions): throttle, server profile gate, **`materializeDueUpcoming`**, conditional **`reconcileDeferredLedgerForUser`**, canonical provider invalidation — see **`data-contract.md` §11**. |
@@ -119,6 +119,10 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Monthly budget card — category rings:** arc progress uses **positive expense** from signed `byCategoryMinorMain` (`positiveExpenseMinorFromSignedNet`); ring **track** matches `/budgets` compact bar (`FinkoColors.grayLight`). |
+| 2026-05-13 | **Monthly budget card (dashboard):** category grid shows **expense categories only** (income omitted from top-6 selection). |
+| 2026-05-13 | **Monthly budget card:** top-6 category cells are a **2×3** grid; each shows **category icon** (`FinkoCategoryIconAvatar`) inside the existing **progress ring** (`FinkoCategoryAvatarRing` + `FinkoBudgetTeaserCategoryRing` data). |
+| 2026-05-13 | **Category visuals:** Recent + upcoming use **`FinkoCategoryIconAvatar`**; **`categoriesStreamProvider`** for tints; **category editor** `colorArgb` + **`commitOnboarding`**. (Budget teaser icon+ring grid: see adjacent row.) |
 | 2026-05-13 | **Upcoming** (dashboard): **hide whole section** when the merged list is empty; show **at most five** items + trailing **see all** card → **`/recurring`**; strings **`dashboardUpcomingSeeAll`** (`FinkoUpcomingSeeAllCard`). |
 | 2026-05-13 | **Upcoming** strip: removed outer **`FinkoPaperCard`** wrapper so the horizontal row has **no extra section background** (individual upcoming cards unchanged). |
 | 2026-05-13 | **Upcoming** strip cards: avatar, title, amounts, and days-until footer **horizontally centered** (`FinkoUpcomingTransactionCard`). |

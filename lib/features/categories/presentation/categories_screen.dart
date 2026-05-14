@@ -8,11 +8,11 @@ import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/data/repositories/firestore_data_repository.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../widgets/categories/finko_category_icon_avatar.dart';
 import '../../../widgets/summary/finko_month_category_account_summary_sheets.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../onboarding/domain/onboarding_models.dart';
 import '../../onboarding/presentation/onboarding_category_editor.dart';
-import '../../onboarding/presentation/onboarding_category_icons.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
@@ -48,6 +48,7 @@ class CategoriesScreen extends ConsumerWidget {
                       ? CategoryKind.income
                       : CategoryKind.expense,
                   iconKey: draft.iconKey,
+                  colorArgb: draft.colorArgb,
                 );
             if (context.mounted) {
               ref.invalidate(categoriesStreamProvider);
@@ -189,9 +190,7 @@ class _CategoryRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: FinkoPaperCard(
         child: ListTile(
-          leading: CircleAvatar(
-            child: Icon(onboardingIconForKey(category.iconKey)),
-          ),
+          leading: FinkoCategoryIconAvatar.fromCategory(category),
           title: Text(category.name),
           trailing: Text(
             trailing,

@@ -79,6 +79,7 @@ class OnboardingCategoryDraft {
     required this.kind,
     required this.iconKey,
     required this.isSystem,
+    this.colorArgb,
   });
 
   final String id;
@@ -87,12 +88,16 @@ class OnboardingCategoryDraft {
   final String iconKey;
   final bool isSystem;
 
+  /// Optional ARGB tint; included in `commitOnboarding` when non-null.
+  final int? colorArgb;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'name': name,
     'kind': kind.name,
     'iconKey': iconKey,
     'isSystem': isSystem,
+    if (colorArgb != null) 'colorArgb': colorArgb,
   };
 }
 
@@ -217,6 +222,7 @@ class OnboardingDraft {
         kind: OnboardingCategoryKind.expense,
         iconKey: 'lock',
         isSystem: true,
+        colorArgb: 0xFF546E7A,
       );
 
   final String displayName;

@@ -69,6 +69,7 @@ class OnboardingController extends Notifier<OnboardingState> {
           kind: c.kind,
           iconKey: c.iconKey,
           isSystem: c.isSystem,
+          colorArgb: c.colorArgb,
         );
       }
       return c;
@@ -148,6 +149,7 @@ class OnboardingController extends Notifier<OnboardingState> {
     required String name,
     required OnboardingCategoryKind kind,
     required String iconKey,
+    int? colorArgb,
   }) {
     if (state.draft.categories.any((c) => c.id == id)) return;
     upsertCategory(
@@ -157,6 +159,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         kind: kind,
         iconKey: iconKey,
         isSystem: false,
+        colorArgb: colorArgb,
       ),
     );
   }

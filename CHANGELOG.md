@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Category colors:** Shared add/edit category sheet includes a **named color** control; `colorArgb` is saved on **`users/{uid}/categories/{id}`** (create + update) and included in **`commitOnboarding`** when the client sends it. **`FinkoCategoryIconAvatar`** + **`categoryAccentColor`** drive list avatars (transactions, recurring, spending top, summaries), dashboard **recent** and **upcoming** cards, and **Categories** list rows; Spending donut fallbacks use the same id-based palette as unset colors.
+
 - **Telegram DM bot (Functions):** **`classifyTelegramUpdate`** gate, **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`**, bound-chat expense/income/transfer/recurring flows, optional **Gemini** via **`GEMINI_API_KEY`** (Google Secret Manager / **`defineSecret`**), Spanish/English copy; **`disconnectMessagingIntegration`** clears bindings/sessions. **Tests:** `functions/test/telegram/` fixtures + mocked **`fetch`** (`npm test` in **`functions/`**).
 - **Telegram bot defaults (Flutter):** **`users/{uid}.telegramBotPreferences`** on **`UserProfile`**; **Settings → Telegram (connected) → Bot defaults** sheet (`telegram_bot_preferences_sheet.dart`).
 - **Docs:** [`docs/references/telegram-bot-testing.md`](docs/references/telegram-bot-testing.md); expanded [`docs/references/telegram-bot-webhook.md`](docs/references/telegram-bot-webhook.md) (`allowed_updates`, **`GEMINI_API_KEY`**).
@@ -24,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Onboarding:** **Main currency** picker on profile; always-on **Cash** account (`type: cash`, localized name, editable currency and **starting balance**, not deletable); **credit card total credit line**; **Automatic** theme label for system preference; **stacked projected savings** chart (fills step height; blue expense bands; savings on top in green/red); expanded **color/icon dropdowns** (overlay-safe rows); **Remind me later** advances the flow; recurring income **prefills** zero income budgets using monthly/biweekly/weekly multipliers (single state update when opening budgets so fields stay in sync). Firestore accounts may include **`creditLimitMinor`**, **`isSystem`**, and **`cash`** type (see `docs/data-model.md`).
 
 ### Changed
+
+- **Spending:** Donut colors for categories **without** stored `colorArgb` now use the same **deterministic palette** as other category UI (`categoryAccentColor` by `categoryId`), not list index.
+
+- **Dashboard:** “This month’s budget” teaser — top **6** **expense** categories only (income excluded); **2×3** grid with **`FinkoCategoryIconAvatar`** inside the same **progress ring** as before (`FinkoCategoryAvatarRing`).
 
 - **Dashboard:** Upcoming block **hidden** when there is nothing to show; otherwise up to **five** preview cards plus **see all upcoming** → **Recurring** tab.
 
@@ -62,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI:** modal bottom sheets (transaction editor, filters, onboarding editors, messaging, month summaries) use **nearly full height** via a shared helper (keyboard-aware, respects the **status-bar inset**, and leaves a **small peek** above the sheet so underlying UI stays visible) instead of short intrinsic or ~82% caps. **Add/edit account** and **add/edit category** sheets use **`useSafeArea` + drag handle** on `showModalBottomSheet` (same as the transaction editor) so they are not edge-to-edge under the status bar. **Category / account month-detail** summary sheets do the same (modal `useSafeArea`, no duplicate inner `SafeArea`).
 
 ### Fixed
+
+- **Dashboard — month budget teaser rings:** category arc progress used **signed** `byCategoryMinorMain` (expense outflows negative), so the fill always clamped to **0**; it now uses **`positiveExpenseMinorFromSignedNet`** like `/budgets` rollups. **`FinkoCategoryAvatarRing`** track uses **`FinkoColors.grayLight`** so the ring reads like the compact budget **pill** bar (neutral track + accent fill).
 
 - **Recurring / KB-008:** **`ledgerFromTodayForUpcomingMergeStreamProvider`** + **`mergeUpcomingForUi`** respect **`includeDueToday`** for ledger previews so rows **dated today** appear on the Recurring tab (dashboard strip still uses strictly-after-today ledger query).
 

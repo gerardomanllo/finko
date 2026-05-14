@@ -90,6 +90,8 @@ final Map<String, IconData> kOnboardingCategoryIconMap = <String, IconData>{
   'volunteer_activism': Icons.volunteer_activism_outlined,
   'wallet': Icons.account_balance_wallet_outlined,
   'wifi': Icons.wifi_outlined,
+  // Reserved ledger-transfer category (ensureLedgerTransferCategory).
+  'swap_horiz': Icons.swap_horiz_outlined,
 };
 
 Iterable<String> get kOnboardingIconKeys => kOnboardingCategoryIconMap.keys;

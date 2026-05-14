@@ -204,16 +204,21 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
       typeof category.id === "string" && category.id.trim().length > 0
         ? category.id.trim()
         : randomUUID();
+    const categoryPayload: Record<string, unknown> = {
+      name: mustString(category.name, "category.name"),
+      kind: mustString(category.kind, "category.kind"),
+      iconKey: mustString(category.iconKey, "category.iconKey"),
+      sortOrder: 0,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    const ca = category["colorArgb"];
+    if (typeof ca === "number" && Number.isFinite(ca)) {
+      categoryPayload.colorArgb = ca;
+    }
     batch.set(
       db.doc(`users/${uid}/categories/${categoryId}`),
-      {
-        name: mustString(category.name, "category.name"),
-        kind: mustString(category.kind, "category.kind"),
-        iconKey: mustString(category.iconKey, "category.iconKey"),
-        sortOrder: 0,
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-      },
+      categoryPayload,
       { merge: true }
     );
   }
