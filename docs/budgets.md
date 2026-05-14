@@ -45,10 +45,10 @@ Use a **responsive row**: side-by-side on wide width; stacked on narrow if neede
 ## UI — category budgets
 
 - **Section title** (l10n): **Spending by category** / **Gastos por categoría** — **expense budgets only** (no income section in this list).
-- **Paper list** of **expense** `users/{uid}.budgets.*` rows (`kind == expense`), **and** any row whose Firestore category has **`kind: income`** is omitted (guards legacy / mismatched budget maps). Rows are **sorted by month spend** (positive `byCategoryMinorMain` outflow for that category on the viewed month) **descending**, then by `categoryId` for a stable order.
+- **Paper list** of **expense** `users/{uid}.budgets.*` rows (`kind == expense`), **and** any row whose Firestore category has **`kind: income`** is omitted (guards legacy / mismatched budget maps). Rows are **sorted by category budget** (`targetMinorMain`) **descending**, then by `categoryId` for a stable order.
 - Each row:
-  - **Left**: category **icon** with **border as progress** (ring toward budget consumption).
-  - **Middle**: **Firestore category `name`** (fallback: `categoryId`) + subtitle **`Available · {amount}`** where `{amount}` is the formatted **remainder** (target minus actual, clamped ≥ 0).
+  - **Left**: category **icon** with **border as progress** (ring toward budget consumption). When the budget target is **positive** and **actual spend** (positive expense from signed `byCategoryMinorMain`) **exceeds** that target, a **small warning icon** appears at the **top-right** of the avatar (localized tooltip).
+  - **Middle**: **Firestore category `name`** (fallback: `categoryId`) + subtitle: **`{amount} available`** / **`{amount} disponible`** when spend ≤ budget (`{amount}` = remainder, clamped ≥ 0); **`{amount} over`** / **`{amount} de más`** when spend exceeds budget (`{amount}` = overspend).
   - **Right**: **positive** actual spend for the month (signed `byCategoryMinorMain` is negative for outflows).
 
 ## Navigation
@@ -75,6 +75,8 @@ Use a **responsive row**: side-by-side on wide width; stacked on narrow if neede
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | Category row subtitle: **remaining** vs **over** copy (l10n; ES: “{amount} disponible” / “{amount} de más”). |
+| 2026-05-13 | Category list: sort by **budget target** descending; **over-budget** rows show a **warning** on the avatar (tooltip). |
 | 2026-04-16 | Bottom list sorted by **category spend** (minor, descending). |
 | 2026-04-16 | Bottom list: skip budget rows tied to Firestore **income** categories even if `budgets.*.kind` were wrong. |
 | 2026-04-16 | **Earnings** tile: **X** = sum of budget targets on **income** Firestore categories; **Y** = `incomeMinorMain`; compact tile shows amount + caption under amount; list title **Gastos por categoría** and **expense** budget rows only. |

@@ -522,14 +522,23 @@
   "budgetsBillsLeftLabel": "Disponible para gastos fijos",
   "budgetsIncomeLeftLabel": "Por ganar",
   "budgetsIncomeEarned": "Ingresado",
-  "budgetsCategorySubtitleAvailable": "Disponible · {amount}",
-  "@budgetsCategorySubtitleAvailable": {
+  "budgetsCategorySubtitleRemaining": "{amount} disponible",
+  "@budgetsCategorySubtitleRemaining": {
     "placeholders": {
       "amount": {
         "type": "String"
       }
     }
   },
+  "budgetsCategorySubtitleOver": "{amount} de más",
+  "@budgetsCategorySubtitleOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsCategoryOverBudgetTooltip": "El gasto supera el presupuesto de esta categoría",
   "budgetsCompactBillsCaption": "Por pagar",
   "budgetsCompactEarningsCaption": "Por ganar",
   "budgetsCompactAmountPaid": "{amount} pagado",

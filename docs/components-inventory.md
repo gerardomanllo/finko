@@ -77,7 +77,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Month paginator field** | Left calendar icon; center **“This month”** (or equivalent); right **prev/next** month — **no date picker popover** | Budgets |
 | **Budget progress block** | Labels for spent / left / budgeted + progress bar patterns | Budgets (main spending card), Dashboard monthly budget |
 | **Budget compact summary card** | Icon + title + **amount** (compact bold) + **caption** under amount + thin pill progress + **one** footer line (paid / earned); light surface, small elevation | Budgets (Bills & Utilities + Earnings row) (`FinkoBudgetCompactSummaryCard`) |
-| **Category avatar with ring progress** | Full **circle track** (`FinkoColors.grayLight`, same as compact budget pill) + **accent arc** (0–1); center **`FinkoCategoryIconAvatar`** when `iconKey` + `categoryId` set, else letter (`FinkoCategoryAvatarRing`) | Dashboard monthly budget **2×3** grid, Budgets category rows |
+| **Category avatar with ring progress** | Full **circle track** (`FinkoColors.grayLight`, same as compact budget pill) + **accent arc** (0–1); center **`FinkoCategoryIconAvatar`** when `iconKey` + `categoryId` set, else letter (`FinkoCategoryAvatarRing`). **Budgets** list stacks a small **warning** (tooltip) on the avatar when spend exceeds the row’s budget. | Dashboard monthly budget **2×3** grid, Budgets category rows |
 | **Savings projection card** | Two columns: text block + simple column chart (Y from `$0` to short target) | Budgets |
 
 ## Auth & settings
@@ -111,7 +111,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
-- **2026-05-13** — **`FinkoCategoryAvatarRing`:** full neutral **track** (`FinkoColors.grayLight`) + accent **progress arc** (aligned with compact budget pill bars).
+- **2026-05-13** — **Budgets category rows:** sort by budget target (desc); **over-budget** warning badge on avatar (`budgets_screen.dart`).
 - **2026-05-01** — **Messaging connected sheet** / **`telegram_bot_preferences_sheet`**: Telegram **Bot defaults** row for optional **`telegramBotPreferences`**.
 - **2026-04-21** — **Messaging OTP bottom sheet** row: Telegram bot-start / deep-link branch + `url_launcher`.
 - **2026-04-18** — **Ledger-aware pull refresh** row: `ledgerAwareAppRefreshProvider` for shared `RefreshIndicator` behavior.

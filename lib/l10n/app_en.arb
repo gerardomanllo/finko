@@ -522,14 +522,23 @@
   "budgetsBillsLeftLabel": "Left for bills & utilities",
   "budgetsIncomeLeftLabel": "Left to earn",
   "budgetsIncomeEarned": "Earned",
-  "budgetsCategorySubtitleAvailable": "Available · {amount}",
-  "@budgetsCategorySubtitleAvailable": {
+  "budgetsCategorySubtitleRemaining": "{amount} available",
+  "@budgetsCategorySubtitleRemaining": {
     "placeholders": {
       "amount": {
         "type": "String"
       }
     }
   },
+  "budgetsCategorySubtitleOver": "{amount} over",
+  "@budgetsCategorySubtitleOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetsCategoryOverBudgetTooltip": "Spending is over this category’s budget",
   "budgetsCompactBillsCaption": "Left to pay",
   "budgetsCompactEarningsCaption": "To earn",
   "budgetsCompactAmountPaid": "{amount} paid",

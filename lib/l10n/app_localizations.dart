@@ -2384,11 +2384,23 @@ abstract class AppLocalizations {
   /// **'Ingresado'**
   String get budgetsIncomeEarned;
 
-  /// No description provided for @budgetsCategorySubtitleAvailable.
+  /// No description provided for @budgetsCategorySubtitleRemaining.
   ///
   /// In es, this message translates to:
-  /// **'Disponible · {amount}'**
-  String budgetsCategorySubtitleAvailable(String amount);
+  /// **'{amount} disponible'**
+  String budgetsCategorySubtitleRemaining(String amount);
+
+  /// No description provided for @budgetsCategorySubtitleOver.
+  ///
+  /// In es, this message translates to:
+  /// **'{amount} de más'**
+  String budgetsCategorySubtitleOver(String amount);
+
+  /// No description provided for @budgetsCategoryOverBudgetTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'El gasto supera el presupuesto de esta categoría'**
+  String get budgetsCategoryOverBudgetTooltip;
 
   /// No description provided for @budgetsCompactBillsCaption.
   ///

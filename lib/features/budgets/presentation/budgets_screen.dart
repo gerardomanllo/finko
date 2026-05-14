@@ -195,8 +195,6 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                         budgets: budgets,
                         categoryById: catById,
                         formatMoney: (x) => _fmt(context, x, main),
-                        subtitleAvailable: (amount) =>
-                            l10n.budgetsCategorySubtitleAvailable(amount),
                       ),
                     ],
                   );
@@ -220,14 +218,12 @@ class _CategoryBudgetList extends StatelessWidget {
     required this.budgets,
     required this.categoryById,
     required this.formatMoney,
-    required this.subtitleAvailable,
   });
 
   final MonthlyTotals month;
   final Map<String, MonthlyBudgetEntry> budgets;
   final Map<String, FinkoCategory> categoryById;
   final String Function(int minor) formatMoney;
-  final String Function(String formattedAmount) subtitleAvailable;
 
   @override
   Widget build(BuildContext context) {
@@ -238,13 +234,8 @@ class _CategoryBudgetList extends StatelessWidget {
       if (cat != null && cat.kind == CategoryKind.income) continue;
       expenseRows.add(e);
     }
-    int spentMinorForSort(String categoryId) {
-      final raw = month.byCategoryMinorMain[categoryId] ?? 0;
-      return positiveExpenseMinorFromSignedNet(raw);
-    }
-
     expenseRows.sort((a, b) {
-      final cmp = spentMinorForSort(b.key).compareTo(spentMinorForSort(a.key));
+      final cmp = b.value.targetMinorMain.compareTo(a.value.targetMinorMain);
       if (cmp != 0) return cmp;
       return a.key.compareTo(b.key);
     });
@@ -260,8 +251,6 @@ class _CategoryBudgetList extends StatelessWidget {
               signedNet: month.byCategoryMinorMain[e.key] ?? 0,
               category: categoryById[e.key],
               formatMoney: formatMoney,
-              subtitleForRow: (formattedLeft) =>
-                  subtitleAvailable(formattedLeft),
             ),
         ],
       ),
@@ -276,7 +265,6 @@ class _CategoryRow extends StatelessWidget {
     required this.signedNet,
     required this.category,
     required this.formatMoney,
-    required this.subtitleForRow,
   });
 
   final String categoryId;
@@ -284,15 +272,25 @@ class _CategoryRow extends StatelessWidget {
   final int signedNet;
   final FinkoCategory? category;
   final String Function(int minor) formatMoney;
-  final String Function(String formattedLeft) subtitleForRow;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final target = entry.targetMinorMain;
     final actualPositive = positiveExpenseMinorFromSignedNet(signedNet);
     final ring = target > 0 ? (actualPositive / target).clamp(0.0, 1.0) : 0.5;
-    final left = (target - actualPositive).clamp(0, 1 << 62);
+    final overBudget = target > 0 && actualPositive > target;
+    final String subtitleText;
+    if (actualPositive <= target) {
+      final leftMinor = (target - actualPositive).clamp(0, 1 << 62);
+      subtitleText = l10n.budgetsCategorySubtitleRemaining(
+        formatMoney(leftMinor),
+      );
+    } else {
+      final overMinor = actualPositive - target;
+      subtitleText = l10n.budgetsCategorySubtitleOver(formatMoney(overMinor));
+    }
     final titleName = category?.name ?? categoryId;
     final avatarLabel = titleName.isNotEmpty ? titleName : categoryId;
     final ringColor = categoryAccentColor(
@@ -300,17 +298,60 @@ class _CategoryRow extends StatelessWidget {
       categoryId,
       colorArgb: category?.colorArgb,
     );
+    const ringSize = 46.0;
+    final avatarRing = FinkoCategoryAvatarRing(
+      label: avatarLabel,
+      iconKey: category?.iconKey ?? 'category',
+      categoryId: categoryId,
+      colorArgb: category?.colorArgb,
+      progress: ring,
+      ringColor: ringColor,
+    );
     return ListTile(
-      leading: FinkoCategoryAvatarRing(
-        label: avatarLabel,
-        iconKey: category?.iconKey ?? 'category',
-        categoryId: categoryId,
-        colorArgb: category?.colorArgb,
-        progress: ring,
-        ringColor: ringColor,
+      leading: SizedBox(
+        width: ringSize,
+        height: ringSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            avatarRing,
+            if (overBudget)
+              Positioned(
+                top: -2,
+                right: -2,
+                child: Tooltip(
+                  message: l10n.budgetsCategoryOverBudgetTooltip,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.shadow.withValues(
+                            alpha: 0.18,
+                          ),
+                          blurRadius: 2,
+                          offset: const Offset(0, 0.5),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(1),
+                      child: Icon(
+                        Icons.warning_amber_rounded,
+                        size: 14,
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
       title: Text(titleName),
-      subtitle: Text(subtitleForRow(formatMoney(left))),
+      subtitle: Text(subtitleText),
       trailing: Text(
         formatMoney(actualPositive),
         style: theme.textTheme.titleSmall,

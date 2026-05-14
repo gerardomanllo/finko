@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Budgets:** **Spending by category** list is ordered by **category budget** (largest first), not by current spend; rows **over budget** show a small **warning** on the category avatar; row subtitle is **`{amount} available` / `{amount} disponible`** when spend is within budget, else **`{amount} over` / `{amount} de más`**.
+
 - **Dashboard:** Cash-flow **accounts accordion** sections animate open/close (height + chevron rotation).
 
 - **Recurring “Coming up” calendar:** **Green** dot for income days, **blue** (primary) dot for expense days; **both** shown **side by side** when a day has both (replaces overlapping dot + `$`).

@@ -1263,9 +1263,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsIncomeEarned => 'Earned';
 
   @override
-  String budgetsCategorySubtitleAvailable(String amount) {
-    return 'Available · $amount';
+  String budgetsCategorySubtitleRemaining(String amount) {
+    return '$amount available';
   }
+
+  @override
+  String budgetsCategorySubtitleOver(String amount) {
+    return '$amount over';
+  }
+
+  @override
+  String get budgetsCategoryOverBudgetTooltip =>
+      'Spending is over this category’s budget';
 
   @override
   String get budgetsCompactBillsCaption => 'Left to pay';
