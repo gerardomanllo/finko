@@ -34,6 +34,7 @@ Horizontal carousel with **exactly two** cards (order as designed):
 - Same header structure: label (e.g. monthly expense), large amount, top-right **period differential** (still **stub copy** — not yet computed vs prior month).
 - **Amount** (large number): **MTD expense** through profile **today** — **`expenseMinorMainThroughDate`** on **`monthlyTotals/{dashboardYearMonth}`** (same month key as the net worth card’s calendar context).
 - **Body**: **line/area chart** — **one point per calendar day** in that month (28–31 points on the X axis); each Y value is **cumulative spend from day 1 through that day** (sum of **`monthlyTotals.days.{01..dd}.expenseMinorMain`**; missing days count as `0` so the curve **holds flat** until more spend appears). Same chart widget shell as net worth (`FinkoNetWorthSparkline`).
+- **Footer** (bottom of card): same row pattern as net worth — **“Ver mis gastos”** (localized) **on the left**, **chevron on the right**; fixed bottom strip + flexible chart slot above.
 - **Tap entire card** → `/spending` (via `go_router`).
 
 **Reuse**: `Metric carousel card` + chart slot; see `**components-inventory.md`**.
@@ -116,6 +117,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Monthly expense card**: bottom **footer** (“See my spending” / “Ver mis gastos”) + chevron, same pattern as net worth card; tap still opens **Spending**. |
 | 2026-05-13 | **Monthly expense card**: full-month line chart via `dashboardMonthDailyExpenseSeriesProvider` — **running total** spend (cumulative `expenseMinorMain` by day); earlier same-day **per-day** chart superseded. |
 | 2026-05-13 | Metric carousel defaults: **`viewportFraction` 0.98**, **`cardHorizontalInset` 4** — wider cards, thinner sibling peek. |
 | 2026-05-13 | Metric carousel: `PageView` + dashboard `ListView` use **`clipBehavior: Clip.none`** so rounded cards are not clipped at viewport edges. |

@@ -223,6 +223,26 @@ class DashboardScreen extends ConsumerWidget {
                   deltaText: l10n.metricDeltaStubDown,
                   expandChartVertically: true,
                   chart: FinkoNetWorthSparkline(values: dailyExpenseSeries),
+                  footer: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.metricMonthlyExpenseSeeSpendingFooter,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
                   onTap: () => context.go('/spending'),
                 ),
               ),

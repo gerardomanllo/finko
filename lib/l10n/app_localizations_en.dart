@@ -848,6 +848,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get metricNetWorthSeeAccountsFooter => 'See my accounts';
 
   @override
+  String get metricMonthlyExpenseSeeSpendingFooter => 'See my spending';
+
+  @override
   String get metricMonthlyExpense => 'Monthly expense';
 
   @override

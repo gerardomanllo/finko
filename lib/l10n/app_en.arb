@@ -350,6 +350,7 @@
   "accountsTitle": "Accounts",
   "metricNetWorth": "Net Worth",
   "metricNetWorthSeeAccountsFooter": "See my accounts",
+  "metricMonthlyExpenseSeeSpendingFooter": "See my spending",
   "metricMonthlyExpense": "Monthly expense",
   "metricDeltaStubUp": "+2.1%",
   "metricDeltaStubDown": "-1.0%",

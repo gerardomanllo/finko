@@ -1622,6 +1622,12 @@ abstract class AppLocalizations {
   /// **'Ver mis cuentas'**
   String get metricNetWorthSeeAccountsFooter;
 
+  /// No description provided for @metricMonthlyExpenseSeeSpendingFooter.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver mis gastos'**
+  String get metricMonthlyExpenseSeeSpendingFooter;
+
   /// No description provided for @metricMonthlyExpense.
   ///
   /// In es, this message translates to:
