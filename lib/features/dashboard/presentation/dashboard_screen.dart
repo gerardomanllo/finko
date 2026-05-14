@@ -16,7 +16,6 @@ import '../../../core/formatting/money_format.dart';
 import '../../../core/refresh/ledger_aware_app_refresh.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/accounts/finko_cash_flow_accounts_accordion.dart';
-import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/budgets/finko_monthly_budget_teaser.dart';
 import '../../../widgets/metrics/finko_metric_carousel_card.dart';
 import '../../../widgets/metrics/finko_net_worth_sparkline.dart';
@@ -280,57 +279,86 @@ class DashboardScreen extends ConsumerWidget {
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('$e'),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.dashboardUpcomingHeading,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
                   upcomingAsync.when(
                     data: (list) {
                       if (list.isEmpty) {
-                        return Text(l10n.emptyNoUpcoming);
+                        return const SizedBox.shrink();
                       }
-                      return FinkoPaperCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 10,
-                        ),
-                        child: SizedBox(
-                          height: 168,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: list.length.clamp(0, 20),
-                            separatorBuilder:
-                                (BuildContext context, int index) =>
-                                    const SizedBox(width: 10),
-                            itemBuilder: (context, i) {
-                              final u = list[i];
-                              return FinkoUpcomingTransactionCard(
-                                title: u.memo ?? u.kind.wireName,
-                                amountText: _upcomingAmount(
-                                  context,
-                                  u,
-                                  mainCurrency,
-                                ),
-                                secondaryAmountText: _upcomingSecondaryAmount(
-                                  context,
-                                  u,
-                                  mainCurrency,
-                                ),
-                                footerText: _daysUntilLabel(
-                                  l10n,
-                                  u.transactionDate,
-                                  todayKey,
-                                ),
-                              );
-                            },
+                      const previewCount = 5;
+                      final preview = list.length > previewCount
+                          ? list.sublist(0, previewCount)
+                          : list;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 24),
+                          Text(
+                            l10n.dashboardUpcomingHeading,
+                            style: theme.textTheme.titleMedium,
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 10,
+                            ),
+                            child: SizedBox(
+                              height: 168,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: preview.length + 1,
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                        const SizedBox(width: 10),
+                                itemBuilder: (context, i) {
+                                  if (i < preview.length) {
+                                    final u = preview[i];
+                                    return FinkoUpcomingTransactionCard(
+                                      title: u.memo ?? u.kind.wireName,
+                                      amountText: _upcomingAmount(
+                                        context,
+                                        u,
+                                        mainCurrency,
+                                      ),
+                                      secondaryAmountText:
+                                          _upcomingSecondaryAmount(
+                                            context,
+                                            u,
+                                            mainCurrency,
+                                          ),
+                                      footerText: _daysUntilLabel(
+                                        l10n,
+                                        u.transactionDate,
+                                        todayKey,
+                                      ),
+                                    );
+                                  }
+                                  return FinkoUpcomingSeeAllCard(
+                                    label: l10n.dashboardUpcomingSeeAll,
+                                    onTap: () => context.go('/recurring'),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
-                    loading: () => const LinearProgressIndicator(),
-                    error: (e, _) => Text('$e'),
+                    loading: () => const SizedBox.shrink(),
+                    error: (e, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.dashboardUpcomingHeading,
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text('$e'),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(

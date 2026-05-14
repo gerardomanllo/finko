@@ -60,6 +60,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **Upcoming transaction card** | Category avatar; name; **bold** amount; footer “days until” | Dashboard |
+| **Upcoming “see all” card** | Trailing strip tile: **chevron** + label using **`labelMedium` / `onSurfaceVariant`** (same as metric card footers); tap → **`/recurring`** | Dashboard |
 | **Transaction row (compact)** | For lists: icon/avatar, title, subtitle/amount as per screen | Recent, recurring lists, top transactions |
 | **Paper list with “see more”** | List + final row navigates to full list | Dashboard → `/transactions` |
 | **Full-width scrollable list** | Standard list layout for many rows | Transactions, categories, accounts |

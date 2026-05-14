@@ -55,8 +55,10 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
 
 ## UI — upcoming transactions
 
-- **Horizontal row of vertical cards** (carousel or horizontal `ListView`).
-- Each card:
+- **Entire section omitted** when there are **no** upcoming rows (no heading, no empty placeholder).
+- **No** outer paper / tinted surface: the row sits on the **same scaffold background** as the heading; only each **item card** has its own surface.
+- **Horizontal row of vertical cards** (horizontal `ListView`): up to **five** upcoming rows from the merged strip, then a **“See all upcoming”** card → **`/recurring`** (Recurring tab: calendar + due-soon / coming-later lists).
+- Each transaction card (content **horizontally centered** in the card):
   - Small **category** avatar/icon
   - Small label: transaction name
   - **Centered bold**: amount
@@ -82,7 +84,7 @@ Expanded: **one row per real account** matching that type. **Net cash**: show ag
 ## Navigation
 
 - **In**: Default tab from shell.
-- **Out**: Metric cards → accounts/spending; budget card → budgets; see more → transactions.
+- **Out**: Metric cards → accounts/spending; budget card → budgets; see more → transactions; **dashboard upcoming “see all”** → **Recurring** (`/recurring`).
 
 ## Reuse
 
@@ -99,7 +101,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 | **Main currency** | `userProfileStreamProvider` (`mainCurrency`) | Fallback: first account currency or `MXN`. |
 | **Accounts + net cash** | `accountsStreamProvider` | Net cash = sum of `balanceMinorMain` / `balanceMinor` for accounts with **`includeInNetCash`** (Firestore field; client infers checking/creditCard when omitted — see `data-model.md` §5 / §4.2). |
 | **Budget teaser** | Same month doc as above | **Left for spending** = sum of expense **`budgets.{id}.targetMinorMain`** − **MTD** expense (same day-sum as the card). Category rings scale `byCategoryMinorMain` by MTD/full-month expense when day-level categories are not stored. |
-| **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). |
+| **Upcoming strip** | `dashboardUpcomingStripProvider` | **`mergeUpcomingForUi`** (`includeDueToday: false`): `upcomingTransactions` **after** today + **`futureDatedLedgerTransactionsStreamProvider`** (ledger rows dated after today) + active **recurring** previews when not already listed; sorted ascending. Transfer **in** legs omitted (out leg only). **Dashboard UI:** section hidden when empty; **≤5** preview + **see all** → **`/recurring`**. |
 | **Recent list** | `recentTransactionsStreamProvider` | Last **5** with `transactionDate` **on or before** profile **today** (excludes future-dated ledger rows). |
 | **Pull-to-refresh** | `RefreshIndicator` | Calls **`ledgerAwareAppRefreshProvider.runPullToRefresh`** (shared with Recurring / Transactions): throttle, server profile gate, **`materializeDueUpcoming`**, conditional **`reconcileDeferredLedgerForUser`**, canonical provider invalidation — see **`data-contract.md` §11**. |
 
@@ -109,7 +111,7 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 - Date format matches short weekday + month + day style.
 - Net cash is aggregate and non-clickable; info icon explains the calculation.
-- Upcoming sorted ascending; only future dates.
+- Upcoming: **hidden** when none; otherwise sorted ascending, future dates only, **max five** preview cards + **see all** → Recurring.
 - Recent capped at 5 with see more.
 - Monthly expense chart: **one point per calendar day** in `dashboardYearMonth` (28–31 points); each value is **running total** spend from day 1 through that day (`dashboardMonthDailyExpenseSeriesProvider`).
 
@@ -117,6 +119,9 @@ Implementation: `lib/features/dashboard/presentation/dashboard_screen.dart` + pr
 
 | Date | Change |
 |------|--------|
+| 2026-05-13 | **Upcoming** (dashboard): **hide whole section** when the merged list is empty; show **at most five** items + trailing **see all** card → **`/recurring`**; strings **`dashboardUpcomingSeeAll`** (`FinkoUpcomingSeeAllCard`). |
+| 2026-05-13 | **Upcoming** strip: removed outer **`FinkoPaperCard`** wrapper so the horizontal row has **no extra section background** (individual upcoming cards unchanged). |
+| 2026-05-13 | **Upcoming** strip cards: avatar, title, amounts, and days-until footer **horizontally centered** (`FinkoUpcomingTransactionCard`). |
 | 2026-05-13 | **Monthly expense card**: bottom **footer** (“See my spending” / “Ver mis gastos”) + chevron, same pattern as net worth card; tap still opens **Spending**. |
 | 2026-05-13 | **Monthly expense card**: full-month line chart via `dashboardMonthDailyExpenseSeriesProvider` — **running total** spend (cumulative `expenseMinorMain` by day); earlier same-day **per-day** chart superseded. |
 | 2026-05-13 | Metric carousel defaults: **`viewportFraction` 0.98**, **`cardHorizontalInset` 4** — wider cards, thinner sibling peek. |

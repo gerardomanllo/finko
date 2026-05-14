@@ -901,6 +901,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboardUpcomingHeading => 'Próximos';
 
   @override
+  String get dashboardUpcomingSeeAll => 'Ver todos los próximos';
+
+  @override
   String get dashboardRecentHeading => 'Transacciones recientes';
 
   @override

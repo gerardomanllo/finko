@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Dashboard:** Upcoming block **hidden** when there is nothing to show; otherwise up to **five** preview cards plus **see all upcoming** → **Recurring** tab.
+
 - **Dashboard:** Metric carousel uses the **same horizontal gutter** as the rest of the dashboard; **viewportFraction** (~0.98) + smaller per-page inset keeps the **second card** barely visible while maximizing card width.
 - **Dashboard:** Monthly expense metric card — line chart is **running total** spend through each day of **`dashboardYearMonth`** (`dashboardMonthDailyExpenseSeriesProvider`; cumulative **`days.{dd}.expenseMinorMain`**).
 - **Dashboard:** Monthly expense metric card — **footer** with localized **“See my spending”** / **“Ver mis gastos”** and chevron (same pattern as net worth); tap still opens **Spending**.

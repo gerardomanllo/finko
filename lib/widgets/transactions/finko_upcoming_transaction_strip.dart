@@ -1,5 +1,60 @@
 import 'package:flutter/material.dart';
 
+/// Trailing card in the dashboard upcoming row: tap opens the full upcoming list (Recurring tab).
+class FinkoUpcomingSeeAllCard extends StatelessWidget {
+  const FinkoUpcomingSeeAllCard({
+    super.key,
+    required this.label,
+    required this.onTap,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 132,
+      child: Card(
+        elevation: 0,
+        color: theme.colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox.expand(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Vertical card for horizontal carousel: avatar, name, bold amount, footer “days until”.
 class FinkoUpcomingTransactionCard extends StatelessWidget {
   const FinkoUpcomingTransactionCard({
@@ -31,18 +86,21 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              CircleAvatar(
-                radius: 16,
-                child: Text(
-                  letter.isNotEmpty ? letter[0].toUpperCase() : '?',
-                  style: theme.textTheme.labelLarge,
+              Center(
+                child: CircleAvatar(
+                  radius: 16,
+                  child: Text(
+                    letter.isNotEmpty ? letter[0].toUpperCase() : '?',
+                    style: theme.textTheme.labelLarge,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 title,
+                textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium,
@@ -50,6 +108,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
               const Spacer(),
               Text(
                 amountText,
+                textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -58,6 +117,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   secondaryAmountText!,
+                  textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -66,6 +126,7 @@ class FinkoUpcomingTransactionCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 footerText,
+                textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

@@ -1718,6 +1718,12 @@ abstract class AppLocalizations {
   /// **'Próximos'**
   String get dashboardUpcomingHeading;
 
+  /// No description provided for @dashboardUpcomingSeeAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todos los próximos'**
+  String get dashboardUpcomingSeeAll;
+
   /// No description provided for @dashboardRecentHeading.
   ///
   /// In es, this message translates to:
