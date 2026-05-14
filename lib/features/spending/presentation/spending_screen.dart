@@ -444,57 +444,70 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: kSpendingSectionCloudGap),
-        Builder(
-          builder: (context) {
-            final rollup = aggregateSpendingTransactions(
-              selectedTxs,
-              mainCurrency: mainCurrency,
-            );
-            final catById = <String, FinkoCategory>{
-              for (final c in categories) c.id: c,
-            };
-            final top = rollup.topOutflows;
-            if (top.isEmpty) {
-              return FinkoPaperCard(
-                title: l10n.spendingTopTransactions,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 16,
-                ),
-                child: Text(
-                  l10n.emptyNoTransactions,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              );
-            }
-            return FinkoPaperCard(
-              title: l10n.spendingTopTransactions,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < top.length; i++) ...[
-                    if (i > 0) const Divider(height: 1),
-                    FinkoTransactionRowCompact(
-                      leading: ledgerTransactionCategoryLeading(
-                        top[i],
-                        catById,
-                      ),
-                      title: top[i].memo ?? top[i].type.wireName,
-                      subtitle: top[i].transactionDate,
-                      amountText: _tx(context, top[i]),
-                      onTap: () => LedgerTransactionEditorSheet.show(
-                        context,
-                        transaction: top[i],
-                      ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.spendingTopTransactions,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Builder(
+              builder: (context) {
+                final rollup = aggregateSpendingTransactions(
+                  selectedTxs,
+                  mainCurrency: mainCurrency,
+                );
+                final catById = <String, FinkoCategory>{
+                  for (final c in categories) c.id: c,
+                };
+                final top = rollup.topOutflows;
+                if (top.isEmpty) {
+                  return FinkoPaperCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
                     ),
-                  ],
-                ],
-              ),
-            );
-          },
+                    child: Text(
+                      l10n.emptyNoTransactions,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  );
+                }
+                return FinkoPaperCard(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final t in top)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: FinkoTransactionRowCompact(
+                            leading: ledgerTransactionCategoryLeading(
+                              t,
+                              catById,
+                            ),
+                            title: t.memo ?? t.type.wireName,
+                            subtitle: t.transactionDate,
+                            amountText: _tx(context, t),
+                            onTap: () => LedgerTransactionEditorSheet.show(
+                              context,
+                              transaction: t,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
     );

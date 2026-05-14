@@ -17,11 +17,11 @@
 ## Navigation
 
 - **In**: Drawer → **Categories**.
-- **Out**: Row tap → **bottom sheet**: month total, recent transactions for the month, **Edit category** (same bottom-sheet pattern as onboarding; fixed-expenses category locks income/expense kind). **Delete category** (destructive cascade) is in the editor sheet for non-system categories; after a successful cascade delete, the editor and summary sheets close and the list is shown again.
+- **Out**: Row tap → **bottom sheet**: month total, recent transactions for the month, **Edit category** (same bottom-sheet pattern as onboarding; fixed-expenses category locks income/expense kind). The editor includes **monthly budget (main currency)** for the recurring profile map **`users/{uid}.budgets.{categoryId}`** (`setCategoryBudgetTarget` after `updateCategory`). **Delete category** (destructive cascade) is in the editor sheet for non-system categories; after a successful cascade delete, the editor and summary sheets close and the list is shown again.
 
 ## Add
 
-- **Floating extended FAB** (bottom center, tonal): **Add category** → onboarding-style editor → `FirestoreDataRepository.createCategory`. List / empty state use extra bottom padding so rows are not covered by the FAB.
+- **Floating extended FAB** (bottom center, tonal): **Add category** → onboarding-style editor (with optional **monthly budget** in main currency) → `FirestoreDataRepository.createCategory`, then **`setCategoryBudgetTarget`** so the new category id gets a profile budget row (empty or zero clears/removes the row). List / empty state use extra bottom padding so rows are not covered by the FAB.
 
 ## Reuse
 
@@ -36,9 +36,11 @@
 - [x] Income block appears before expense block.
 - [x] Matches list density of other “paper list” screens.
 - [x] Add category and cascade delete (with confirmation) for user categories; fixed-expenses and internal transfer category are not deletable from UI.
+- [x] Add/edit category sheet can set or clear the **monthly budget** (main currency) on the user profile.
 
 ## Revision log
 
+- **2026-05-13**: Add/edit category (FAB + summary **Edit category**): **monthly budget** field in main currency; persists `users/{uid}.budgets.{categoryId}` via `FirestoreDataRepository.setCategoryBudgetTarget` (cleared when amount empty / zero).
 - **2026-05-13**: Category rows: `FinkoPaperCard` horizontal inner padding **8** (was default **16**) and `ListTile` horizontal `contentPadding` **8** (was default tile inset), matching accounts list cards.
 - **2026-04-18**: Add category CTA as **center-floating extended FAB** (was inline list button); delete from editor with cascade (`deleteCategoryCascade`); reserved **`ledger-transfer`** category omitted from list stream.
 - **2026-04-16**: Summary transaction lines use the same **main / native** amount rules as the transactions list (`amountMinorMain` or same-currency `amountMinor` fallback).

@@ -80,6 +80,11 @@ class OnboardingCategoryDraft {
     required this.iconKey,
     required this.isSystem,
     this.colorArgb,
+
+    /// Main-currency minor units for `users/{uid}.budgets.{id}.targetMinorMain`.
+    /// Non-null only when the category editor was opened with budget editing
+    /// (post-onboarding); onboarding itself uses [OnboardingDraft.budgetsMinorByCategory].
+    this.monthlyBudgetTargetMinorMain,
   });
 
   final String id;
@@ -90,6 +95,8 @@ class OnboardingCategoryDraft {
 
   /// Optional ARGB tint; included in `commitOnboarding` when non-null.
   final int? colorArgb;
+
+  final int? monthlyBudgetTargetMinorMain;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,

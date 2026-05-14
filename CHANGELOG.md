@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Categories:** Add and edit category sheets include **monthly budget (main currency)**; values are stored on **`users/{uid}.budgets.{categoryId}`** (`FirestoreDataRepository.setCategoryBudgetTarget`). Clearing the amount removes the budget row.
+
 - **Category colors:** Shared add/edit category sheet includes a **named color** control; `colorArgb` is saved on **`users/{uid}/categories/{id}`** (create + update) and included in **`commitOnboarding`** when the client sends it. **`FinkoCategoryIconAvatar`** + **`categoryAccentColor`** drive list avatars (transactions, recurring, spending top, summaries), dashboard **recent** and **upcoming** cards, and **Categories** list rows; Spending donut fallbacks use the same id-based palette as unset colors.
 
 - **Telegram DM bot (Functions):** **`classifyTelegramUpdate`** gate, **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`**, bound-chat expense/income/transfer/recurring flows, optional **Gemini** via **`GEMINI_API_KEY`** (Google Secret Manager / **`defineSecret`**), Spanish/English copy; **`disconnectMessagingIntegration`** clears bindings/sessions. **Tests:** `functions/test/telegram/` fixtures + mocked **`fetch`** (`npm test` in **`functions/`**).

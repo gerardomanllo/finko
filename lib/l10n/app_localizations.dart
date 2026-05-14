@@ -1548,6 +1548,12 @@ abstract class AppLocalizations {
   /// **'Eliminar categoría…'**
   String get categoryEditorDeleteCategory;
 
+  /// No description provided for @categoryEditorMonthlyBudgetLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto mensual (moneda principal)'**
+  String get categoryEditorMonthlyBudgetLabel;
+
   /// No description provided for @accountEditorDeleteAccount.
   ///
   /// In es, this message translates to:

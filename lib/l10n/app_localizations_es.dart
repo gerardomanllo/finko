@@ -803,6 +803,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryEditorDeleteCategory => 'Eliminar categoría…';
 
   @override
+  String get categoryEditorMonthlyBudgetLabel =>
+      'Presupuesto mensual (moneda principal)';
+
+  @override
   String get accountEditorDeleteAccount => 'Eliminar cuenta…';
 
   @override

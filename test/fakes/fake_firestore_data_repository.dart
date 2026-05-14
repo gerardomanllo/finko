@@ -183,6 +183,14 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
   Future<void> updateCategory(String uid, FinkoCategory category) async {}
 
   @override
+  Future<void> setCategoryBudgetTarget(
+    String uid,
+    String categoryId, {
+    required int targetMinorMain,
+    required BudgetKind kind,
+  }) async {}
+
+  @override
   Future<void> updateAccountMetadata(String uid, FinkoAccount account) async {}
 
   @override

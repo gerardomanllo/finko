@@ -47,7 +47,7 @@
 
 ## UI — breakdown (paper)
 
-- Below the pills, **separate white surfaces** (paper card or existing `Card` accordion) are stacked with a **vertical gutter** (~12px) so the **cloud scaffold** shows between sections: **period strip** (mini bars) → **income / fixed / variable accordion** → **donut + legend** (inside paper) → **top transactions** (paper with section title).
+- Below the pills, **separate white surfaces** (paper card or existing `Card` accordion) are stacked with a **vertical gutter** (~12px) so the **cloud scaffold** shows between sections: **period strip** (mini bars) → **income / fixed / variable accordion** → **donut + legend** (inside paper) → **top transactions** section: **`spendingTopTransactions`** as a **`titleMedium`** heading **above** the paper card, then the card with padded compact rows (same inset as Recurring due lists).
 - **Layout**: **Donut on the left**, **category labels on the right**; the **donut + legend row** is **centered horizontally** inside its paper card (narrow `Row` inside `Center`).
 - **Donut**:
   - **Very thin ring** (~1 px stroke: high `centerSpaceRadius` vs section outer radius in fl_chart).
@@ -82,6 +82,7 @@
 
 ## Revision log
 
+- **2026-05-13**: **Top transactions** block: localized title (**`spendingTopTransactions`**, e.g. “Gastos más grandes”) is **outside** the paper card (`titleMedium` + 8px gap); card uses **16×12** padding and **6px** vertical padding per row (aligned with Recurring due lists); removed inter-row **Divider**s in favor of row padding.
 - **2026-04-16**: **Separate paper cards** under the pills with **cloud gutters** between strip, accordion, donut block, and top transactions (no single merged white panel).
 - **2026-04-16**: **One accordion** (income + fixed + variable); **auto-scroll strip** to the right on pill change; donut + legend **centered horizontally**.
 - **2026-04-16**: Strip shows **only periods with ≥1 transaction**; donut ring **thinner**; top outflows use **`amountMinorMain`** with **`amountMinor`** fallback when currency matches **`mainCurrency`**.

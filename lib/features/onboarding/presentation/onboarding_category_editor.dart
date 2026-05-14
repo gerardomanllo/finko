@@ -4,9 +4,12 @@ import '../../../core/data/ledger_category_ids.dart';
 import '../../../core/ui/finko_modal_sheet_extent.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/onboarding_models.dart';
+import 'onboarding_amount_field.dart';
 import 'onboarding_category_icons.dart';
 import 'onboarding_color_palette.dart';
 import 'onboarding_icon_labels.dart';
+import 'onboarding_input_styles.dart';
+import 'onboarding_money_parsing.dart';
 
 double _onboardingCategoryDropdownItemMaxWidth(BuildContext context) {
   return (MediaQuery.sizeOf(context).width - 64).clamp(200.0, 560.0);
@@ -83,6 +86,13 @@ Future<void> showOnboardingCategoryEditor({
   required void Function(OnboardingCategoryDraft draft) onSave,
   bool lockKind = false,
   Future<bool> Function()? onDelete,
+
+  /// When true and [monthlyBudgetCurrencyCode] is non-empty, shows a monthly
+  /// budget field (main currency minor units) and sets
+  /// [OnboardingCategoryDraft.monthlyBudgetTargetMinorMain] on save.
+  bool editMonthlyBudgetMain = false,
+  String? monthlyBudgetCurrencyCode,
+  int initialMonthlyBudgetTargetMinorMain = 0,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -95,6 +105,9 @@ Future<void> showOnboardingCategoryEditor({
       onSave: onSave,
       lockKind: lockKind,
       onDelete: onDelete,
+      editMonthlyBudgetMain: editMonthlyBudgetMain,
+      monthlyBudgetCurrencyCode: monthlyBudgetCurrencyCode,
+      initialMonthlyBudgetTargetMinorMain: initialMonthlyBudgetTargetMinorMain,
     ),
   );
 }
@@ -106,6 +119,9 @@ class _OnboardingCategoryEditorSheet extends StatefulWidget {
     required this.onSave,
     this.lockKind = false,
     this.onDelete,
+    this.editMonthlyBudgetMain = false,
+    this.monthlyBudgetCurrencyCode,
+    this.initialMonthlyBudgetTargetMinorMain = 0,
   });
 
   final AppLocalizations l10n;
@@ -113,6 +129,9 @@ class _OnboardingCategoryEditorSheet extends StatefulWidget {
   final void Function(OnboardingCategoryDraft draft) onSave;
   final bool lockKind;
   final Future<bool> Function()? onDelete;
+  final bool editMonthlyBudgetMain;
+  final String? monthlyBudgetCurrencyCode;
+  final int initialMonthlyBudgetTargetMinorMain;
 
   @override
   State<_OnboardingCategoryEditorSheet> createState() =>
@@ -125,6 +144,11 @@ class _OnboardingCategoryEditorSheetState
   late OnboardingCategoryKind _kind;
   late String _iconKey;
   late int _colorArgb;
+  TextEditingController? _budgetController;
+
+  bool get _showBudgetField =>
+      widget.editMonthlyBudgetMain &&
+      (widget.monthlyBudgetCurrencyCode?.trim().isNotEmpty ?? false);
 
   @override
   void initState() {
@@ -136,11 +160,19 @@ class _OnboardingCategoryEditorSheetState
     _colorArgb = e?.colorArgb != null
         ? onboardingNearestNamedColor(e!.colorArgb!).argb
         : kOnboardingNamedColors.first.argb;
+    if (_showBudgetField) {
+      _budgetController = TextEditingController(
+        text: formatMinorAsInputString(
+          widget.initialMonthlyBudgetTargetMinorMain,
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _budgetController?.dispose();
     super.dispose();
   }
 
@@ -276,6 +308,17 @@ class _OnboardingCategoryEditorSheetState
                       setState(() => _colorArgb = v);
                     },
                   ),
+                  if (_showBudgetField) ...[
+                    const SizedBox(height: 16),
+                    OnboardingAmountTextField(
+                      controller: _budgetController!,
+                      decoration: onboardingMoneyDecoration(
+                        context: context,
+                        labelText: l10n.categoryEditorMonthlyBudgetLabel,
+                        currencyCode: widget.monthlyBudgetCurrencyCode!.trim(),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   if (widget.onDelete != null &&
                       existing != null &&
@@ -304,6 +347,9 @@ class _OnboardingCategoryEditorSheetState
                     onPressed: () {
                       final name = _nameController.text.trim();
                       if (name.isEmpty) return;
+                      final int? budgetMinor = _showBudgetField
+                          ? (parseMajorToMinor(_budgetController!.text) ?? 0)
+                          : null;
                       widget.onSave(
                         OnboardingCategoryDraft(
                           id:
@@ -314,6 +360,7 @@ class _OnboardingCategoryEditorSheetState
                           iconKey: _iconKey,
                           isSystem: existing?.isSystem ?? false,
                           colorArgb: _colorArgb,
+                          monthlyBudgetTargetMinorMain: budgetMinor,
                         ),
                       );
                       Navigator.of(context).pop();

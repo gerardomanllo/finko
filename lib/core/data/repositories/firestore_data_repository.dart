@@ -194,6 +194,15 @@ abstract class FirestoreDataRepository {
   /// User metadata on `categories/{id}` — does not touch aggregates.
   Future<void> updateCategory(String uid, FinkoCategory category);
 
+  /// Sets or clears `users/{uid}.budgets.{categoryId}` ([`MonthlyBudgetEntry`]).
+  /// [targetMinorMain] `<= 0` removes the budget row.
+  Future<void> setCategoryBudgetTarget(
+    String uid,
+    String categoryId, {
+    required int targetMinorMain,
+    required BudgetKind kind,
+  });
+
   /// User metadata on `accounts/{id}` — does not change balances.
   Future<void> updateAccountMetadata(String uid, FinkoAccount account);
 }
@@ -576,6 +585,26 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       payload['colorArgb'] = category.colorArgb;
     }
     await _db.doc(FirestorePaths.categoryDoc(uid, category.id)).update(payload);
+  }
+
+  @override
+  Future<void> setCategoryBudgetTarget(
+    String uid,
+    String categoryId, {
+    required int targetMinorMain,
+    required BudgetKind kind,
+  }) async {
+    final userRef = _db.doc(FirestorePaths.userDoc(uid));
+    if (targetMinorMain <= 0) {
+      await userRef.update({'budgets.$categoryId': FieldValue.delete()});
+    } else {
+      await userRef.update({
+        'budgets.$categoryId': {
+          'targetMinorMain': targetMinorMain,
+          'kind': kind.wireName,
+        },
+      });
+    }
   }
 
   @override

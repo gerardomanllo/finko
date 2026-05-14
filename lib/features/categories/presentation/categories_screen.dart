@@ -37,22 +37,36 @@ class CategoriesScreen extends ConsumerWidget {
         context: context,
         l10n: l10n,
         existing: null,
+        editMonthlyBudgetMain: true,
+        monthlyBudgetCurrencyCode: mainCurrency,
+        initialMonthlyBudgetTargetMinorMain: 0,
         onSave: (draft) async {
           try {
-            await ref
-                .read(firestoreDataRepositoryProvider)
-                .createCategory(
-                  uid,
-                  name: draft.name,
-                  kind: draft.kind == OnboardingCategoryKind.income
-                      ? CategoryKind.income
-                      : CategoryKind.expense,
-                  iconKey: draft.iconKey,
-                  colorArgb: draft.colorArgb,
-                );
+            final repo = ref.read(firestoreDataRepositoryProvider);
+            final id = await repo.createCategory(
+              uid,
+              name: draft.name,
+              kind: draft.kind == OnboardingCategoryKind.income
+                  ? CategoryKind.income
+                  : CategoryKind.expense,
+              iconKey: draft.iconKey,
+              colorArgb: draft.colorArgb,
+            );
+            if (draft.monthlyBudgetTargetMinorMain != null) {
+              final bk = draft.kind == OnboardingCategoryKind.income
+                  ? BudgetKind.income
+                  : BudgetKind.expense;
+              await repo.setCategoryBudgetTarget(
+                uid,
+                id,
+                targetMinorMain: draft.monthlyBudgetTargetMinorMain!,
+                kind: bk,
+              );
+            }
             if (context.mounted) {
               ref.invalidate(categoriesStreamProvider);
               ref.invalidate(currentMonthTotalsStreamProvider);
+              ref.invalidate(userProfileStreamProvider);
             }
           } catch (e) {
             if (context.mounted) {

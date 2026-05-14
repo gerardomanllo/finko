@@ -384,11 +384,20 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                       FilledButton(
                         onPressed: () {
                           final messenger = ScaffoldMessenger.maybeOf(context);
+                          final profile = sheetRef
+                              .read(userProfileStreamProvider)
+                              .valueOrNull;
+                          final budgetMinor =
+                              profile?.budgets[category.id]?.targetMinorMain ??
+                              0;
                           showOnboardingCategoryEditor(
                             context: context,
                             l10n: l10n,
                             existing: _categoryDraftFromFinko(category),
                             lockKind: category.id == kFixedExpensesCategoryId,
+                            editMonthlyBudgetMain: true,
+                            monthlyBudgetCurrencyCode: mainCurrency,
+                            initialMonthlyBudgetTargetMinorMain: budgetMinor,
                             onDelete: category.id == kFixedExpensesCategoryId
                                 ? null
                                 : () => _confirmAndDeleteCategory(
@@ -407,9 +416,27 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                                 category,
                                 draft,
                               );
-                              sheetRef
-                                  .read(firestoreDataRepositoryProvider)
+                              final repo = sheetRef.read(
+                                firestoreDataRepositoryProvider,
+                              );
+                              final budgetKind =
+                                  draft.kind == OnboardingCategoryKind.income
+                                  ? BudgetKind.income
+                                  : BudgetKind.expense;
+                              repo
                                   .updateCategory(uid, next)
+                                  .then((_) async {
+                                    if (draft.monthlyBudgetTargetMinorMain !=
+                                        null) {
+                                      await repo.setCategoryBudgetTarget(
+                                        uid,
+                                        category.id,
+                                        targetMinorMain:
+                                            draft.monthlyBudgetTargetMinorMain!,
+                                        kind: budgetKind,
+                                      );
+                                    }
+                                  })
                                   .then((_) {
                                     sheetRef.invalidate(
                                       categoriesStreamProvider,
@@ -426,6 +453,9 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                                       transactionsForDateRangeStreamProvider(
                                         range,
                                       ),
+                                    );
+                                    sheetRef.invalidate(
+                                      userProfileStreamProvider,
                                     );
                                   })
                                   .catchError((Object e) {

@@ -315,6 +315,7 @@
   "transactionsTitle": "Transactions",
   "budgetsTitle": "Budgets",
   "categoryEditorDeleteCategory": "Delete category…",
+  "categoryEditorMonthlyBudgetLabel": "Monthly budget (main currency)",
   "accountEditorDeleteAccount": "Delete account…",
   "categoryDeleteCascadeTitle": "Delete “{name}” and all related data?",
   "@categoryDeleteCascadeTitle": {

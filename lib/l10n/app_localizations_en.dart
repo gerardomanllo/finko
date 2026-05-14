@@ -799,6 +799,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryEditorDeleteCategory => 'Delete category…';
 
   @override
+  String get categoryEditorMonthlyBudgetLabel =>
+      'Monthly budget (main currency)';
+
+  @override
   String get accountEditorDeleteAccount => 'Delete account…';
 
   @override
