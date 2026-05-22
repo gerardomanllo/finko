@@ -82,7 +82,7 @@ async function logGeminiNullThenGenericError(
   await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(loc, "generic_error"));
 }
 
-type ParsedCb =
+export type ParsedCb =
   | { t: "confirm" }
   | { t: "cancel" }
   | { t: "pick_acc"; idx: number }
@@ -508,7 +508,7 @@ async function handleLinkToken(
   await telegramSendMessage(deps.fetchTelegram, deps.botToken, chatIdNum, t(locale, "link_connected"));
 }
 
-async function handleCallback(
+export async function handleCallback(
   uid: string,
   chatIdStr: string,
   chatIdNum: number,
@@ -1173,7 +1173,7 @@ async function finalizeSpendCategoryResolution(
   await advanceAfterCategory(uid, chatIdStr, chatIdNum, locale, draft, accounts, categories, mainCurrency, deps, messageId);
 }
 
-async function handlePhoto(
+export async function handlePhoto(
   uid: string,
   chatIdStr: string,
   chatIdNum: number,
@@ -1238,7 +1238,7 @@ async function handlePhoto(
   await beginSpendFlow(uid, chatIdStr, chatIdNum, locale, parsed, accounts, categories, mainCurrency, deps, 0);
 }
 
-async function handleVoice(
+export async function handleVoice(
   uid: string,
   chatIdStr: string,
   chatIdNum: number,
@@ -1284,7 +1284,7 @@ async function handleVoice(
   await beginSpendFlow(uid, chatIdStr, chatIdNum, locale, parsed, accounts, categories, mainCurrency, deps, 0);
 }
 
-async function beginSpendFlow(
+export async function beginSpendFlow(
   uid: string,
   chatIdStr: string,
   chatIdNum: number,
@@ -1393,7 +1393,7 @@ async function promptPickCategory(
   await telegramEditMessageTextOrSend(deps.fetchTelegram, deps.botToken, chatIdNum, messageId, textBody, kb(rows));
 }
 
-async function handleDialogText(
+export async function handleDialogText(
   uid: string,
   chatIdStr: string,
   chatIdNum: number,
@@ -1411,9 +1411,14 @@ async function handleDialogText(
     session?.locale === "es" || session?.locale === "en"
       ? session.locale
       : pickBotLocale({ localeOverride: prefs.localeOverride, userText: text, message });
-  const detectedLoc = await detectStrictTextLocale(text, fallbackLoc, deps, chatIdNum);
-  if (!detectedLoc) return;
-  const loc = detectedLoc;
+  let loc: BotLocale;
+  if (chatIdStr.startsWith("app_")) {
+    loc = pickBotLocale({ localeOverride: prefs.localeOverride, userText: text, message });
+  } else {
+    const detectedLoc = await detectStrictTextLocale(text, fallbackLoc, deps, chatIdNum);
+    if (!detectedLoc) return;
+    loc = detectedLoc;
+  }
 
   const norm = text.trim().toLowerCase();
 

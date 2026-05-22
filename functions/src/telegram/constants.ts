@@ -7,6 +7,9 @@ export const TELEGRAM_CHAT_BINDINGS = "telegramChatBindings";
 /** Bot DM conversation draft state per chat (Functions only). */
 export const TELEGRAM_BOT_SESSIONS = "telegramBotSessions";
 
+/** In-app agent FSM per Firebase uid (Functions only). */
+export const APP_AGENT_SESSIONS = "appAgentSessions";
+
 /** Webhook idempotency — Telegram may retry the same `update_id`. */
 export const TELEGRAM_PROCESSED_UPDATES = "telegramProcessedUpdates";
 

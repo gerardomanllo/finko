@@ -159,12 +159,14 @@ export async function loadCategoriesForBot(db: Firestore, uid: string): Promise<
   return rows.map(({ sortOrder: _, ...rest }) => rest);
 }
 
-export async function loadTelegramBotPreferences(
-  db: Firestore,
-  uid: string
-): Promise<{ defaultAccountId?: string; defaultExpenseCategoryId?: string; defaultIncomeCategoryId?: string; localeOverride?: string }> {
-  const snap = await db.doc(`users/${uid}`).get();
-  const raw = snap.data()?.telegramBotPreferences as Record<string, unknown> | undefined;
+export type AgentPrefsRow = {
+  defaultAccountId?: string;
+  defaultExpenseCategoryId?: string;
+  defaultIncomeCategoryId?: string;
+  localeOverride?: string;
+};
+
+function parseAgentPrefsMap(raw: Record<string, unknown> | undefined): AgentPrefsRow {
   if (!raw || typeof raw !== "object") return {};
   return {
     defaultAccountId: typeof raw.defaultAccountId === "string" ? raw.defaultAccountId : undefined,
@@ -174,6 +176,20 @@ export async function loadTelegramBotPreferences(
       typeof raw.defaultIncomeCategoryId === "string" ? raw.defaultIncomeCategoryId : undefined,
     localeOverride: typeof raw.localeOverride === "string" ? raw.localeOverride : undefined,
   };
+}
+
+/** Reads `agentPreferences` with legacy `telegramBotPreferences` fallback. */
+export async function loadAgentPreferences(db: Firestore, uid: string): Promise<AgentPrefsRow> {
+  const snap = await db.doc(`users/${uid}`).get();
+  const data = snap.data();
+  const agent = data?.agentPreferences as Record<string, unknown> | undefined;
+  const legacy = data?.telegramBotPreferences as Record<string, unknown> | undefined;
+  return parseAgentPrefsMap(agent ?? legacy);
+}
+
+/** @deprecated Use [loadAgentPreferences]. */
+export async function loadTelegramBotPreferences(db: Firestore, uid: string): Promise<AgentPrefsRow> {
+  return loadAgentPreferences(db, uid);
 }
 
 export async function loadMainCurrency(db: Firestore, uid: string): Promise<string> {

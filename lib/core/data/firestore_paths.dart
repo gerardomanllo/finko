@@ -51,4 +51,10 @@ abstract final class FirestorePaths {
   static const forexRates = 'forexRates';
 
   static String forexRatesDoc(String yyyyMmDd) => '$forexRates/$yyyyMmDd';
+
+  static String agentMessagesCollection(String uid) =>
+      '$users/$uid/agentMessages';
+
+  static String agentMessageDoc(String uid, String messageId) =>
+      '${agentMessagesCollection(uid)}/$messageId';
 }

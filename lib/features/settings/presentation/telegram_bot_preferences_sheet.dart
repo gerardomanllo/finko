@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_enums.dart';
-import '../../../core/data/models/telegram_bot_preferences.dart';
+import '../../../core/data/models/agent_preferences.dart';
 import '../../../core/data/models/user_profile.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/ui/finko_modal_sheet_extent.dart';
@@ -42,7 +42,7 @@ class _TelegramBotPreferencesSheetState
   @override
   void initState() {
     super.initState();
-    final p = widget.profile.telegramBotPreferences;
+    final p = widget.profile.agentPreferences;
     final loc = p?.localeOverride?.trim().toLowerCase();
     if (loc == 'es' || loc == 'en') {
       _localeOverride = loc;
@@ -63,7 +63,7 @@ class _TelegramBotPreferencesSheetState
     final uid = ref.read(authUidProvider);
     if (uid == null) return;
     try {
-      await ref.read(userSettingsWriterProvider).setTelegramBotPreferences(
+      await ref.read(userSettingsWriterProvider).setAgentPreferences(
             uid,
             _prefsCoercedFromStreams(),
           );
@@ -94,7 +94,7 @@ class _TelegramBotPreferencesSheetState
     }
   }
 
-  TelegramBotPreferences _prefsCoercedFromStreams() {
+  AgentPreferences _prefsCoercedFromStreams() {
     final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
     final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
     final expenseCats =
@@ -117,7 +117,7 @@ class _TelegramBotPreferencesSheetState
         ? _incomeCategoryId
         : null;
 
-    return TelegramBotPreferences(
+    return AgentPreferences(
       localeOverride: _localeOverride,
       defaultAccountId: acc,
       defaultExpenseCategoryId: exp,

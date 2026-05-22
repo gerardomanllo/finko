@@ -17,6 +17,11 @@ import { deleteMyAccount } from "./deleteMyAccount";
 import { disconnectMessagingIntegration } from "./disconnectMessagingIntegration";
 import { requestMessagingOtp, verifyMessagingOtp } from "./messagingOtp";
 import { telegramWebhook } from "./telegramWebhook";
+import {
+  dismissAgentMessage,
+  sendAgentMessage,
+  submitAgentAction,
+} from "./agent/channels/app/callables";
 import { reconcileDeferredLedgerForUser } from "./reconcileDeferredLedgerCallable";
 import {
   onUserAccountWritten,
@@ -39,6 +44,9 @@ export {
   onUserAccountWritten,
   onUserCategoryWritten,
   telegramWebhook,
+  sendAgentMessage,
+  submitAgentAction,
+  dismissAgentMessage,
 };
 
 export const onLedgerTransactionWritten = onDocumentWritten(

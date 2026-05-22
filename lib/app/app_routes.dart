@@ -12,6 +12,7 @@ import '../features/settings/presentation/settings_screen.dart';
 import '../features/shell/presentation/app_shell.dart';
 import '../features/splash/presentation/splash_screen.dart';
 import '../features/spending/presentation/spending_screen.dart';
+import '../features/agent/presentation/agent_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 
 List<RouteBase> buildAppRoutes({
@@ -80,6 +81,12 @@ List<RouteBase> buildAppRoutes({
           ],
         ),
       ],
+    ),
+    GoRoute(
+      parentNavigatorKey: rootNavigatorKey,
+      path: '/agent',
+      builder: (BuildContext context, GoRouterState state) =>
+          const AgentScreen(),
     ),
     GoRoute(
       parentNavigatorKey: rootNavigatorKey,

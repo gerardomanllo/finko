@@ -7,6 +7,7 @@ import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_enums.dart';
 import '../../../core/data/models/user_profile.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
+import '../../../core/launch/launch_screen_preference.dart';
 import '../../../core/theme/theme_mode_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../onboarding/data/onboarding_repository.dart';
@@ -328,6 +329,49 @@ class SettingsScreen extends ConsumerWidget {
           FinkoSettingsSection(
             title: l10n.settingsLanguageSection,
             child: const LanguageLocaleDropdown(),
+          ),
+          const SizedBox(height: 24),
+          FinkoSettingsSection(
+            title: l10n.agentTitle,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.settingsLaunchScreenAgent),
+                  subtitle: Text(l10n.settingsLaunchScreenDashboard),
+                  value: ref.watch(launchScreenPreferenceProvider).maybeWhen(
+                    data: (s) => s == LaunchScreen.agent,
+                    orElse: () => false,
+                  ),
+                  onChanged: profile == null
+                      ? null
+                      : (on) async {
+                          final uid = ref.read(authUidProvider);
+                          if (uid == null) return;
+                          await setLaunchScreenPreference(
+                            firestore: ref.read(firestoreProvider),
+                            uid: uid,
+                            screen: on ? LaunchScreen.agent : LaunchScreen.dashboard,
+                          );
+                          ref.invalidate(launchScreenPreferenceProvider);
+                        },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.tune_outlined),
+                  title: Text(l10n.settingsAgentDefaults),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: profile == null
+                      ? null
+                      : () => showTelegramBotPreferencesSheet(
+                          context: context,
+                          ref: ref,
+                          profile: profile,
+                        ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
           FinkoSettingsSection(

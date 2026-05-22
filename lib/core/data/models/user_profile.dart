@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../json/json_converters.dart';
 import 'finko_enums.dart';
 import 'monthly_totals.dart';
-import 'telegram_bot_preferences.dart';
+import 'agent_preferences.dart';
 
 part 'user_profile.g.dart';
 
@@ -30,7 +30,7 @@ class UserProfile {
     this.budgets = const {},
     this.aggregateLastCompletedAt,
     this.ledgerSourcesLastChangedAt,
-    this.telegramBotPreferences,
+    this.agentPreferences,
   });
 
   @JsonKey(includeToJson: false)
@@ -83,15 +83,21 @@ class UserProfile {
   @FirestoreNullableUtcDateTimeConverter()
   final DateTime? ledgerSourcesLastChangedAt;
 
-  /// Defaults for the Telegram bot (optional map on `users/{uid}`).
+  /// Defaults for the in-app agent (`users/{uid}.agentPreferences`).
   @JsonKey(
-    fromJson: telegramBotPreferencesFromJson,
-    toJson: telegramBotPreferencesToJson,
+    fromJson: agentPreferencesFromJson,
+    toJson: agentPreferencesToJson,
+    name: 'agentPreferences',
   )
-  final TelegramBotPreferences? telegramBotPreferences;
+  final AgentPreferences? agentPreferences;
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) =>
-      _$UserProfileFromJson(json);
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final copy = Map<String, dynamic>.from(json);
+    if (copy['agentPreferences'] == null && copy['telegramBotPreferences'] != null) {
+      copy['agentPreferences'] = copy['telegramBotPreferences'];
+    }
+    return _$UserProfileFromJson(copy);
+  }
 
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 

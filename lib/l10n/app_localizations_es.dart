@@ -1522,4 +1522,90 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get accountsListSubtitle => 'Toca una cuenta cuando existan detalles.';
+
+  @override
+  String get agentTitle => 'Agente';
+
+  @override
+  String get agentEntryPillLabel => 'Agente';
+
+  @override
+  String get agentBackToDashboard => 'Panel';
+
+  @override
+  String get agentComposerHint => 'Escribe al agente…';
+
+  @override
+  String get agentAttachImage => 'Adjuntar imagen';
+
+  @override
+  String get agentRecordVoice => 'Grabar voz';
+
+  @override
+  String get agentSend => 'Enviar';
+
+  @override
+  String get agentDismiss => 'Cerrar';
+
+  @override
+  String get agentHomePromptTitle => '¿Abrir siempre el agente?';
+
+  @override
+  String get agentHomePromptBody =>
+      'Puedes entrar directo al agente. Lo cambias cuando quieras en Ajustes.';
+
+  @override
+  String get agentHomePromptYes => 'Sí, abrir agente';
+
+  @override
+  String get agentHomePromptNo => 'Ahora no';
+
+  @override
+  String get settingsLaunchScreenAgent => 'Abrir app en el agente';
+
+  @override
+  String get settingsLaunchScreenDashboard => 'Abrir app en el panel';
+
+  @override
+  String get settingsAgentDefaults => 'Preferencias del agente';
+
+  @override
+  String get agentStatusReceiving => 'Recibido — un momentito…';
+
+  @override
+  String get agentStatusReadingReceipt => 'Modo detective del ticket…';
+
+  @override
+  String get agentStatusExtractingAmount => 'Buscando números…';
+
+  @override
+  String get agentStatusTranscribing =>
+      'Oídos atentos — decodificando tu nota…';
+
+  @override
+  String get agentStatusUnderstanding => 'De palabras a movimientos de dinero…';
+
+  @override
+  String get agentStatusThinking => 'Haciendo cuentas en la cabeza…';
+
+  @override
+  String get agentStatusAlmostThere => 'Ya casi…';
+
+  @override
+  String get agentStatusLoadingCategories => 'Reuniendo tus categorías…';
+
+  @override
+  String get agentStatusLoadingAccounts => 'Viendo en qué cuenta…';
+
+  @override
+  String get agentStatusSaving => 'Guardando…';
+
+  @override
+  String get agentErrorGeneric => 'Ups, tropecé con eso.';
+
+  @override
+  String get agentErrorMedia => 'No entendí ese archivo — ¿otro?';
+
+  @override
+  String get agentErrorTimeout => 'Tardó mucho — ¿lo mandas otra vez?';
 }

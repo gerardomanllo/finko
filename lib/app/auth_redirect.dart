@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/auth/firebase_auth_providers.dart';
+import '../core/launch/launch_screen_preference.dart';
 
 /// Resolves the first screen after bootstrap: `/login`, `/onboarding`, or
 /// `/dashboard`. Shared by [appAuthRedirect] and the splash screen.
@@ -19,7 +21,23 @@ Future<String> resolvePostSplashLocation({
     user.uid,
   );
   if (!onboardingDone) return '/onboarding';
-  return '/dashboard';
+  final launch = await _readLaunchScreen(firestore, user.uid);
+  return launch == LaunchScreen.agent ? '/agent' : '/dashboard';
+}
+
+Future<LaunchScreen> _readLaunchScreen(FirebaseFirestore firestore, String uid) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString(kLaunchScreenPrefKey);
+    final doc = await firestore.collection('users').doc(uid).get();
+    final wire = doc.data()?['launchScreen'] as String? ?? cached;
+    if (wire != null) {
+      await prefs.setString(kLaunchScreenPrefKey, wire);
+    }
+    return launchScreenFromWire(wire);
+  } catch (_) {
+    return LaunchScreen.dashboard;
+  }
 }
 
 /// Auth + onboarding gate (see docs/onboarding.md). Uses [FirebaseAuth] /
@@ -54,7 +72,7 @@ Future<String?> appAuthRedirect(
     return '/onboarding';
   }
   if (location == '/login' || location == '/onboarding') {
-    return '/dashboard';
+    return target;
   }
   return null;
 }

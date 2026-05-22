@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
+import '../../agent/presentation/agent_entry_pill.dart';
 import 'finko_shell_drawer.dart';
 import 'shell_drawer_controller.dart';
 
@@ -69,7 +70,15 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   static const int _plusSlotIndex = 2;
+  static const Set<String> _agentPillTabPaths = {
+    '/dashboard',
+    '/recurring',
+    '/spending',
+    '/transactions',
+  };
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _drawerOpen = false;
 
   int _slotForBranch(int branchIndex) {
     return branchIndex < _plusSlotIndex ? branchIndex : branchIndex + 1;
@@ -90,15 +99,40 @@ class _AppShellState extends State<AppShell> {
     await LedgerTransactionEditorSheet.show(context);
   }
 
+  bool _showAgentPill(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (!_agentPillTabPaths.contains(location)) return false;
+    if (_drawerOpen) return false;
+    final rootNav = Navigator.of(context, rootNavigator: true);
+    if (rootNav.canPop()) return false;
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final showPill = _showAgentPill(context);
+    final navBarHeight = kBottomNavigationBarHeight +
+        MediaQuery.paddingOf(context).bottom;
 
     return ShellDrawerController(
       openDrawer: _openDrawer,
       child: Scaffold(
         key: _scaffoldKey,
-        body: widget.navigationShell,
+        onDrawerChanged: (open) => setState(() => _drawerOpen = open),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            widget.navigationShell,
+            if (showPill)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: navBarHeight + 12,
+                child: const Center(child: AgentEntryPill()),
+              ),
+          ],
+        ),
         drawer: Drawer(
           child: SafeArea(
             child: FinkoShellDrawer(navigationShell: widget.navigationShell),
