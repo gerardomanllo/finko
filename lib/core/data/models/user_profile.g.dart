@@ -36,9 +36,7 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       .fromJson(json['aggregateLastCompletedAt']),
   ledgerSourcesLastChangedAt: const FirestoreNullableUtcDateTimeConverter()
       .fromJson(json['ledgerSourcesLastChangedAt']),
-  telegramBotPreferences: telegramBotPreferencesFromJson(
-    json['telegramBotPreferences'],
-  ),
+  agentPreferences: agentPreferencesFromJson(json['agentPreferences']),
 );
 
 Map<String, dynamic> _$UserProfileToJson(
@@ -64,9 +62,7 @@ Map<String, dynamic> _$UserProfileToJson(
       .toJson(instance.aggregateLastCompletedAt),
   'ledgerSourcesLastChangedAt': ?const FirestoreNullableUtcDateTimeConverter()
       .toJson(instance.ledgerSourcesLastChangedAt),
-  'telegramBotPreferences': ?telegramBotPreferencesToJson(
-    instance.telegramBotPreferences,
-  ),
+  'agentPreferences': ?agentPreferencesToJson(instance.agentPreferences),
 };
 
 const _$ThemePreferenceEnumMap = {

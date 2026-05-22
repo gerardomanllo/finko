@@ -1,6 +1,6 @@
 import { FieldValue, Firestore, Timestamp } from "firebase-admin/firestore";
 
-import { BOT_SESSION_TTL_MS, TELEGRAM_BOT_SESSIONS } from "./constants";
+import { APP_AGENT_SESSIONS, BOT_SESSION_TTL_MS, TELEGRAM_BOT_SESSIONS } from "./constants";
 import type { TelegramMessage } from "./types";
 
 export type BotLocale = "es" | "en";
@@ -26,8 +26,18 @@ export type TelegramBotSessionDoc = {
   lastPromptMessageId?: number;
 };
 
+export function sessionCollectionForChatId(chatId: string): string {
+  return chatId.startsWith("app_") ? APP_AGENT_SESSIONS : TELEGRAM_BOT_SESSIONS;
+}
+
+export function botSessionRef(db: Firestore, chatId: string) {
+  return db.collection(sessionCollectionForChatId(chatId)).doc(
+    chatId.startsWith("app_") ? chatId.slice(4) : chatId
+  );
+}
+
 export function telegramBotSessionRef(db: Firestore, chatId: string) {
-  return db.collection(TELEGRAM_BOT_SESSIONS).doc(chatId);
+  return botSessionRef(db, chatId);
 }
 
 /** Omit `undefined` recursively — Firestore rejects undefined field values (dynamic `draft`). */
@@ -49,13 +59,13 @@ export async function loadTelegramBotSession(
   db: Firestore,
   chatId: string
 ): Promise<TelegramBotSessionDoc | null> {
-  const snap = await telegramBotSessionRef(db, chatId).get();
+  const snap = await botSessionRef(db, chatId).get();
   if (!snap.exists) return null;
   const d = snap.data() as TelegramBotSessionDoc;
   if (!d.uid || typeof d.uid !== "string") return null;
   const exp = d.expiresAt as Timestamp | undefined;
   if (exp && exp.toMillis() < Date.now()) {
-    await telegramBotSessionRef(db, chatId).delete().catch(() => undefined);
+    await botSessionRef(db, chatId).delete().catch(() => undefined);
     return null;
   }
   return d;
@@ -77,7 +87,7 @@ export async function upsertTelegramBotSession(
 ): Promise<void> {
   const expiresAt =
     partial.expiresAt ?? Timestamp.fromMillis(Date.now() + BOT_SESSION_TTL_MS);
-  await telegramBotSessionRef(db, chatId).set(
+  await botSessionRef(db, chatId).set(
     {
       ...partial,
       draft: stripUndefinedDeep(partial.draft) as Record<string, unknown>,
@@ -89,5 +99,5 @@ export async function upsertTelegramBotSession(
 }
 
 export async function deleteTelegramBotSession(db: Firestore, chatId: string): Promise<void> {
-  await telegramBotSessionRef(db, chatId).delete().catch(() => undefined);
+  await botSessionRef(db, chatId).delete().catch(() => undefined);
 }

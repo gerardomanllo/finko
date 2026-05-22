@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **In-app agent (primary channel):** Full-screen **`/agent`** chat with text, image, and voice input; playful **status labels** and dismissable errors; **`AgentEntryPill`** on shell tabs; optional **open app to agent** (`launchScreen` + first-visit prompt). Cloud Functions: **`sendAgentMessage`**, **`submitAgentAction`**, **`dismissAgentMessage`**; Firestore **`agentMessages`**, **`appAgentSessions`**; Storage **`agentMedia`**. **`agentPreferences`** replaces **`telegramBotPreferences`** (legacy read fallback). See [`docs/agent.md`](docs/agent.md).
+
 - **Settings — Delete my account:** destructive action below **Sign out** with **three** confirmation dialogs, then Cloud Callable **`deleteMyAccount`** (Admin: recursive Firestore delete under **`users/{uid}`**, Telegram **`telegramChatBindings`** / bot session cleanup when linked, **`deleteUser`** on Firebase Auth). Flutter: **`AccountDeletionService`** + localized copy (EN/ES).
 
 - **Categories:** Add and edit category sheets include **monthly budget (main currency)**; values are stored on **`users/{uid}.budgets.{categoryId}`** (`FirestoreDataRepository.setCategoryBudgetTarget`). Clearing the amount removes the budget row.

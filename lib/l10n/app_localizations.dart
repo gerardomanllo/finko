@@ -2804,6 +2804,174 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Toca una cuenta cuando existan detalles.'**
   String get accountsListSubtitle;
+
+  /// No description provided for @agentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agente'**
+  String get agentTitle;
+
+  /// No description provided for @agentEntryPillLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Agente'**
+  String get agentEntryPillLabel;
+
+  /// No description provided for @agentBackToDashboard.
+  ///
+  /// In es, this message translates to:
+  /// **'Panel'**
+  String get agentBackToDashboard;
+
+  /// No description provided for @agentComposerHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe al agente…'**
+  String get agentComposerHint;
+
+  /// No description provided for @agentAttachImage.
+  ///
+  /// In es, this message translates to:
+  /// **'Adjuntar imagen'**
+  String get agentAttachImage;
+
+  /// No description provided for @agentRecordVoice.
+  ///
+  /// In es, this message translates to:
+  /// **'Grabar voz'**
+  String get agentRecordVoice;
+
+  /// No description provided for @agentSend.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar'**
+  String get agentSend;
+
+  /// No description provided for @agentDismiss.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get agentDismiss;
+
+  /// No description provided for @agentHomePromptTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Abrir siempre el agente?'**
+  String get agentHomePromptTitle;
+
+  /// No description provided for @agentHomePromptBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puedes entrar directo al agente. Lo cambias cuando quieras en Ajustes.'**
+  String get agentHomePromptBody;
+
+  /// No description provided for @agentHomePromptYes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, abrir agente'**
+  String get agentHomePromptYes;
+
+  /// No description provided for @agentHomePromptNo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get agentHomePromptNo;
+
+  /// No description provided for @settingsLaunchScreenAgent.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir app en el agente'**
+  String get settingsLaunchScreenAgent;
+
+  /// No description provided for @settingsLaunchScreenDashboard.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir app en el panel'**
+  String get settingsLaunchScreenDashboard;
+
+  /// No description provided for @settingsAgentDefaults.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias del agente'**
+  String get settingsAgentDefaults;
+
+  /// No description provided for @agentStatusReceiving.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibido — un momentito…'**
+  String get agentStatusReceiving;
+
+  /// No description provided for @agentStatusReadingReceipt.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo detective del ticket…'**
+  String get agentStatusReadingReceipt;
+
+  /// No description provided for @agentStatusExtractingAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscando números…'**
+  String get agentStatusExtractingAmount;
+
+  /// No description provided for @agentStatusTranscribing.
+  ///
+  /// In es, this message translates to:
+  /// **'Oídos atentos — decodificando tu nota…'**
+  String get agentStatusTranscribing;
+
+  /// No description provided for @agentStatusUnderstanding.
+  ///
+  /// In es, this message translates to:
+  /// **'De palabras a movimientos de dinero…'**
+  String get agentStatusUnderstanding;
+
+  /// No description provided for @agentStatusThinking.
+  ///
+  /// In es, this message translates to:
+  /// **'Haciendo cuentas en la cabeza…'**
+  String get agentStatusThinking;
+
+  /// No description provided for @agentStatusAlmostThere.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya casi…'**
+  String get agentStatusAlmostThere;
+
+  /// No description provided for @agentStatusLoadingCategories.
+  ///
+  /// In es, this message translates to:
+  /// **'Reuniendo tus categorías…'**
+  String get agentStatusLoadingCategories;
+
+  /// No description provided for @agentStatusLoadingAccounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Viendo en qué cuenta…'**
+  String get agentStatusLoadingAccounts;
+
+  /// No description provided for @agentStatusSaving.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardando…'**
+  String get agentStatusSaving;
+
+  /// No description provided for @agentErrorGeneric.
+  ///
+  /// In es, this message translates to:
+  /// **'Ups, tropecé con eso.'**
+  String get agentErrorGeneric;
+
+  /// No description provided for @agentErrorMedia.
+  ///
+  /// In es, this message translates to:
+  /// **'No entendí ese archivo — ¿otro?'**
+  String get agentErrorMedia;
+
+  /// No description provided for @agentErrorTimeout.
+  ///
+  /// In es, this message translates to:
+  /// **'Tardó mucho — ¿lo mandas otra vez?'**
+  String get agentErrorTimeout;
 }
 
 class _AppLocalizationsDelegate

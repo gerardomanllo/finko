@@ -1512,4 +1512,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountsListSubtitle => 'Tap an account when detail routes exist.';
+
+  @override
+  String get agentTitle => 'Agent';
+
+  @override
+  String get agentEntryPillLabel => 'Agent';
+
+  @override
+  String get agentBackToDashboard => 'Dashboard';
+
+  @override
+  String get agentComposerHint => 'Message your agent…';
+
+  @override
+  String get agentAttachImage => 'Attach image';
+
+  @override
+  String get agentRecordVoice => 'Record voice';
+
+  @override
+  String get agentSend => 'Send';
+
+  @override
+  String get agentDismiss => 'Dismiss';
+
+  @override
+  String get agentHomePromptTitle => 'Make the agent your main screen?';
+
+  @override
+  String get agentHomePromptBody =>
+      'You can open Finko straight to the agent. Switch back anytime from Settings.';
+
+  @override
+  String get agentHomePromptYes => 'Yes, open to agent';
+
+  @override
+  String get agentHomePromptNo => 'Not now';
+
+  @override
+  String get settingsLaunchScreenAgent => 'Open app to agent';
+
+  @override
+  String get settingsLaunchScreenDashboard => 'Open app to dashboard';
+
+  @override
+  String get settingsAgentDefaults => 'Agent defaults';
+
+  @override
+  String get agentStatusReceiving => 'Got it — one sec…';
+
+  @override
+  String get agentStatusReadingReceipt => 'Receipt detective mode…';
+
+  @override
+  String get agentStatusExtractingAmount => 'Hunting for numbers…';
+
+  @override
+  String get agentStatusTranscribing => 'Ears on — decoding your voice note…';
+
+  @override
+  String get agentStatusUnderstanding => 'Turning words into money moves…';
+
+  @override
+  String get agentStatusThinking => 'Doing the math in my head…';
+
+  @override
+  String get agentStatusAlmostThere => 'Almost there…';
+
+  @override
+  String get agentStatusLoadingCategories => 'Rounding up your categories…';
+
+  @override
+  String get agentStatusLoadingAccounts => 'Checking which account…';
+
+  @override
+  String get agentStatusSaving => 'Locking it in…';
+
+  @override
+  String get agentErrorGeneric => 'Hmm, I tripped on that one.';
+
+  @override
+  String get agentErrorMedia =>
+      'Couldn\'t make sense of that file — try another?';
+
+  @override
+  String get agentErrorTimeout => 'That took too long — want to send it again?';
 }

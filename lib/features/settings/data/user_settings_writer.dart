@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/firestore_paths.dart';
 import '../../../core/data/models/finko_enums.dart';
-import '../../../core/data/models/telegram_bot_preferences.dart';
+import '../../../core/data/models/agent_preferences.dart';
 
 final userSettingsWriterProvider = Provider<UserSettingsWriter>((ref) {
   return UserSettingsWriter(firestore: ref.watch(firestoreProvider));
@@ -23,20 +23,25 @@ class UserSettingsWriter {
     }, SetOptions(merge: true));
   }
 
-  Future<void> setTelegramBotPreferences(
-    String uid,
-    TelegramBotPreferences prefs,
-  ) async {
+  Future<void> setAgentPreferences(String uid, AgentPreferences prefs) async {
     await _firestore.doc(FirestorePaths.userDoc(uid)).set(
-      {'telegramBotPreferences': prefs.toJson()},
+      {'agentPreferences': prefs.toJson()},
       SetOptions(merge: true),
     );
   }
 
-  Future<void> clearTelegramBotPreferences(String uid) async {
+  Future<void> clearAgentPreferences(String uid) async {
     await _firestore.doc(FirestorePaths.userDoc(uid)).set(
-      {'telegramBotPreferences': <String, dynamic>{}},
+      {'agentPreferences': <String, dynamic>{}},
       SetOptions(merge: true),
     );
   }
+
+  @Deprecated('Use setAgentPreferences')
+  Future<void> setTelegramBotPreferences(String uid, AgentPreferences prefs) =>
+      setAgentPreferences(uid, prefs);
+
+  @Deprecated('Use clearAgentPreferences')
+  Future<void> clearTelegramBotPreferences(String uid) =>
+      clearAgentPreferences(uid);
 }

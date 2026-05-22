@@ -81,6 +81,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // In-app agent FSM (Functions only).
+    match /appAgentSessions/{uid} {
+      allow read, write: if false;
+    }
+
     match /users/{userId} {
       // Profile document only (not subcollections).
       allow read: if signedIn(userId);
@@ -149,6 +154,12 @@ service cloud.firestore {
 
       match /recurring/{ruleId} {
         allow read, write: if signedIn(userId);
+      }
+
+      // In-app agent thread — read-only for client; writes via Functions.
+      match /agentMessages/{messageId} {
+        allow read: if signedIn(userId);
+        allow write: if false;
       }
     }
   }

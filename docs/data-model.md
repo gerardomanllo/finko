@@ -37,8 +37,10 @@ users/{uid}/_processedAggregateEvents/{eventId}  # idempotency for CF aggregate 
 forexRates/{yyyy-mm-dd}                  # global daily quotes (see §10)—not user-scoped
 telegramLinkTokens/{tokenId}             # Telegram deep-link tokens (24h TTL; Functions + webhook only; see §3.1)
 telegramChatBindings/{chatId}            # Telegram chat id (string) → Firebase uid (Functions / webhook only; see §3.2)
-telegramBotSessions/{chatId}             # DM bot draft + wizard state (Functions only)
+telegramBotSessions/{chatId}             # Legacy Telegram DM draft (Functions only)
 telegramProcessedUpdates/{updateId}      # Webhook idempotency by Telegram update_id (Functions only)
+appAgentSessions/{uid}                   # In-app agent FSM (Functions only)
+users/{uid}/agentMessages/{messageId}    # In-app agent thread (client read; Functions write)
 ```
 
 ---
@@ -60,7 +62,8 @@ telegramProcessedUpdates/{updateId}      # Webhook idempotency by Telegram updat
 | `budgets` | `map<string, object>` | **Recurring monthly targets** (same every month): `categoryId` → `{ "targetMinorMain": int, "kind": "income"|"expense" }`. **Legacy:** flat `categoryId` → minor int coerces to `{ targetMinorMain, kind: expense }` in clients; **`commitOnboarding`** writes canonical rows. |
 | `ledgerSourcesLastChangedAt` | `Timestamp?` | **Server-only** (Cloud Functions / Admin): last time **ledger sources** changed in a way that can require aggregates—**transactions** (non–audit-only writes), **categories**, or **accounts** (excluding balance-only denormalized updates). Clients read for pull-to-refresh gating; **`firestore.rules`** block client **create/update** on this key. |
 | `aggregateLastCompletedAt` | `Timestamp?` | **Server-only**: last time incremental **aggregates** finished applying (`accounts` / `monthlyTotals`) for this user. Clients read for gating; rules block client writes. |
-| `telegramBotPreferences` | `map?` | Optional defaults for the **Telegram DM bot** (`defaultAccountId`, `defaultExpenseCategoryId`, `defaultIncomeCategoryId`, `localeOverride` as `es` \| `en`). Client merge when linked; **Cloud Functions** read when handling webhook updates. |
+| `agentPreferences` | `map?` | Optional defaults for the **in-app agent** (and legacy Telegram adapter): `defaultAccountId`, `defaultExpenseCategoryId`, `defaultIncomeCategoryId`, `localeOverride` (`es` \| `en`). Client merge from Settings; **Cloud Functions** read on agent/Telegram turns. Legacy field `telegramBotPreferences` is read as fallback until backfill. |
+| `launchScreen` | `string?` | `dashboard` (default) \| `agent` — cold-start route after onboarding. |
 
 ### 3.1 Integrations (messaging channels)
 
@@ -384,6 +387,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-05-22 | In-app **agent** (primary): `users/{uid}/agentMessages`, `appAgentSessions/{uid}`, `agentPreferences`, `launchScreen`; see [`agent.md`](agent.md). Legacy `telegramBotPreferences` read fallback. |
 | 2026-05-13 | Account teardown: Callable **`deleteMyAccount`** (authenticated `uid`) — Admin **`recursiveDelete`** on **`users/{uid}`** (profile + all subcollections), **`deleteTelegramChatBinding`** / **`deleteTelegramBotSession`** / **`deleteTelegramLinkState`** when Telegram is linked, then **`auth.deleteUser(uid)`** (idempotent on `auth/user-not-found`). Clients cannot delete the profile doc (`firestore.rules`); full wipe is server-only. |
 | 2026-05-12 | §4.2: **`monthlyTotals.days.*.netWorthEodMinorMain`** = signed sum of all accounts in main currency after aggregates (Functions snapshot + optional **`rebuildNetWorthSeriesForMonth`** replay), not incremental tx-only NW deltas. |
 | 2026-05-01 | §2 / §3 / §3.2: **`telegramChatBindings`**, **`telegramBotSessions`**, **`telegramProcessedUpdates`** (Functions-only); **`users/{uid}.telegramBotPreferences`** for DM bot defaults; linking path unchanged. See [`references/telegram-bot-testing.md`](references/telegram-bot-testing.md). |
