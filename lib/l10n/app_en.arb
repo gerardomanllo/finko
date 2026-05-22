@@ -35,6 +35,32 @@
   "onboardingBack": "Back",
   "onboardingCommit": "Finish onboarding",
   "onboardingCompleted": "Onboarding complete.",
+  "onboardingStepWelcomeTitle": "Welcome to Finko",
+  "onboardingWelcomeStart": "Get started",
+  "onboardingWelcomeHeadline": "Hi! Here's how Finko works.",
+  "onboardingWelcomeIntro": "Finko follows how your money really works: it lives in accounts, moves with every transaction, gets grouped into categories, and budgets help you plan ahead. That's the whole idea.",
+  "onboardingWelcomeAccountsTitle": "Accounts",
+  "onboardingWelcomeAccountsBody": "These are the places your money lives—your bank account, cash, credit cards. Finko keeps them all in one place.",
+  "onboardingWelcomeTransactionsTitle": "Transactions",
+  "onboardingWelcomeTransactionsBody": "Every time money comes in or goes out, that's a transaction. Logging them keeps your balances up to date—no spreadsheet required.",
+  "onboardingWelcomeCategoriesTitle": "Categories",
+  "onboardingWelcomeCategoriesBody": "Categories tell you what your money was for—groceries, rent, fun. An account is where your money is; a category is what it's for.",
+  "onboardingWelcomeBudgetsTitle": "Budgets",
+  "onboardingWelcomeBudgetsBody": "A budget is a plan, not a rule. It shows you where to adjust—it's not about winning or losing.",
+  "onboardingProfileIntro": "Let's start with the basics to set up your experience.",
+  "onboardingAccountsIntro": "Add each place you keep money—bank, cash, cards. Don't worry about being exact; you can edit anytime.",
+  "onboardingCategoriesIntro": "Categories group your money by purpose. Remember: an account is where your money is; a category is what it's for.",
+  "onboardingRecurringIntro": "Do you have income that arrives regularly? Telling us when and how much lets Finko project your months.",
+  "onboardingRecurringYes": "Yes, regular",
+  "onboardingRecurringNo": "No, varies",
+  "onboardingRecurringDetailsLabel": "Payment details",
+  "onboardingRecurringSkipHint": "You can still set an expected amount on the budgets step.",
+  "onboardingProjectedHeroPositive": "You could save each month",
+  "onboardingProjectedHeroNegative": "Over budget by",
+  "onboardingProjectedHeroZero": "Break even — no room to save",
+  "onboardingBudgetsIntro": "Set gentle targets for a few categories. Going over just tells you where to adjust—you can't \"fail\".",
+  "onboardingProjectedIntro": "This is a forecast based on what you just entered, not a promise. It shows where you might land each month.",
+  "onboardingMessagingIntro": "Connect WhatsApp or Telegram to log transactions with a quick message. It's optional—you can do this later.",
   "onboardingStepProfileTitle": "Profile & preferences",
   "onboardingStepAccountsTitle": "Accounts",
   "onboardingStepCategoriesTitle": "Categories",
@@ -66,6 +92,40 @@
   "onboardingReviewMessagingWhatsAppOk": "WhatsApp verified",
   "onboardingReviewMessagingTelegramOk": "Telegram verified",
   "onboardingReviewRecurringOff": "Not recurring",
+  "onboardingReviewRecurringMonthly": "{category}: {amount} monthly, paid on the {day} of each month",
+  "@onboardingReviewRecurringMonthly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "day": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringBiweekly": "{category}: {amount} paid on the {day1} and {day2} of each month",
+  "@onboardingReviewRecurringBiweekly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "day1": { "type": "String" },
+      "day2": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringWeekly": "{category}: {amount} every {weekday}",
+  "@onboardingReviewRecurringWeekly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "weekday": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringVariable": "{category}: variable income with no fixed pay date",
+  "@onboardingReviewRecurringVariable": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "onboardingCategoryKindIncomeShort": "Income",
+  "onboardingCategoryKindExpenseShort": "Expense",
+  "onboardingBudgetAmountLabel": "Monthly target",
   "onboardingReviewBiweeklyDays": "Paydays: days {day1} and {day2}",
   "@onboardingReviewBiweeklyDays": {
     "placeholders": {

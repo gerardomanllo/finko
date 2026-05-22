@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../../core/data/models/user_profile.dart' show kDefaultMainCurrency;
 
 enum OnboardingStep {
+  welcome,
   profile,
   accounts,
   categories,
@@ -338,6 +339,30 @@ class OnboardingDraft {
     'budgetsMinorByCategory': budgetsMinorByCategory,
     'messaging': messaging.toJson(),
   };
+}
+
+/// Display order for category/budget lists: income → fixed expenses → other expenses.
+/// Preserves original order within each group.
+List<OnboardingCategoryDraft> onboardingCategoriesForDisplay(
+  Iterable<OnboardingCategoryDraft> categories,
+) {
+  final list = categories.toList();
+  final indices = <String, int>{
+    for (var i = 0; i < list.length; i++) list[i].id: i,
+  };
+
+  int rank(OnboardingCategoryDraft c) {
+    if (c.kind == OnboardingCategoryKind.income) return 0;
+    if (c.id == OnboardingDraft.kFixedExpensesCategory.id) return 1;
+    return 2;
+  }
+
+  list.sort((a, b) {
+    final byRank = rank(a).compareTo(rank(b));
+    if (byRank != 0) return byRank;
+    return indices[a.id]!.compareTo(indices[b.id]!);
+  });
+  return list;
 }
 
 String _newRequestId() {

@@ -86,6 +86,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingCompleted => 'Onboarding complete.';
 
   @override
+  String get onboardingStepWelcomeTitle => 'Welcome to Finko';
+
+  @override
+  String get onboardingWelcomeStart => 'Get started';
+
+  @override
+  String get onboardingWelcomeHeadline => 'Hi! Here\'s how Finko works.';
+
+  @override
+  String get onboardingWelcomeIntro =>
+      'Finko follows how your money really works: it lives in accounts, moves with every transaction, gets grouped into categories, and budgets help you plan ahead. That\'s the whole idea.';
+
+  @override
+  String get onboardingWelcomeAccountsTitle => 'Accounts';
+
+  @override
+  String get onboardingWelcomeAccountsBody =>
+      'These are the places your money lives—your bank account, cash, credit cards. Finko keeps them all in one place.';
+
+  @override
+  String get onboardingWelcomeTransactionsTitle => 'Transactions';
+
+  @override
+  String get onboardingWelcomeTransactionsBody =>
+      'Every time money comes in or goes out, that\'s a transaction. Logging them keeps your balances up to date—no spreadsheet required.';
+
+  @override
+  String get onboardingWelcomeCategoriesTitle => 'Categories';
+
+  @override
+  String get onboardingWelcomeCategoriesBody =>
+      'Categories tell you what your money was for—groceries, rent, fun. An account is where your money is; a category is what it\'s for.';
+
+  @override
+  String get onboardingWelcomeBudgetsTitle => 'Budgets';
+
+  @override
+  String get onboardingWelcomeBudgetsBody =>
+      'A budget is a plan, not a rule. It shows you where to adjust—it\'s not about winning or losing.';
+
+  @override
+  String get onboardingProfileIntro =>
+      'Let\'s start with the basics to set up your experience.';
+
+  @override
+  String get onboardingAccountsIntro =>
+      'Add each place you keep money—bank, cash, cards. Don\'t worry about being exact; you can edit anytime.';
+
+  @override
+  String get onboardingCategoriesIntro =>
+      'Categories group your money by purpose. Remember: an account is where your money is; a category is what it\'s for.';
+
+  @override
+  String get onboardingRecurringIntro =>
+      'Do you have income that arrives regularly? Telling us when and how much lets Finko project your months.';
+
+  @override
+  String get onboardingRecurringYes => 'Yes, regular';
+
+  @override
+  String get onboardingRecurringNo => 'No, varies';
+
+  @override
+  String get onboardingRecurringDetailsLabel => 'Payment details';
+
+  @override
+  String get onboardingRecurringSkipHint =>
+      'You can still set an expected amount on the budgets step.';
+
+  @override
+  String get onboardingProjectedHeroPositive => 'You could save each month';
+
+  @override
+  String get onboardingProjectedHeroNegative => 'Over budget by';
+
+  @override
+  String get onboardingProjectedHeroZero => 'Break even — no room to save';
+
+  @override
+  String get onboardingBudgetsIntro =>
+      'Set gentle targets for a few categories. Going over just tells you where to adjust—you can\'t \"fail\".';
+
+  @override
+  String get onboardingProjectedIntro =>
+      'This is a forecast based on what you just entered, not a promise. It shows where you might land each month.';
+
+  @override
+  String get onboardingMessagingIntro =>
+      'Connect WhatsApp or Telegram to log transactions with a quick message. It\'s optional—you can do this later.';
+
+  @override
   String get onboardingStepProfileTitle => 'Profile & preferences';
 
   @override
@@ -151,6 +242,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingReviewRecurringOff => 'Not recurring';
+
+  @override
+  String onboardingReviewRecurringMonthly(
+    String category,
+    String amount,
+    String day,
+  ) {
+    return '$category: $amount monthly, paid on the $day of each month';
+  }
+
+  @override
+  String onboardingReviewRecurringBiweekly(
+    String category,
+    String amount,
+    String day1,
+    String day2,
+  ) {
+    return '$category: $amount paid on the $day1 and $day2 of each month';
+  }
+
+  @override
+  String onboardingReviewRecurringWeekly(
+    String category,
+    String amount,
+    String weekday,
+  ) {
+    return '$category: $amount every $weekday';
+  }
+
+  @override
+  String onboardingReviewRecurringVariable(String category) {
+    return '$category: variable income with no fixed pay date';
+  }
+
+  @override
+  String get onboardingCategoryKindIncomeShort => 'Income';
+
+  @override
+  String get onboardingCategoryKindExpenseShort => 'Expense';
+
+  @override
+  String get onboardingBudgetAmountLabel => 'Monthly target';
 
   @override
   String onboardingReviewBiweeklyDays(int day1, int day2) {

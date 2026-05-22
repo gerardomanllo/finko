@@ -45,6 +45,46 @@ void main() {
     },
   );
 
+  test(
+    'onboardingCategoriesForDisplay orders income, fixed, then expenses',
+    () {
+      const salary = OnboardingCategoryDraft(
+        id: 'salary',
+        name: 'Salary',
+        kind: OnboardingCategoryKind.income,
+        iconKey: 'work',
+        isSystem: false,
+      );
+      const food = OnboardingCategoryDraft(
+        id: 'food',
+        name: 'Food',
+        kind: OnboardingCategoryKind.expense,
+        iconKey: 'restaurant',
+        isSystem: false,
+      );
+      const transport = OnboardingCategoryDraft(
+        id: 'transport',
+        name: 'Transport',
+        kind: OnboardingCategoryKind.expense,
+        iconKey: 'directions_car',
+        isSystem: false,
+      );
+      // Deliberately shuffled input order.
+      final sorted = onboardingCategoriesForDisplay([
+        food,
+        OnboardingDraft.kFixedExpensesCategory,
+        transport,
+        salary,
+      ]);
+      expect(sorted.map((c) => c.id).toList(), [
+        'salary',
+        'fixed-expenses',
+        'food',
+        'transport',
+      ]);
+    },
+  );
+
   test('projected savings uses fixed + variable expenses split', () {
     final draft = OnboardingDraft(
       categories: const [

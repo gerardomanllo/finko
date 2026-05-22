@@ -44,5 +44,5 @@ class OnboardingState {
   }
 
   static OnboardingState initial() =>
-      OnboardingState(step: OnboardingStep.profile, draft: OnboardingDraft());
+      OnboardingState(step: OnboardingStep.welcome, draft: OnboardingDraft());
 }

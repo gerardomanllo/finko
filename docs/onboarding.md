@@ -141,6 +141,9 @@
 
 | Date | Change |
 |------|--------|
+| 2026-05-22 | Category/budget lists use **`onboardingCategoriesForDisplay`**: income → **Fixed Expenses** → other expenses (stable within each group). |
+| 2026-05-22 | **§4** Account/weekday chips use **`OnboardingChoiceChip`** (cloud fill, visible borders). **§5** Budget targets in per-category **cards** with income/expense badges. **§6** Projected step scrollable; chart **fixed 280px** in card. **Review:** all categories listed with kind cues; recurring copy in **natural language**. |
+| 2026-05-22 | **§1** Theme, locale, and main currency use **segmented toggles** (not dropdowns). **§2–3** “Add” buttons sit **above** account/category lists. **§4** Recurring income cards use icon header, yes/no toggle, and chip pickers. **§6 / review** Projected savings hero + metric tiles; review step uses section cards. |
 | 2026-04-22 | **§2** Account **color** dropdown shows **named colors** (EN/ES, curated ~24-color palette) instead of hex; account + category **icon** dropdowns show **localized labels** (EN/ES) instead of raw icon keys. Stored `colorArgb` / `iconKey` values unchanged. |
 | 2026-04-22 | **§6** Stacked column: all **expense** rows (fixed + each variable) **sorted by budget amount** (largest next to $0, smallest expense just under savings); **projected savings** at the top (100% expected income). |
 | 2026-04-22 | **§4** Income **budget** stays aligned with **recurring** (cadence multipliers) whenever recurring is edited, not only on first visit to budgets. |

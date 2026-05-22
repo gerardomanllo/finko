@@ -35,6 +35,32 @@
   "onboardingBack": "Atrás",
   "onboardingCommit": "Finalizar incorporación",
   "onboardingCompleted": "Incorporación completada.",
+  "onboardingStepWelcomeTitle": "Te damos la bienvenida",
+  "onboardingWelcomeStart": "Comenzar",
+  "onboardingWelcomeHeadline": "¡Hola! Así funciona Finko.",
+  "onboardingWelcomeIntro": "Finko sigue el ritmo real de tu dinero: vive en cuentas, se mueve con cada transacción, lo agrupas en categorías y los presupuestos te ayudan a planear. Eso es todo.",
+  "onboardingWelcomeAccountsTitle": "Cuentas",
+  "onboardingWelcomeAccountsBody": "Son los lugares donde guardas tu dinero: tu cuenta de banco, el efectivo, las tarjetas de crédito. Finko las reúne todas en un solo lugar.",
+  "onboardingWelcomeTransactionsTitle": "Transacciones",
+  "onboardingWelcomeTransactionsBody": "Cada vez que entra o sale dinero, eso es una transacción. Registrarlas mantiene tus saldos al día, sin hojas de cálculo.",
+  "onboardingWelcomeCategoriesTitle": "Categorías",
+  "onboardingWelcomeCategoriesBody": "Las categorías dicen para qué fue tu dinero: comida, renta, diversión. Una cuenta es dónde está tu dinero; una categoría es para qué es.",
+  "onboardingWelcomeBudgetsTitle": "Presupuestos",
+  "onboardingWelcomeBudgetsBody": "Un presupuesto es un plan, no una regla. Te muestra dónde ajustar; no se trata de ganar ni de perder.",
+  "onboardingProfileIntro": "Empecemos con lo básico para personalizar tu experiencia.",
+  "onboardingAccountsIntro": "Agrega cada lugar donde tienes dinero: banco, efectivo, tarjetas. No te preocupes por ser exacto, puedes editarlo cuando quieras.",
+  "onboardingCategoriesIntro": "Las categorías agrupan tu dinero por propósito. Recuerda: una cuenta es dónde está tu dinero; una categoría es para qué es.",
+  "onboardingRecurringIntro": "¿Tienes ingresos que llegan de forma regular? Decirnos cuándo y cuánto nos deja proyectar tus meses.",
+  "onboardingRecurringYes": "Sí, regular",
+  "onboardingRecurringNo": "No, varía",
+  "onboardingRecurringDetailsLabel": "Detalles del pago",
+  "onboardingRecurringSkipHint": "Aún puedes definir un monto esperado en el paso de presupuestos.",
+  "onboardingProjectedHeroPositive": "Podrías ahorrar cada mes",
+  "onboardingProjectedHeroNegative": "Sobre presupuesto por",
+  "onboardingProjectedHeroZero": "Empate — sin margen para ahorrar",
+  "onboardingBudgetsIntro": "Define metas suaves para algunas categorías. Pasarte solo te dice dónde ajustar; no puedes \"fallar\".",
+  "onboardingProjectedIntro": "Esto es una proyección basada en lo que acabas de ingresar, no una promesa. Te muestra dónde podrías terminar el mes.",
+  "onboardingMessagingIntro": "Conecta WhatsApp o Telegram para registrar movimientos con un mensaje. Es opcional y puedes hacerlo después.",
   "onboardingStepProfileTitle": "Perfil y preferencias",
   "onboardingStepAccountsTitle": "Cuentas",
   "onboardingStepCategoriesTitle": "Categorías",
@@ -66,6 +92,40 @@
   "onboardingReviewMessagingWhatsAppOk": "WhatsApp verificado",
   "onboardingReviewMessagingTelegramOk": "Telegram verificado",
   "onboardingReviewRecurringOff": "No recurrente",
+  "onboardingReviewRecurringMonthly": "{category}: {amount} mensual, pagado el día {day} de cada mes",
+  "@onboardingReviewRecurringMonthly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "day": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringBiweekly": "{category}: {amount} pagado los días {day1} y {day2} de cada mes",
+  "@onboardingReviewRecurringBiweekly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "day1": { "type": "String" },
+      "day2": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringWeekly": "{category}: {amount} cada {weekday}",
+  "@onboardingReviewRecurringWeekly": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" },
+      "weekday": { "type": "String" }
+    }
+  },
+  "onboardingReviewRecurringVariable": "{category}: ingreso variable, sin fecha fija de pago",
+  "@onboardingReviewRecurringVariable": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "onboardingCategoryKindIncomeShort": "Ingreso",
+  "onboardingCategoryKindExpenseShort": "Gasto",
+  "onboardingBudgetAmountLabel": "Meta mensual",
   "onboardingReviewBiweeklyDays": "Pagos: días {day1} y {day2}",
   "@onboardingReviewBiweeklyDays": {
     "placeholders": {

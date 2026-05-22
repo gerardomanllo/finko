@@ -16,7 +16,8 @@ void main() {
       locale: 'es',
       mainCurrency: 'MXN',
     );
-    await controller.next();
+    await controller.next(); // welcome -> profile
+    await controller.next(); // profile -> accounts
     expect(
       container.read(onboardingControllerProvider).step,
       OnboardingStep.accounts,
@@ -60,8 +61,9 @@ void main() {
         locale: 'es',
         mainCurrency: 'MXN',
       );
-      await controller.next(); // accounts
-      await controller.next(); // categories
+      await controller.next(); // welcome -> profile
+      await controller.next(); // profile -> accounts
+      await controller.next(); // accounts -> categories
 
       controller.addSuggestedCategory(
         id: 'salary',

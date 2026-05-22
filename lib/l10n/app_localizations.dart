@@ -240,6 +240,162 @@ abstract class AppLocalizations {
   /// **'Incorporación completada.'**
   String get onboardingCompleted;
 
+  /// No description provided for @onboardingStepWelcomeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Te damos la bienvenida'**
+  String get onboardingStepWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeStart.
+  ///
+  /// In es, this message translates to:
+  /// **'Comenzar'**
+  String get onboardingWelcomeStart;
+
+  /// No description provided for @onboardingWelcomeHeadline.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Hola! Así funciona Finko.'**
+  String get onboardingWelcomeHeadline;
+
+  /// No description provided for @onboardingWelcomeIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Finko sigue el ritmo real de tu dinero: vive en cuentas, se mueve con cada transacción, lo agrupas en categorías y los presupuestos te ayudan a planear. Eso es todo.'**
+  String get onboardingWelcomeIntro;
+
+  /// No description provided for @onboardingWelcomeAccountsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get onboardingWelcomeAccountsTitle;
+
+  /// No description provided for @onboardingWelcomeAccountsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Son los lugares donde guardas tu dinero: tu cuenta de banco, el efectivo, las tarjetas de crédito. Finko las reúne todas en un solo lugar.'**
+  String get onboardingWelcomeAccountsBody;
+
+  /// No description provided for @onboardingWelcomeTransactionsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Transacciones'**
+  String get onboardingWelcomeTransactionsTitle;
+
+  /// No description provided for @onboardingWelcomeTransactionsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada vez que entra o sale dinero, eso es una transacción. Registrarlas mantiene tus saldos al día, sin hojas de cálculo.'**
+  String get onboardingWelcomeTransactionsBody;
+
+  /// No description provided for @onboardingWelcomeCategoriesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get onboardingWelcomeCategoriesTitle;
+
+  /// No description provided for @onboardingWelcomeCategoriesBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Las categorías dicen para qué fue tu dinero: comida, renta, diversión. Una cuenta es dónde está tu dinero; una categoría es para qué es.'**
+  String get onboardingWelcomeCategoriesBody;
+
+  /// No description provided for @onboardingWelcomeBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get onboardingWelcomeBudgetsTitle;
+
+  /// No description provided for @onboardingWelcomeBudgetsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Un presupuesto es un plan, no una regla. Te muestra dónde ajustar; no se trata de ganar ni de perder.'**
+  String get onboardingWelcomeBudgetsBody;
+
+  /// No description provided for @onboardingProfileIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Empecemos con lo básico para personalizar tu experiencia.'**
+  String get onboardingProfileIntro;
+
+  /// No description provided for @onboardingAccountsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega cada lugar donde tienes dinero: banco, efectivo, tarjetas. No te preocupes por ser exacto, puedes editarlo cuando quieras.'**
+  String get onboardingAccountsIntro;
+
+  /// No description provided for @onboardingCategoriesIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Las categorías agrupan tu dinero por propósito. Recuerda: una cuenta es dónde está tu dinero; una categoría es para qué es.'**
+  String get onboardingCategoriesIntro;
+
+  /// No description provided for @onboardingRecurringIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Tienes ingresos que llegan de forma regular? Decirnos cuándo y cuánto nos deja proyectar tus meses.'**
+  String get onboardingRecurringIntro;
+
+  /// No description provided for @onboardingRecurringYes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, regular'**
+  String get onboardingRecurringYes;
+
+  /// No description provided for @onboardingRecurringNo.
+  ///
+  /// In es, this message translates to:
+  /// **'No, varía'**
+  String get onboardingRecurringNo;
+
+  /// No description provided for @onboardingRecurringDetailsLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalles del pago'**
+  String get onboardingRecurringDetailsLabel;
+
+  /// No description provided for @onboardingRecurringSkipHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún puedes definir un monto esperado en el paso de presupuestos.'**
+  String get onboardingRecurringSkipHint;
+
+  /// No description provided for @onboardingProjectedHeroPositive.
+  ///
+  /// In es, this message translates to:
+  /// **'Podrías ahorrar cada mes'**
+  String get onboardingProjectedHeroPositive;
+
+  /// No description provided for @onboardingProjectedHeroNegative.
+  ///
+  /// In es, this message translates to:
+  /// **'Sobre presupuesto por'**
+  String get onboardingProjectedHeroNegative;
+
+  /// No description provided for @onboardingProjectedHeroZero.
+  ///
+  /// In es, this message translates to:
+  /// **'Empate — sin margen para ahorrar'**
+  String get onboardingProjectedHeroZero;
+
+  /// No description provided for @onboardingBudgetsIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Define metas suaves para algunas categorías. Pasarte solo te dice dónde ajustar; no puedes \"fallar\".'**
+  String get onboardingBudgetsIntro;
+
+  /// No description provided for @onboardingProjectedIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Esto es una proyección basada en lo que acabas de ingresar, no una promesa. Te muestra dónde podrías terminar el mes.'**
+  String get onboardingProjectedIntro;
+
+  /// No description provided for @onboardingMessagingIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Conecta WhatsApp o Telegram para registrar movimientos con un mensaje. Es opcional y puedes hacerlo después.'**
+  String get onboardingMessagingIntro;
+
   /// No description provided for @onboardingStepProfileTitle.
   ///
   /// In es, this message translates to:
@@ -365,6 +521,61 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No recurrente'**
   String get onboardingReviewRecurringOff;
+
+  /// No description provided for @onboardingReviewRecurringMonthly.
+  ///
+  /// In es, this message translates to:
+  /// **'{category}: {amount} mensual, pagado el día {day} de cada mes'**
+  String onboardingReviewRecurringMonthly(
+    String category,
+    String amount,
+    String day,
+  );
+
+  /// No description provided for @onboardingReviewRecurringBiweekly.
+  ///
+  /// In es, this message translates to:
+  /// **'{category}: {amount} pagado los días {day1} y {day2} de cada mes'**
+  String onboardingReviewRecurringBiweekly(
+    String category,
+    String amount,
+    String day1,
+    String day2,
+  );
+
+  /// No description provided for @onboardingReviewRecurringWeekly.
+  ///
+  /// In es, this message translates to:
+  /// **'{category}: {amount} cada {weekday}'**
+  String onboardingReviewRecurringWeekly(
+    String category,
+    String amount,
+    String weekday,
+  );
+
+  /// No description provided for @onboardingReviewRecurringVariable.
+  ///
+  /// In es, this message translates to:
+  /// **'{category}: ingreso variable, sin fecha fija de pago'**
+  String onboardingReviewRecurringVariable(String category);
+
+  /// No description provided for @onboardingCategoryKindIncomeShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso'**
+  String get onboardingCategoryKindIncomeShort;
+
+  /// No description provided for @onboardingCategoryKindExpenseShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get onboardingCategoryKindExpenseShort;
+
+  /// No description provided for @onboardingBudgetAmountLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta mensual'**
+  String get onboardingBudgetAmountLabel;
 
   /// No description provided for @onboardingReviewBiweeklyDays.
   ///
@@ -1275,7 +1486,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsDeleteAccountDialog3Body.
   ///
   /// In es, this message translates to:
-  /// **'Se eliminará tu inicio de sesión en Firebase y perderás el acceso de inmediato. Solo continúa si quieres salir de Finko para siempre.'**
+  /// **'Se eliminará tu usuario y perderás el acceso de inmediato. Solo continúa si quieres salir de Finko... para siempre.'**
   String get settingsDeleteAccountDialog3Body;
 
   /// No description provided for @settingsDeleteAccountContinue.

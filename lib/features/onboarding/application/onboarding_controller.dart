@@ -411,6 +411,8 @@ class OnboardingController extends Notifier<OnboardingState> {
 
   String? _validateStep(OnboardingStep step, OnboardingDraft draft) {
     switch (step) {
+      case OnboardingStep.welcome:
+        return null;
       case OnboardingStep.profile:
         final name = draft.displayName.trim();
         if (name.isEmpty) return 'profileNameRequired';

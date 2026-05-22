@@ -92,6 +92,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **FinkoThemeModeToggle** | Three icon buttons (light / dark / system) for `ThemePreference` | Settings |
 | **Onboarding typewriter header** | Step title animation with reduced-motion + semantics-safe label | Onboarding |
 | **Onboarding wizard progress** | Global 9-step progress bar + nav controls | Onboarding |
+| **Onboarding segmented toggle** | Single-select pill row for theme, locale, currency (profile step) | Onboarding (`onboarding_ui.dart`) |
+| **Onboarding section card** | Icon header + body for review/finalize sections | Onboarding review step |
 
 ## Calendar (recurring)
 
@@ -111,6 +113,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 
 ## Revision log
 
+- **2026-05-22** — **Onboarding segmented toggle** / **section card** / **metric tile** for profile pickers, projected savings, and review step.
 - **2026-05-13** — **Budgets category rows:** sort by budget target (desc); **over-budget** warning badge on avatar (`budgets_screen.dart`).
 - **2026-05-01** — **Messaging connected sheet** / **`telegram_bot_preferences_sheet`**: Telegram **Bot defaults** row for optional **`telegramBotPreferences`**.
 - **2026-04-21** — **Messaging OTP bottom sheet** row: Telegram bot-start / deep-link branch + `url_launcher`.
