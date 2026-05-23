@@ -7,7 +7,7 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | Component | Responsibility | Used on |
 |-----------|----------------|---------|
 | **App shell** | `Scaffold` + bottom navigation + center plus action + `Drawer` toggled from top-left settings cog; **`AgentEntryPill`** overlay on tab routes only | All main tabs |
-| **Agent screen** | Full-screen chat (`/agent`): **`AgentStatusRow`**, **`AgentFailedRow`**, **`AgentMessageBubble`**, **`AgentActionChips`**, **`AgentComposer`** | [`agent.md`](agent.md) |
+| **Agent screen** | Full-screen conversational agent (`/agent`): **`AgentLiveTransactionCard`** (evolving flow; tap-to-edit via **`AgentDraftFieldEditorSheet`**), **`AgentThreadItem`**, **`AgentStatusRow`**, **`AgentFailedRow`**, **`AgentComposer`** | [`agent.md`](agent.md) |
 | **App drawer** | Rich shell drawer: profile (avatar + display name) + plan stub chip; **paper-style** net worth block (dashboard metric vocabulary) + stub month delta; MTD income / expense / savings on **cloud**/**navy** fills; nav rows match bottom-nav tints (**Dashboard** shell branch, **Categories**, **Accounts**, **Settings**) | [`finko_shell_drawer.dart`](../lib/features/shell/presentation/finko_shell_drawer.dart) |
 | **Screen scaffold** | Title (and optional actions) consistent with app style | Most routes |
 
@@ -115,7 +115,7 @@ Shared widgets are implemented under `lib/widgets/` (`finko_*.dart` files groupe
 ## Revision log
 
 - **2026-05-22** — **Onboarding segmented toggle** / **section card** / **metric tile** for profile pickers, projected savings, and review step.
-- **2026-05-13** — **Budgets category rows:** sort by budget target (desc); **over-budget** warning badge on avatar (`budgets_screen.dart`).
+- **2026-05-22** — **Agent live transaction card**: single evolving card per flow (fields fade in, choices swap in-place, sealed state on save).
 - **2026-05-01** — **Messaging connected sheet** / **`telegram_bot_preferences_sheet`**: Telegram **Bot defaults** row for optional **`telegramBotPreferences`**.
 - **2026-04-21** — **Messaging OTP bottom sheet** row: Telegram bot-start / deep-link branch + `url_launcher`.
 - **2026-04-18** — **Ledger-aware pull refresh** row: `ledgerAwareAppRefreshProvider` for shared `RefreshIndicator` behavior.

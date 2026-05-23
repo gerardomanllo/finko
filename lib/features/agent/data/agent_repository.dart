@@ -28,9 +28,9 @@ class AgentRepository {
     required FirebaseFirestore firestore,
     required FirebaseFunctions functions,
     required FirebaseStorage storage,
-  })  : _firestore = firestore,
-        _functions = functions,
-        _storage = storage;
+  }) : _firestore = firestore,
+       _functions = functions,
+       _storage = storage;
 
   final FirebaseFirestore _firestore;
   final FirebaseFunctions _functions;
@@ -87,7 +87,10 @@ class AgentRepository {
     String? caption,
     String? clientMessageId,
   }) async {
-    final id = _firestore.collection(FirestorePaths.agentMessagesCollection(uid)).doc().id;
+    final id = _firestore
+        .collection(FirestorePaths.agentMessagesCollection(uid))
+        .doc()
+        .id;
     final path = 'users/$uid/agentMedia/$id';
     await _storage.ref(path).putFile(file);
     final callable = _functions.httpsCallable('sendAgentMessage');
@@ -104,7 +107,10 @@ class AgentRepository {
     required File file,
     String? clientMessageId,
   }) async {
-    final id = _firestore.collection(FirestorePaths.agentMessagesCollection(uid)).doc().id;
+    final id = _firestore
+        .collection(FirestorePaths.agentMessagesCollection(uid))
+        .doc()
+        .id;
     final path = 'users/$uid/agentMedia/$id.ogg';
     await _storage.ref(path).putFile(file);
     final callable = _functions.httpsCallable('sendAgentMessage');

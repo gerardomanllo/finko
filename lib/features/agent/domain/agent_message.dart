@@ -20,13 +20,7 @@ class AgentActionChip {
   }
 }
 
-enum AgentMessageStatus {
-  pending,
-  processing,
-  complete,
-  failed,
-  superseded,
-}
+enum AgentMessageStatus { pending, processing, complete, failed, superseded }
 
 class AgentMessage {
   const AgentMessage({
@@ -41,6 +35,7 @@ class AgentMessage {
     this.errorLabelKey,
     this.dismissedAt,
     this.createdAt,
+    this.clientMessageId,
   });
 
   final String id;
@@ -54,6 +49,7 @@ class AgentMessage {
   final String? errorLabelKey;
   final DateTime? dismissedAt;
   final DateTime? createdAt;
+  final String? clientMessageId;
 
   bool get isUser => role == 'user';
   bool get isAssistant => role == 'assistant';
@@ -61,7 +57,9 @@ class AgentMessage {
   bool get isFailed => status == AgentMessageStatus.failed;
   bool get isDismissed => dismissedAt != null;
 
-  factory AgentMessage.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory AgentMessage.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data() ?? {};
     final actionsRaw = data['actions'];
     final actions = <AgentActionChip>[];
@@ -84,6 +82,7 @@ class AgentMessage {
       errorLabelKey: data['errorLabelKey'] as String?,
       dismissedAt: (data['dismissedAt'] as Timestamp?)?.toDate(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      clientMessageId: data['clientMessageId'] as String?,
     );
   }
 

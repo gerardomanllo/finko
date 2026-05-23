@@ -30,7 +30,10 @@ class AgentFailedRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.sentiment_dissatisfied_outlined, color: theme.colorScheme.error),
+              Icon(
+                Icons.sentiment_dissatisfied_outlined,
+                color: theme.colorScheme.error,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -39,10 +42,7 @@ class AgentFailedRow extends StatelessWidget {
                 ),
               ),
               if (onRetry != null)
-                TextButton(
-                  onPressed: onRetry,
-                  child: Text(l10n.actionRetry),
-                ),
+                TextButton(onPressed: onRetry, child: Text(l10n.actionRetry)),
               IconButton(
                 tooltip: l10n.agentDismiss,
                 onPressed: onDismiss,

@@ -2972,6 +2972,162 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tardó mucho — ¿lo mandas otra vez?'**
   String get agentErrorTimeout;
+
+  /// No description provided for @agentConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Lo guardamos?'**
+  String get agentConfirmTitle;
+
+  /// No description provided for @agentConfirmSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get agentConfirmSave;
+
+  /// No description provided for @agentConfirmCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get agentConfirmCancel;
+
+  /// No description provided for @agentCancel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar'**
+  String get agentCancel;
+
+  /// No description provided for @agentSelectOption.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una opción…'**
+  String get agentSelectOption;
+
+  /// No description provided for @agentDirectionIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso'**
+  String get agentDirectionIncome;
+
+  /// No description provided for @agentDirectionExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto'**
+  String get agentDirectionExpense;
+
+  /// No description provided for @agentFieldCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get agentFieldCategory;
+
+  /// No description provided for @agentFieldAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta'**
+  String get agentFieldAccount;
+
+  /// No description provided for @agentFieldNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get agentFieldNote;
+
+  /// No description provided for @agentFieldAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get agentFieldAmount;
+
+  /// No description provided for @agentEditAmountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar monto'**
+  String get agentEditAmountTitle;
+
+  /// No description provided for @agentEditMemoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar nota'**
+  String get agentEditMemoTitle;
+
+  /// No description provided for @agentEditCategoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir categoría'**
+  String get agentEditCategoryTitle;
+
+  /// No description provided for @agentEditAccountTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir cuenta'**
+  String get agentEditAccountTitle;
+
+  /// No description provided for @agentEditDirectionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de movimiento'**
+  String get agentEditDirectionTitle;
+
+  /// No description provided for @agentEditDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get agentEditDone;
+
+  /// No description provided for @agentEditAmountInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto válido mayor que cero.'**
+  String get agentEditAmountInvalid;
+
+  /// No description provided for @agentPickCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Qué categoría encaja mejor?'**
+  String get agentPickCategory;
+
+  /// No description provided for @agentPickAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'¿En qué cuenta lo registro?'**
+  String get agentPickAccount;
+
+  /// No description provided for @agentPickTransferAccount.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta para la transferencia'**
+  String get agentPickTransferAccount;
+
+  /// No description provided for @agentTransferTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista previa de transferencia'**
+  String get agentTransferTitle;
+
+  /// No description provided for @agentTransferFrom.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde'**
+  String get agentTransferFrom;
+
+  /// No description provided for @agentTransferTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Hacia'**
+  String get agentTransferTo;
+
+  /// No description provided for @agentRecurringTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Con qué frecuencia se repite?'**
+  String get agentRecurringTitle;
+
+  /// No description provided for @agentCardBuilding.
+  ///
+  /// In es, this message translates to:
+  /// **'Armando tu transacción…'**
+  String get agentCardBuilding;
 }
 
 class _AppLocalizationsDelegate
