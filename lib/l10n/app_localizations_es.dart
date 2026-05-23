@@ -1608,4 +1608,84 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get agentErrorTimeout => 'Tardó mucho — ¿lo mandas otra vez?';
+
+  @override
+  String get agentConfirmTitle => '¿Lo guardamos?';
+
+  @override
+  String get agentConfirmSave => 'Guardar';
+
+  @override
+  String get agentConfirmCancel => 'Ahora no';
+
+  @override
+  String get agentCancel => 'Cancelar';
+
+  @override
+  String get agentSelectOption => 'Elige una opción…';
+
+  @override
+  String get agentDirectionIncome => 'Ingreso';
+
+  @override
+  String get agentDirectionExpense => 'Gasto';
+
+  @override
+  String get agentFieldCategory => 'Categoría';
+
+  @override
+  String get agentFieldAccount => 'Cuenta';
+
+  @override
+  String get agentFieldNote => 'Nota';
+
+  @override
+  String get agentFieldAmount => 'Monto';
+
+  @override
+  String get agentEditAmountTitle => 'Editar monto';
+
+  @override
+  String get agentEditMemoTitle => 'Editar nota';
+
+  @override
+  String get agentEditCategoryTitle => 'Elegir categoría';
+
+  @override
+  String get agentEditAccountTitle => 'Elegir cuenta';
+
+  @override
+  String get agentEditDirectionTitle => 'Tipo de movimiento';
+
+  @override
+  String get agentEditDone => 'Listo';
+
+  @override
+  String get agentEditAmountInvalid =>
+      'Ingresa un monto válido mayor que cero.';
+
+  @override
+  String get agentPickCategory => '¿Qué categoría encaja mejor?';
+
+  @override
+  String get agentPickAccount => '¿En qué cuenta lo registro?';
+
+  @override
+  String get agentPickTransferAccount =>
+      'Elige una cuenta para la transferencia';
+
+  @override
+  String get agentTransferTitle => 'Vista previa de transferencia';
+
+  @override
+  String get agentTransferFrom => 'Desde';
+
+  @override
+  String get agentTransferTo => 'Hacia';
+
+  @override
+  String get agentRecurringTitle => '¿Con qué frecuencia se repite?';
+
+  @override
+  String get agentCardBuilding => 'Armando tu transacción…';
 }

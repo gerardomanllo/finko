@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **In-app agent UX:** One **live transaction card** per logging flow — fields fade in as choices are made, prompts swap in the same card, then the card **seals** after save (no stacked step bubbles). Before save, **tap any field** on the card to edit amount, note, category, account, or transaction type in a bottom sheet.
+
 ### Added
 
 - **In-app agent (primary channel):** Full-screen **`/agent`** chat with text, image, and voice input; playful **status labels** and dismissable errors; **`AgentEntryPill`** on shell tabs; optional **open app to agent** (`launchScreen` + first-visit prompt). Cloud Functions: **`sendAgentMessage`**, **`submitAgentAction`**, **`dismissAgentMessage`**; Firestore **`agentMessages`**, **`appAgentSessions`**; Storage **`agentMedia`**. **`agentPreferences`** replaces **`telegramBotPreferences`** (legacy read fallback). See [`docs/agent.md`](docs/agent.md).

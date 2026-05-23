@@ -18,13 +18,45 @@ class AgentActionChips extends StatelessWidget {
   Widget build(BuildContext context) {
     if (actions.isEmpty) return const SizedBox.shrink();
 
+    final theme = Theme.of(context);
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: actions.map((a) {
-        return ActionChip(
-          label: Text(a.label),
-          onPressed: enabled ? () => onAction(a.callbackCode) : null,
+        final isConfirm = a.callbackCode == 'cf';
+        final isCancel = a.callbackCode == 'cx' || a.callbackCode == 'rn';
+
+        if (isConfirm) {
+          return FilledButton(
+            onPressed: enabled ? () => onAction(a.callbackCode) : null,
+            child: Text(a.label == '✓' ? '✓' : a.label),
+          );
+        }
+        if (isCancel) {
+          return OutlinedButton(
+            onPressed: enabled ? () => onAction(a.callbackCode) : null,
+            child: Text(a.label == '✗' ? '✗' : a.label),
+          );
+        }
+
+        return Material(
+          color: theme.colorScheme.surface,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+            ),
+          ),
+          child: InkWell(
+            onTap: enabled ? () => onAction(a.callbackCode) : null,
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Text(a.label, style: theme.textTheme.labelLarge),
+            ),
+          ),
         );
       }).toList(),
     );

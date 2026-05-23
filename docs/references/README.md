@@ -63,7 +63,8 @@ Decisions for client code. **Detail:** `.cursor/rules/finko-flutter-architecture
 ### VS Code / Cursor (Run and Debug)
 
 - Configurations live in **`.vscode/launch.json`**. Pick the row that matches your **device** and environment:
-  - **Finko Dev (mobile)** / **Finko Prod (mobile)** — iOS or Android; passes `--flavor` so the correct native Firebase config is used.
+  - **Finko Dev (iOS)** / **Finko Prod (iOS)** — iOS simulator; passes `--flavor` and targets a device whose name starts with `iPhone` (avoid macOS being selected by mistake).
+  - **Finko Dev (Android)** / **Finko Prod (Android)** — Android emulator or device; passes `--flavor`.
   - **Finko Dev (Web)** / **Finko Prod (Web)** — Chrome; **no** `--flavor` (web tooling does not support flavors the same way as mobile).
   - **Finko Dev (macOS)** etc. — desktop; **no** `--flavor`; `main_dev.dart` / `main_prod.dart` select `firebase_options_*` in Dart.
 - Do **not** set workspace-wide `dart.flutterRunAdditionalArgs` to `--flavor` — that breaks web (and is easy to forget when switching devices).
@@ -71,4 +72,5 @@ Decisions for client code. **Detail:** `.cursor/rules/finko-flutter-architecture
 
 ### Revision log
 
+- **2026-05-22:** Split VS Code mobile launch configs into **iOS** and **Android** with explicit `deviceId` prefixes so `--flavor` is not sent to macOS (which only has the default Runner scheme).
 - **2026-04-18:** Documented VS Code launch entries, desktop run commands, and why `default-flavor` is omitted (macOS / Flutter tool interaction).

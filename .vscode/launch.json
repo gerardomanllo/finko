@@ -2,19 +2,39 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Finko Dev (mobile)",
+      "name": "Finko Dev (iOS)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_dev.dart",
       "flutterMode": "debug",
+      "deviceId": "iPhone",
       "toolArgs": ["--flavor", "dev"]
     },
     {
-      "name": "Finko Prod (mobile)",
+      "name": "Finko Prod (iOS)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_prod.dart",
       "flutterMode": "release",
+      "deviceId": "iPhone",
+      "toolArgs": ["--flavor", "prod"]
+    },
+    {
+      "name": "Finko Dev (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "flutterMode": "debug",
+      "deviceId": "SM S928U",
+      "toolArgs": ["--flavor", "dev"]
+    },
+    {
+      "name": "Finko Prod (Android)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_prod.dart",
+      "flutterMode": "release",
+      "deviceId": "android",
       "toolArgs": ["--flavor", "prod"]
     },
     {

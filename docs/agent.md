@@ -24,6 +24,8 @@ The **in-app agent** is Finko’s canonical way to log transactions and talk to 
 
 While a turn runs, the UI shows **`AgentStatusRow`**: typing indicator + playful label from **`statusLabelKey`** (localized in ARB).
 
+When the agent asks to **confirm a transaction or transfer**, the thread renders one **live transaction card** per flow: known fields appear immediately (amount/memo from the user message), each choice **adds a field with a fade-in**, and the **choice grid swaps in-place** for the next question. **Before save**, tapping any field on the card (amount, note, category, account, or type badge) opens **`AgentDraftFieldEditorSheet`** to edit that value locally. After confirm, the card **seals** (success banner, no buttons).
+
 On failure, **`AgentFailedRow`**: playful **`errorLabelKey`**, optional retry, dismiss (✕). Failed rows are **dismissable** and **auto-hidden** when a later turn succeeds (`superseded` on server; client filters as backup).
 
 ### Status keys (EN examples)
@@ -65,5 +67,6 @@ First open of `/agent` may prompt: **open app to agent**. Sets `launchScreen: ag
 
 | Date | Change |
 |------|--------|
+| 2026-05-22 | Optimistic send (instant user bubble + loader), local flow plan with step dots, Spanish direction parsing, subtle Cancel link. |
 | 2026-05-22 | Initial spec: primary in-app agent, playful status UX, FAB, launch preference. |
 | 2026-05-22 | Fix `sendAgentMessage` INTERNAL: omit `undefined` Firestore fields; app channel skips strict Gemini locale gate; safe `GEMINI_API_KEY` read. |

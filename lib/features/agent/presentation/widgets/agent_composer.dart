@@ -46,11 +46,17 @@ class _AgentComposerState extends State<AgentComposer> {
 
   Future<void> _pickImage() async {
     if (widget.busy) return;
-    final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (picked == null) return;
     final caption = _controller.text.trim();
     _controller.clear();
-    await widget.onSendImage(File(picked.path), caption: caption.isEmpty ? null : caption);
+    await widget.onSendImage(
+      File(picked.path),
+      caption: caption.isEmpty ? null : caption,
+    );
   }
 
   Future<void> _toggleVoice() async {
@@ -65,8 +71,12 @@ class _AgentComposerState extends State<AgentComposer> {
     }
     if (!await _recorder.hasPermission()) return;
     final dir = Directory.systemTemp;
-    final path = '${dir.path}/finko_agent_${DateTime.now().millisecondsSinceEpoch}.m4a';
-    await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
+    final path =
+        '${dir.path}/finko_agent_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    await _recorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc),
+      path: path,
+    );
     setState(() => _recording = true);
   }
 
@@ -77,45 +87,116 @@ class _AgentComposerState extends State<AgentComposer> {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            IconButton(
-              tooltip: l10n.agentAttachImage,
-              onPressed: widget.busy ? null : _pickImage,
-              icon: const Icon(Icons.image_outlined),
-            ),
-            IconButton(
-              tooltip: l10n.agentRecordVoice,
-              onPressed: widget.busy ? null : _toggleVoice,
-              icon: Icon(_recording ? Icons.stop_circle_outlined : Icons.mic_none_outlined),
-              color: _recording ? theme.colorScheme.error : null,
-            ),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                minLines: 1,
-                maxLines: 5,
-                enabled: !widget.busy,
-                decoration: InputDecoration(
-                  hintText: l10n.agentComposerHint,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onSubmitted: (_) => _sendText(),
-              ),
-            ),
-            const SizedBox(width: 4),
-            IconButton.filled(
-              tooltip: l10n.agentSend,
-              onPressed: widget.busy ? null : _sendText,
-              icon: const Icon(Icons.arrow_upward),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _ComposerIconButton(
+                tooltip: l10n.agentAttachImage,
+                icon: Icons.image_outlined,
+                onPressed: widget.busy ? null : _pickImage,
+              ),
+              _ComposerIconButton(
+                tooltip: l10n.agentRecordVoice,
+                icon: _recording
+                    ? Icons.stop_circle_outlined
+                    : Icons.mic_none_outlined,
+                color: _recording ? theme.colorScheme.error : null,
+                onPressed: widget.busy ? null : _toggleVoice,
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  minLines: 1,
+                  maxLines: 5,
+                  enabled: !widget.busy,
+                  textInputAction: TextInputAction.send,
+                  decoration: InputDecoration(
+                    hintText: l10n.agentComposerHint,
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.35),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                  ),
+                  onSubmitted: (_) => _sendText(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: widget.busy
+                      ? null
+                      : LinearGradient(
+                          colors: [
+                            theme.colorScheme.primary,
+                            theme.colorScheme.primary.withValues(alpha: 0.85),
+                          ],
+                        ),
+                  color: widget.busy ? theme.disabledColor : null,
+                ),
+                child: IconButton.filled(
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: theme.colorScheme.onPrimary,
+                    disabledBackgroundColor: Colors.transparent,
+                  ),
+                  tooltip: l10n.agentSend,
+                  onPressed: widget.busy ? null : _sendText,
+                  icon: const Icon(Icons.arrow_upward_rounded),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _ComposerIconButton extends StatelessWidget {
+  const _ComposerIconButton({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+    this.color,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, size: 22),
+      color: color,
+      visualDensity: VisualDensity.compact,
     );
   }
 }

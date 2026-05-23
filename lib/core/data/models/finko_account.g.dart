@@ -27,36 +27,26 @@ FinkoAccount _$FinkoAccountFromJson(Map<String, dynamic> json) => FinkoAccount(
   isSystem: json['isSystem'] as bool? ?? false,
 );
 
-Map<String, dynamic> _$FinkoAccountToJson(FinkoAccount instance) {
-  final val = <String, dynamic>{
-    'name': instance.name,
-    'type': _$FinkoAccountTypeEnumMap[instance.type]!,
-    'currency': instance.currency,
-    'balanceMinor': instance.balanceMinor,
-    'includeInNetCash': instance.includeInNetCash,
-    'sortOrder': instance.sortOrder,
-    'createdAt': const FirestoreUtcDateTimeConverter().toJson(
-      instance.createdAt,
-    ),
-    'updatedAt': const FirestoreUtcDateTimeConverter().toJson(
-      instance.updatedAt,
-    ),
-    'iconKey': instance.iconKey,
-  };
-  if (instance.balanceMinorMain != null) {
-    val['balanceMinorMain'] = instance.balanceMinorMain;
-  }
-  if (instance.colorArgb != null) {
-    val['colorArgb'] = instance.colorArgb;
-  }
-  if (instance.creditLimitMinor != null) {
-    val['creditLimitMinor'] = instance.creditLimitMinor;
-  }
-  if (instance.isSystem) {
-    val['isSystem'] = instance.isSystem;
-  }
-  return val;
-}
+Map<String, dynamic> _$FinkoAccountToJson(FinkoAccount instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'type': _$FinkoAccountTypeEnumMap[instance.type]!,
+      'currency': instance.currency,
+      'balanceMinor': instance.balanceMinor,
+      'balanceMinorMain': ?instance.balanceMinorMain,
+      'includeInNetCash': instance.includeInNetCash,
+      'sortOrder': instance.sortOrder,
+      'createdAt': ?const FirestoreUtcDateTimeConverter().toJson(
+        instance.createdAt,
+      ),
+      'updatedAt': ?const FirestoreUtcDateTimeConverter().toJson(
+        instance.updatedAt,
+      ),
+      'iconKey': instance.iconKey,
+      'colorArgb': ?instance.colorArgb,
+      'creditLimitMinor': ?instance.creditLimitMinor,
+      'isSystem': instance.isSystem,
+    };
 
 const _$FinkoAccountTypeEnumMap = {
   FinkoAccountType.cash: 'cash',

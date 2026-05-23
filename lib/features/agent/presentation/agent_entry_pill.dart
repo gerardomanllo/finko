@@ -24,7 +24,11 @@ class AgentEntryPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.auto_awesome, color: theme.colorScheme.onPrimary, size: 20),
+              Icon(
+                Icons.auto_awesome,
+                color: theme.colorScheme.onPrimary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 l10n.agentEntryPillLabel,

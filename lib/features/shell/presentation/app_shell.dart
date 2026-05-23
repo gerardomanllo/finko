@@ -112,8 +112,6 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final showPill = _showAgentPill(context);
-    final navBarHeight = kBottomNavigationBarHeight +
-        MediaQuery.paddingOf(context).bottom;
 
     return ShellDrawerController(
       openDrawer: _openDrawer,
@@ -128,7 +126,7 @@ class _AppShellState extends State<AppShell> {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: navBarHeight + 12,
+                bottom: 12,
                 child: const Center(child: AgentEntryPill()),
               ),
           ],
