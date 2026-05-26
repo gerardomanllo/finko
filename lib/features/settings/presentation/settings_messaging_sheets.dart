@@ -135,7 +135,9 @@ class _ConnectedMessagingSheet extends StatelessWidget {
                               Navigator.of(context).pop();
                               onTelegramBotDefaults!();
                             },
-                            child: Text(l10n.settingsMessagingTelegramBotDefaults),
+                            child: Text(
+                              l10n.settingsMessagingTelegramBotDefaults,
+                            ),
                           ),
                           const SizedBox(height: 12),
                         ],

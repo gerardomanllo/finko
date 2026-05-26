@@ -93,7 +93,8 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final copy = Map<String, dynamic>.from(json);
-    if (copy['agentPreferences'] == null && copy['telegramBotPreferences'] != null) {
+    if (copy['agentPreferences'] == null &&
+        copy['telegramBotPreferences'] != null) {
       copy['agentPreferences'] = copy['telegramBotPreferences'];
     }
     return _$UserProfileFromJson(copy);

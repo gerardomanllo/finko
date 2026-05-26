@@ -5,7 +5,6 @@ import * as logger from "firebase-functions/logger";
 import { computeNextTransactionDate, resolveAsOfYmd } from "./scheduleNext";
 
 const LEDGER_TRANSFER_CATEGORY_ID = "ledger-transfer";
-const FALLBACK_CATEGORY_ID = "fixed-expenses";
 
 /** Stable ids so concurrent / retried materialization cannot create duplicate legs. */
 function materializedStandardTxId(upcomingId: string, transactionDateYyyyMmDd: string): string {
@@ -65,6 +64,17 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
     const recurringRuleId = typeof u.recurringRuleId === "string" ? u.recurringRuleId : undefined;
 
     if (kind === "standard") {
+      const categoryId =
+        typeof u.categoryId === "string" && u.categoryId.trim().length > 0
+          ? u.categoryId.trim()
+          : null;
+      if (!categoryId) {
+        logger.warn("materialize: skipping upcoming without categoryId", {
+          uid,
+          upcomingId,
+        });
+        continue;
+      }
       const ymdStd = u.transactionDate as string;
       const txRef = db
         .collection(`users/${uid}/transactions`)
@@ -76,10 +86,7 @@ export const materializeDueUpcoming = onCall({ region: "us-central1" }, async (r
         direction: u.direction,
         currency: u.currency,
         accountId: u.accountId,
-        categoryId:
-          typeof u.categoryId === "string" && u.categoryId.trim().length > 0
-            ? u.categoryId.trim()
-            : FALLBACK_CATEGORY_ID,
+        categoryId,
         type: "standard",
         memo: u.memo ?? null,
         sourceUpcomingId: upcomingId,

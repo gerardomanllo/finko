@@ -21,7 +21,14 @@ void main() {
           ),
         ],
         categories: const [
-          OnboardingDraft.kFixedExpensesCategory,
+          OnboardingCategoryDraft(
+            id: 'car',
+            name: 'Car',
+            kind: OnboardingCategoryKind.expense,
+            iconKey: 'directions_car',
+            isSystem: false,
+            isFixedExpense: true,
+          ),
           OnboardingCategoryDraft(
             id: 'food',
             name: 'Food',
@@ -30,23 +37,22 @@ void main() {
             isSystem: false,
           ),
         ],
-        budgetsMinorByCategory: const {'fixed-expenses': 100, 'food': 50},
+        budgetsMinorByCategory: const {'car': 100, 'food': 50},
         requestId: 'req-test-1',
       );
       final payload = draft.toCommitPayload();
       expect(payload['requestId'], 'req-test-1');
-      expect(payload['budgetsMinorByCategory'], {
-        'fixed-expenses': 100,
-        'food': 50,
-      });
+      expect(payload['budgetsMinorByCategory'], {'car': 100, 'food': 50});
       final profile = payload['profile'] as Map<String, dynamic>;
       expect(profile['displayName'], 'Ada');
       expect(profile['mainCurrency'], 'USD');
+      final cats = payload['categories'] as List<dynamic>;
+      expect((cats.first as Map<String, dynamic>)['isFixedExpense'], true);
     },
   );
 
   test(
-    'onboardingCategoriesForDisplay orders income, fixed, then expenses',
+    'onboardingCategoriesForDisplay orders income, fixed-flagged expenses, then others',
     () {
       const salary = OnboardingCategoryDraft(
         id: 'salary',
@@ -62,58 +68,96 @@ void main() {
         iconKey: 'restaurant',
         isSystem: false,
       );
-      const transport = OnboardingCategoryDraft(
-        id: 'transport',
-        name: 'Transport',
+      const car = OnboardingCategoryDraft(
+        id: 'car',
+        name: 'Car',
         kind: OnboardingCategoryKind.expense,
         iconKey: 'directions_car',
         isSystem: false,
+        isFixedExpense: true,
       );
-      // Deliberately shuffled input order.
-      final sorted = onboardingCategoriesForDisplay([
-        food,
-        OnboardingDraft.kFixedExpensesCategory,
-        transport,
-        salary,
-      ]);
-      expect(sorted.map((c) => c.id).toList(), [
-        'salary',
-        'fixed-expenses',
-        'food',
-        'transport',
-      ]);
+      final sorted = onboardingCategoriesForDisplay([food, car, salary]);
+      expect(sorted.map((c) => c.id).toList(), ['salary', 'car', 'food']);
     },
   );
 
-  test('projected savings uses fixed + variable expenses split', () {
-    final draft = OnboardingDraft(
-      categories: const [
-        OnboardingDraft.kFixedExpensesCategory,
-        OnboardingCategoryDraft(
-          id: 'salary',
-          name: 'Salary',
-          kind: OnboardingCategoryKind.income,
-          iconKey: 'work',
-          isSystem: false,
-        ),
-        OnboardingCategoryDraft(
-          id: 'food',
-          name: 'Food',
-          kind: OnboardingCategoryKind.expense,
-          iconKey: 'restaurant',
-          isSystem: false,
-        ),
-      ],
-      budgetsMinorByCategory: const {
-        'salary': 500000,
-        'fixed-expenses': 200000,
-        'food': 100000,
-      },
-    );
+  test(
+    'projected savings uses fixed + variable expense budgets from flags',
+    () {
+      final draft = OnboardingDraft(
+        categories: const [
+          OnboardingCategoryDraft(
+            id: 'salary',
+            name: 'Salary',
+            kind: OnboardingCategoryKind.income,
+            iconKey: 'work',
+            isSystem: false,
+          ),
+          OnboardingCategoryDraft(
+            id: 'car',
+            name: 'Car',
+            kind: OnboardingCategoryKind.expense,
+            iconKey: 'directions_car',
+            isSystem: false,
+            isFixedExpense: true,
+          ),
+          OnboardingCategoryDraft(
+            id: 'rent',
+            name: 'Rent',
+            kind: OnboardingCategoryKind.expense,
+            iconKey: 'home',
+            isSystem: false,
+            isFixedExpense: true,
+          ),
+          OnboardingCategoryDraft(
+            id: 'food',
+            name: 'Food',
+            kind: OnboardingCategoryKind.expense,
+            iconKey: 'restaurant',
+            isSystem: false,
+          ),
+        ],
+        budgetsMinorByCategory: const {
+          'salary': 500000,
+          'car': 120000,
+          'rent': 80000,
+          'food': 100000,
+        },
+      );
 
-    expect(draft.expectedIncomeMinor, 500000);
-    expect(draft.fixedExpensesMinor, 200000);
-    expect(draft.variableExpensesMinor, 100000);
-    expect(draft.projectedSavingsMinor, 200000);
-  });
+      expect(draft.expectedIncomeMinor, 500000);
+      expect(draft.fixedExpensesMinor, 200000);
+      expect(draft.variableExpensesMinor, 100000);
+      expect(draft.projectedSavingsMinor, 200000);
+    },
+  );
+
+  test(
+    'onboardingFirstExpenseCategoryId returns first expense in display order',
+    () {
+      const income = OnboardingCategoryDraft(
+        id: 'salary',
+        name: 'Salary',
+        kind: OnboardingCategoryKind.income,
+        iconKey: 'work',
+        isSystem: false,
+      );
+      const car = OnboardingCategoryDraft(
+        id: 'car',
+        name: 'Car',
+        kind: OnboardingCategoryKind.expense,
+        iconKey: 'directions_car',
+        isSystem: false,
+        isFixedExpense: true,
+      );
+      const food = OnboardingCategoryDraft(
+        id: 'food',
+        name: 'Food',
+        kind: OnboardingCategoryKind.expense,
+        iconKey: 'restaurant',
+        isSystem: false,
+      );
+      expect(onboardingFirstExpenseCategoryId([food, income, car]), 'car');
+    },
+  );
 }

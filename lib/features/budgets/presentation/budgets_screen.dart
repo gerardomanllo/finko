@@ -100,7 +100,11 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                         )
                       : null;
 
-                  final fixed = fixedExpensesBudgetAndSpent(m, budgets);
+                  final fixed = fixedExpensesBudgetAndSpent(
+                    m,
+                    budgets,
+                    categories,
+                  );
                   final billsBudgeted = fixed.budgetedMinor;
                   final billsSpent = fixed.spentMinor;
                   final billsLeft = (billsBudgeted - billsSpent).clamp(

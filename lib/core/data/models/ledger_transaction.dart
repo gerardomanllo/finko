@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../spending/fixed_variable_expense.dart'
-    show kFixedExpensesCategoryId;
 import '../json/json_converters.dart';
 import '../ledger_category_ids.dart';
 import 'finko_enums.dart';
@@ -11,7 +9,7 @@ part 'ledger_transaction.g.dart';
 
 String _ledgerCategoryIdFromJson(Object? json) {
   if (json is String && json.trim().isNotEmpty) return json.trim();
-  return kLedgerTransferCategoryId;
+  return '';
 }
 
 /// `users/{uid}/transactions/{txId}` — canonical ledger row.
@@ -96,7 +94,7 @@ class LedgerTransaction {
     if (!hasCat) {
       map['categoryId'] = kind == LedgerTransactionKind.transferLeg
           ? kLedgerTransferCategoryId
-          : kFixedExpensesCategoryId;
+          : '';
     }
     return LedgerTransaction.fromJson(map);
   }

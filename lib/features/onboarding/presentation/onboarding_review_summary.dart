@@ -264,9 +264,7 @@ Widget buildOnboardingReviewSummary(
             for (final c in onboardingCategoriesForDisplay(draft.categories))
               _ReviewListRow(
                 leading: _ReviewCategoryRow.iconFor(c),
-                title: c.id == OnboardingDraft.kFixedExpensesCategory.id
-                    ? l10n.onboardingCategoryFixedExpenses
-                    : c.name,
+                title: c.name,
                 trailing: formatMinorUnits(
                   draft.budgetsMinorByCategory[c.id] ?? 0,
                   m,
@@ -362,10 +360,6 @@ class _ReviewCategoryRow extends StatelessWidget {
     final theme = Theme.of(context);
     final isIncome = c.kind == OnboardingCategoryKind.income;
     final accent = isIncome ? FinkoColors.income : OnboardingAccents.budgets;
-    final displayName = c.id == OnboardingDraft.kFixedExpensesCategory.id
-        ? l10n.onboardingCategoryFixedExpenses
-        : c.name;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -378,7 +372,7 @@ class _ReviewCategoryRow extends StatelessWidget {
         children: [
           iconFor(c),
           const SizedBox(width: 10),
-          Expanded(child: Text(displayName, style: theme.textTheme.bodyMedium)),
+          Expanded(child: Text(c.name, style: theme.textTheme.bodyMedium)),
           kindBadgeFor(c, l10n),
         ],
       ),
@@ -482,9 +476,9 @@ List<String> _recurringLines(
   String m,
 ) {
   final lines = <String>[];
-  for (final c in onboardingCategoriesForDisplay(draft.categories).where(
-    (x) => x.kind == OnboardingCategoryKind.income,
-  )) {
+  for (final c in onboardingCategoriesForDisplay(
+    draft.categories,
+  ).where((x) => x.kind == OnboardingCategoryKind.income)) {
     lines.add(_humanRecurringLine(draft, c, l10n, localeTag, m));
   }
   return lines.isEmpty ? ['—'] : lines;

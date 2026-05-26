@@ -8,7 +8,7 @@ import '../../core/data/repositories/firestore_data_repository.dart';
 import '../../core/datetime/calendar_month_range.dart';
 import '../../core/formatting/ledger_transaction_amount.dart';
 import '../../core/ui/finko_modal_sheet_extent.dart';
-import '../../core/spending/fixed_variable_expense.dart';
+import '../../core/data/ledger_category_ids.dart';
 import '../../features/accounts/application/account_editor_bridge.dart';
 import '../../features/onboarding/domain/onboarding_models.dart';
 import '../../features/onboarding/presentation/onboarding_account_editor.dart';
@@ -194,8 +194,9 @@ OnboardingCategoryDraft _categoryDraftFromFinko(FinkoCategory c) {
         ? OnboardingCategoryKind.income
         : OnboardingCategoryKind.expense,
     iconKey: c.iconKey,
-    isSystem: c.id == kFixedExpensesCategoryId,
+    isSystem: isReservedLedgerCategoryId(c.id),
     colorArgb: c.colorArgb,
+    isFixedExpense: c.isFixedExpense,
   );
 }
 
@@ -213,6 +214,9 @@ FinkoCategory _finkoCategoryFromDraft(
     iconKey: d.iconKey,
     colorArgb: d.colorArgb ?? previous.colorArgb,
     sortOrder: previous.sortOrder,
+    isFixedExpense: d.kind == OnboardingCategoryKind.expense
+        ? d.isFixedExpense
+        : false,
   );
 }
 
@@ -394,11 +398,12 @@ Future<void> showFinkoCategoryMonthSummarySheet({
                             context: context,
                             l10n: l10n,
                             existing: _categoryDraftFromFinko(category),
-                            lockKind: category.id == kFixedExpensesCategoryId,
+                            lockKind: isReservedLedgerCategoryId(category.id),
+                            showFixedExpenseToggle: true,
                             editMonthlyBudgetMain: true,
                             monthlyBudgetCurrencyCode: mainCurrency,
                             initialMonthlyBudgetTargetMinorMain: budgetMinor,
-                            onDelete: category.id == kFixedExpensesCategoryId
+                            onDelete: isReservedLedgerCategoryId(category.id)
                                 ? null
                                 : () => _confirmAndDeleteCategory(
                                     context: context,

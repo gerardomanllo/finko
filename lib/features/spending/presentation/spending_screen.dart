@@ -264,6 +264,7 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
     );
     final flowAsync = ref.watch(spendingPeriodIncomeExpenseProvider(selected));
     final categories = ref.watch(categoriesStreamProvider).valueOrNull ?? [];
+    final fixedCategoryIds = fixedExpenseCategoryIds(categories);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -286,6 +287,7 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                         totalExpenseMinorMain: totalExpense,
                         byCategoryPositiveMinorMain:
                             txRollup.byCategoryMinorMain,
+                        fixedCategoryIds: fixedCategoryIds,
                       )
                     : splitFixedVariableFromPositiveSlices(
                         totalExpenseMinorMain: totalExpense,
@@ -295,6 +297,7 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                                   merged.byCategoryMinorMain,
                               categories: categories,
                             ),
+                        fixedCategoryIds: fixedCategoryIds,
                       );
                 return FinkoSpendingIncomeFixedVariableAccordion(
                   incomeLabel: l10n.spendingIncome,

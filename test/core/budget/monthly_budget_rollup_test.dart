@@ -60,15 +60,50 @@ void main() {
       expect(positiveIncomeMinorFromSignedNet(-100), 0);
     });
 
-    test('fixedExpensesBudgetAndSpent uses fixed-expenses id', () {
-      final m = _month(byCategory: {'fixed-expenses': -12_000});
+    test('fixedExpensesBudgetAndSpent sums flagged expense categories', () {
+      final m = _month(
+        byCategory: {'car': -8_000, 'rent': -4_000, 'food': -2_000},
+      );
       final budgets = {
-        'fixed-expenses': const MonthlyBudgetEntry(
-          targetMinorMain: 30_000,
+        'car': const MonthlyBudgetEntry(
+          targetMinorMain: 20_000,
+          kind: BudgetKind.expense,
+        ),
+        'rent': const MonthlyBudgetEntry(
+          targetMinorMain: 10_000,
+          kind: BudgetKind.expense,
+        ),
+        'food': const MonthlyBudgetEntry(
+          targetMinorMain: 5_000,
           kind: BudgetKind.expense,
         ),
       };
-      final r = fixedExpensesBudgetAndSpent(m, budgets);
+      final cats = [
+        FinkoCategory(
+          id: 'car',
+          name: 'Car',
+          kind: CategoryKind.expense,
+          iconKey: 'x',
+          sortOrder: 0,
+          isFixedExpense: true,
+        ),
+        FinkoCategory(
+          id: 'rent',
+          name: 'Rent',
+          kind: CategoryKind.expense,
+          iconKey: 'y',
+          sortOrder: 1,
+          isFixedExpense: true,
+        ),
+        FinkoCategory(
+          id: 'food',
+          name: 'Food',
+          kind: CategoryKind.expense,
+          iconKey: 'z',
+          sortOrder: 2,
+        ),
+      ];
+      final r = fixedExpensesBudgetAndSpent(m, budgets, cats);
       expect(r.budgetedMinor, 30_000);
       expect(r.spentMinor, 12_000);
     });

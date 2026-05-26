@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/firebase_auth_providers.dart';
 import '../../../core/data/models/finko_account.dart';
 import '../../../core/data/models/finko_enums.dart';
+import '../../../core/data/category_opening_balance.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/data/repositories/firestore_data_repository.dart';
 import '../../../core/formatting/money_format.dart';
@@ -51,6 +52,19 @@ class AccountsScreen extends ConsumerWidget {
         metadataOnly: false,
         onSave: (draft) async {
           try {
+            final categories =
+                ref.read(categoriesStreamProvider).valueOrNull ?? [];
+            final openingCategoryId = draft.startingBalanceMinor != 0
+                ? firstExpenseCategoryIdBySortOrder(categories)
+                : null;
+            if (draft.startingBalanceMinor != 0 && openingCategoryId == null) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.accountsNeedExpenseCategory)),
+                );
+              }
+              return;
+            }
             await ref
                 .read(firestoreDataRepositoryProvider)
                 .createAccount(
@@ -64,6 +78,7 @@ class AccountsScreen extends ConsumerWidget {
                   openingBalanceTransactionDateYyyyMmDd: ref.read(
                     todayYyyyMmDdProvider,
                   ),
+                  openingBalanceCategoryId: openingCategoryId,
                 );
             if (context.mounted) {
               ref.invalidate(accountsStreamProvider);

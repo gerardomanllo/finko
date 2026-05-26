@@ -340,10 +340,12 @@ class SettingsScreen extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   title: Text(l10n.settingsLaunchScreenAgent),
                   subtitle: Text(l10n.settingsLaunchScreenDashboard),
-                  value: ref.watch(launchScreenPreferenceProvider).maybeWhen(
-                    data: (s) => s == LaunchScreen.agent,
-                    orElse: () => false,
-                  ),
+                  value: ref
+                      .watch(launchScreenPreferenceProvider)
+                      .maybeWhen(
+                        data: (s) => s == LaunchScreen.agent,
+                        orElse: () => false,
+                      ),
                   onChanged: profile == null
                       ? null
                       : (on) async {
@@ -352,7 +354,9 @@ class SettingsScreen extends ConsumerWidget {
                           await setLaunchScreenPreference(
                             firestore: ref.read(firestoreProvider),
                             uid: uid,
-                            screen: on ? LaunchScreen.agent : LaunchScreen.dashboard,
+                            screen: on
+                                ? LaunchScreen.agent
+                                : LaunchScreen.dashboard,
                           );
                           ref.invalidate(launchScreenPreferenceProvider);
                         },

@@ -50,8 +50,7 @@ class _TelegramBotPreferencesSheetState
     _accountId = p?.defaultAccountId?.trim().isNotEmpty == true
         ? p!.defaultAccountId
         : null;
-    _expenseCategoryId =
-        p?.defaultExpenseCategoryId?.trim().isNotEmpty == true
+    _expenseCategoryId = p?.defaultExpenseCategoryId?.trim().isNotEmpty == true
         ? p!.defaultExpenseCategoryId
         : null;
     _incomeCategoryId = p?.defaultIncomeCategoryId?.trim().isNotEmpty == true
@@ -63,10 +62,9 @@ class _TelegramBotPreferencesSheetState
     final uid = ref.read(authUidProvider);
     if (uid == null) return;
     try {
-      await ref.read(userSettingsWriterProvider).setAgentPreferences(
-            uid,
-            _prefsCoercedFromStreams(),
-          );
+      await ref
+          .read(userSettingsWriterProvider)
+          .setAgentPreferences(uid, _prefsCoercedFromStreams());
       ref.invalidate(userProfileStreamProvider);
       if (context.mounted) Navigator.of(context).pop();
     } catch (_) {
@@ -82,7 +80,9 @@ class _TelegramBotPreferencesSheetState
     final uid = ref.read(authUidProvider);
     if (uid == null) return;
     try {
-      await ref.read(userSettingsWriterProvider).clearTelegramBotPreferences(uid);
+      await ref
+          .read(userSettingsWriterProvider)
+          .clearTelegramBotPreferences(uid);
       ref.invalidate(userProfileStreamProvider);
       if (context.mounted) Navigator.of(context).pop();
     } catch (_) {
@@ -97,13 +97,14 @@ class _TelegramBotPreferencesSheetState
   AgentPreferences _prefsCoercedFromStreams() {
     final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
     final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
-    final expenseCats =
-        categories.where((c) => c.kind == CategoryKind.expense).toList();
-    final incomeCats =
-        categories.where((c) => c.kind == CategoryKind.income).toList();
+    final expenseCats = categories
+        .where((c) => c.kind == CategoryKind.expense)
+        .toList();
+    final incomeCats = categories
+        .where((c) => c.kind == CategoryKind.income)
+        .toList();
 
-    final acc =
-        _accountId != null && accounts.any((a) => a.id == _accountId)
+    final acc = _accountId != null && accounts.any((a) => a.id == _accountId)
         ? _accountId
         : null;
     final exp =
@@ -184,7 +185,8 @@ class _TelegramBotPreferencesSheetState
                 const SizedBox(height: 16),
                 Expanded(
                   child: accountsAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (Object error, StackTrace stackTrace) =>
                         Center(child: Text(l10n.settingsErrorSave)),
                     data: (accounts) {

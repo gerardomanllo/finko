@@ -37,6 +37,7 @@ class CategoriesScreen extends ConsumerWidget {
         context: context,
         l10n: l10n,
         existing: null,
+        showFixedExpenseToggle: true,
         editMonthlyBudgetMain: true,
         monthlyBudgetCurrencyCode: mainCurrency,
         initialMonthlyBudgetTargetMinorMain: 0,
@@ -51,6 +52,7 @@ class CategoriesScreen extends ConsumerWidget {
                   : CategoryKind.expense,
               iconKey: draft.iconKey,
               colorArgb: draft.colorArgb,
+              isFixedExpense: draft.isFixedExpense,
             );
             if (draft.monthlyBudgetTargetMinorMain != null) {
               final bk = draft.kind == OnboardingCategoryKind.income

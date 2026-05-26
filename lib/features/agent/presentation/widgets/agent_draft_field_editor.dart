@@ -50,7 +50,8 @@ class _AgentDraftFieldEditorSheet extends StatefulWidget {
       _AgentDraftFieldEditorSheetState();
 }
 
-class _AgentDraftFieldEditorSheetState extends State<_AgentDraftFieldEditorSheet> {
+class _AgentDraftFieldEditorSheetState
+    extends State<_AgentDraftFieldEditorSheet> {
   late final TextEditingController _textController;
   String? _selectedCategoryId;
   String? _selectedAccountId;
@@ -142,8 +143,9 @@ class _AgentDraftFieldEditorSheetState extends State<_AgentDraftFieldEditorSheet
     final cat = widget.categories.firstWhere((c) => c.id == id);
     Navigator.pop(context, {
       AgentFlowFieldKey.category: cat.name,
-      AgentFlowFieldKey.direction:
-          cat.kind == CategoryKind.income ? 'IN' : 'OUT',
+      AgentFlowFieldKey.direction: cat.kind == CategoryKind.income
+          ? 'IN'
+          : 'OUT',
     });
   }
 
@@ -183,8 +185,9 @@ class _AgentDraftFieldEditorSheetState extends State<_AgentDraftFieldEditorSheet
           (c) => c.id == _selectedCategoryId,
         );
         updates[AgentFlowFieldKey.category] = cat.name;
-        updates[AgentFlowFieldKey.direction] =
-            cat.kind == CategoryKind.income ? 'IN' : 'OUT';
+        updates[AgentFlowFieldKey.direction] = cat.kind == CategoryKind.income
+            ? 'IN'
+            : 'OUT';
       case AgentDraftEditableField.account:
         if (_selectedAccountId == null) return;
         final account = widget.accounts.firstWhere(
@@ -358,7 +361,10 @@ class _PickerList extends StatelessWidget {
         return ListTile(
           title: Text(item.label),
           trailing: item.selected
-              ? Icon(Icons.check_rounded, color: Theme.of(context).colorScheme.primary)
+              ? Icon(
+                  Icons.check_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                )
               : null,
           onTap: () => onSelected(item.id),
         );

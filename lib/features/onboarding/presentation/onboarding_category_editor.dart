@@ -93,6 +93,7 @@ Future<void> showOnboardingCategoryEditor({
   bool editMonthlyBudgetMain = false,
   String? monthlyBudgetCurrencyCode,
   int initialMonthlyBudgetTargetMinorMain = 0,
+  bool showFixedExpenseToggle = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -108,6 +109,7 @@ Future<void> showOnboardingCategoryEditor({
       editMonthlyBudgetMain: editMonthlyBudgetMain,
       monthlyBudgetCurrencyCode: monthlyBudgetCurrencyCode,
       initialMonthlyBudgetTargetMinorMain: initialMonthlyBudgetTargetMinorMain,
+      showFixedExpenseToggle: showFixedExpenseToggle,
     ),
   );
 }
@@ -122,6 +124,7 @@ class _OnboardingCategoryEditorSheet extends StatefulWidget {
     this.editMonthlyBudgetMain = false,
     this.monthlyBudgetCurrencyCode,
     this.initialMonthlyBudgetTargetMinorMain = 0,
+    this.showFixedExpenseToggle = false,
   });
 
   final AppLocalizations l10n;
@@ -132,6 +135,7 @@ class _OnboardingCategoryEditorSheet extends StatefulWidget {
   final bool editMonthlyBudgetMain;
   final String? monthlyBudgetCurrencyCode;
   final int initialMonthlyBudgetTargetMinorMain;
+  final bool showFixedExpenseToggle;
 
   @override
   State<_OnboardingCategoryEditorSheet> createState() =>
@@ -144,6 +148,7 @@ class _OnboardingCategoryEditorSheetState
   late OnboardingCategoryKind _kind;
   late String _iconKey;
   late int _colorArgb;
+  late bool _isFixedExpense;
   TextEditingController? _budgetController;
 
   bool get _showBudgetField =>
@@ -160,6 +165,7 @@ class _OnboardingCategoryEditorSheetState
     _colorArgb = e?.colorArgb != null
         ? onboardingNearestNamedColor(e!.colorArgb!).argb
         : kOnboardingNamedColors.first.argb;
+    _isFixedExpense = e?.isFixedExpense ?? false;
     if (_showBudgetField) {
       _budgetController = TextEditingController(
         text: formatMinorAsInputString(
@@ -308,6 +314,20 @@ class _OnboardingCategoryEditorSheetState
                       setState(() => _colorArgb = v);
                     },
                   ),
+                  if (widget.showFixedExpenseToggle &&
+                      _kind == OnboardingCategoryKind.expense) ...[
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l10n.categoryFixedExpenseToggle),
+                      subtitle: Text(
+                        l10n.categoryFixedExpenseToggleHint,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      value: _isFixedExpense,
+                      onChanged: (v) => setState(() => _isFixedExpense = v),
+                    ),
+                  ],
                   if (_showBudgetField) ...[
                     const SizedBox(height: 16),
                     OnboardingAmountTextField(
@@ -360,6 +380,10 @@ class _OnboardingCategoryEditorSheetState
                           iconKey: _iconKey,
                           isSystem: existing?.isSystem ?? false,
                           colorArgb: _colorArgb,
+                          isFixedExpense:
+                              _kind == OnboardingCategoryKind.expense
+                              ? _isFixedExpense
+                              : false,
                           monthlyBudgetTargetMinorMain: budgetMinor,
                         ),
                       );

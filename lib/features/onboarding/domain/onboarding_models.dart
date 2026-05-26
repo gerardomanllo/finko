@@ -81,6 +81,7 @@ class OnboardingCategoryDraft {
     required this.iconKey,
     required this.isSystem,
     this.colorArgb,
+    this.isFixedExpense = false,
 
     /// Main-currency minor units for `users/{uid}.budgets.{id}.targetMinorMain`.
     /// Non-null only when the category editor was opened with budget editing
@@ -97,6 +98,9 @@ class OnboardingCategoryDraft {
   /// Optional ARGB tint; included in `commitOnboarding` when non-null.
   final int? colorArgb;
 
+  /// Expense categories only; persisted as `isFixedExpense` on the category doc.
+  final bool isFixedExpense;
+
   final int? monthlyBudgetTargetMinorMain;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -106,6 +110,7 @@ class OnboardingCategoryDraft {
     'iconKey': iconKey,
     'isSystem': isSystem,
     if (colorArgb != null) 'colorArgb': colorArgb,
+    if (isFixedExpense) 'isFixedExpense': true,
   };
 }
 
@@ -199,8 +204,7 @@ class OnboardingDraft {
     OnboardingMessagingState? messaging,
     String? requestId,
   }) : accounts = accounts ?? <OnboardingAccountDraft>[kSystemCashAccountDraft],
-       categories =
-           categories ?? <OnboardingCategoryDraft>[kFixedExpensesCategory],
+       categories = categories ?? <OnboardingCategoryDraft>[],
        recurringByCategory =
            recurringByCategory ?? <String, OnboardingRecurringIncomeDraft>{},
        budgetsMinorByCategory = budgetsMinorByCategory ?? <String, int>{},
@@ -223,16 +227,6 @@ class OnboardingDraft {
         isSystem: true,
       );
 
-  static const OnboardingCategoryDraft kFixedExpensesCategory =
-      OnboardingCategoryDraft(
-        id: 'fixed-expenses',
-        name: 'Fixed Expenses',
-        kind: OnboardingCategoryKind.expense,
-        iconKey: 'lock',
-        isSystem: true,
-        colorArgb: 0xFF546E7A,
-      );
-
   final String displayName;
   final String timezone;
   final String themePreference;
@@ -250,13 +244,22 @@ class OnboardingDraft {
   int get expectedIncomeMinor =>
       _sumBudgetsByKind(OnboardingCategoryKind.income);
 
-  int get fixedExpensesMinor => budgetsMinorByCategory['fixed-expenses'] ?? 0;
+  int get fixedExpensesMinor {
+    var total = 0;
+    for (final category in categories) {
+      if (category.kind == OnboardingCategoryKind.expense &&
+          category.isFixedExpense) {
+        total += budgetsMinorByCategory[category.id] ?? 0;
+      }
+    }
+    return total;
+  }
 
   int get variableExpensesMinor {
     var total = 0;
     for (final category in categories) {
       if (category.kind == OnboardingCategoryKind.expense &&
-          category.id != 'fixed-expenses') {
+          !category.isFixedExpense) {
         total += budgetsMinorByCategory[category.id] ?? 0;
       }
     }
@@ -353,7 +356,7 @@ List<OnboardingCategoryDraft> onboardingCategoriesForDisplay(
 
   int rank(OnboardingCategoryDraft c) {
     if (c.kind == OnboardingCategoryKind.income) return 0;
-    if (c.id == OnboardingDraft.kFixedExpensesCategory.id) return 1;
+    if (c.kind == OnboardingCategoryKind.expense && c.isFixedExpense) return 1;
     return 2;
   }
 
@@ -363,6 +366,16 @@ List<OnboardingCategoryDraft> onboardingCategoriesForDisplay(
     return indices[a.id]!.compareTo(indices[b.id]!);
   });
   return list;
+}
+
+/// First expense category in [onboardingCategoriesForDisplay] order (for opening balances).
+String? onboardingFirstExpenseCategoryId(
+  Iterable<OnboardingCategoryDraft> categories,
+) {
+  for (final c in onboardingCategoriesForDisplay(categories)) {
+    if (c.kind == OnboardingCategoryKind.expense) return c.id;
+  }
+  return null;
 }
 
 String _newRequestId() {

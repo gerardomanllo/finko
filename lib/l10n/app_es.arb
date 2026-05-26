@@ -253,6 +253,11 @@
   "onboardingValidationAccountsMinOne": "Añade al menos una cuenta.",
   "onboardingValidationAccountNameRequired": "Cada cuenta necesita un nombre.",
   "onboardingValidationCategoriesFixed": "Falta la categoría de gastos fijos.",
+  "onboardingValidationCategoriesExpense": "Agrega al menos una categoría de gasto.",
+  "onboardingBudgetsFixedExpenseHint": "Renta, préstamos, suscripciones y costos mensuales similares.",
+  "categoryFixedExpenseToggle": "Gasto fijo",
+  "categoryFixedExpenseToggleHint": "Cuenta en gastos fijos vs variables y en la tarjeta de gastos fijos.",
+  "accountsNeedExpenseCategory": "Agrega una categoría de gasto antes de un saldo inicial distinto de cero.",
   "onboardingValidationRecurringAmount": "Indica un monto recurrente mayor que cero.",
   "onboardingValidationRecurringAccount": "Elige una cuenta de depósito para el ingreso recurrente.",
   "onboardingValidationRecurringDaysTwice": "Elige ambos días de pago (días del mes) para ingreso quincenal.",
@@ -617,7 +622,7 @@
     }
   },
   "budgetsCategoryOverBudgetTooltip": "El gasto supera el presupuesto de esta categoría",
-  "budgetsCompactBillsCaption": "Por pagar",
+  "budgetsCompactBillsCaption": "Pagado en fijos",
   "budgetsCompactEarningsCaption": "Por ganar",
   "budgetsCompactAmountPaid": "{amount} pagado",
   "@budgetsCompactAmountPaid": {

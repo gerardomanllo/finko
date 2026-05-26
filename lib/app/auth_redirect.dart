@@ -25,7 +25,10 @@ Future<String> resolvePostSplashLocation({
   return launch == LaunchScreen.agent ? '/agent' : '/dashboard';
 }
 
-Future<LaunchScreen> _readLaunchScreen(FirebaseFirestore firestore, String uid) async {
+Future<LaunchScreen> _readLaunchScreen(
+  FirebaseFirestore firestore,
+  String uid,
+) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getString(kLaunchScreenPrefKey);
