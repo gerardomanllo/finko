@@ -84,7 +84,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                   final budgets = profile?.budgets ?? const {};
                   final budgeted = totalExpenseBudgetMinor(budgets);
                   final spent = m.expenseMinorMain;
-                  final left = (budgeted - spent).clamp(0, 1 << 62);
+                  final left = nonNegativeMinor(budgeted - spent);
                   final progress = budgeted > 0
                       ? (spent / budgeted).clamp(0.0, 1.0)
                       : 0.0;
@@ -107,9 +107,8 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                   );
                   final billsBudgeted = fixed.budgetedMinor;
                   final billsSpent = fixed.spentMinor;
-                  final billsLeft = (billsBudgeted - billsSpent).clamp(
-                    0,
-                    1 << 62,
+                  final billsLeft = nonNegativeMinor(
+                    billsBudgeted - billsSpent,
                   );
                   final billsProgress = billsBudgeted > 0
                       ? (billsSpent / billsBudgeted).clamp(0.0, 1.0)
@@ -120,9 +119,8 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                     categories,
                   );
                   final incomeActualY = m.incomeMinorMain;
-                  final incomeLeft = (incomeTargetX - incomeActualY).clamp(
-                    0,
-                    1 << 62,
+                  final incomeLeft = nonNegativeMinor(
+                    incomeTargetX - incomeActualY,
                   );
                   final incomeProgress = incomeTargetX > 0
                       ? (incomeActualY / incomeTargetX).clamp(0.0, 1.0)
@@ -287,7 +285,7 @@ class _CategoryRow extends StatelessWidget {
     final overBudget = target > 0 && actualPositive > target;
     final String subtitleText;
     if (actualPositive <= target) {
-      final leftMinor = (target - actualPositive).clamp(0, 1 << 62);
+      final leftMinor = nonNegativeMinor(target - actualPositive);
       subtitleText = l10n.budgetsCategorySubtitleRemaining(
         formatMoney(leftMinor),
       );

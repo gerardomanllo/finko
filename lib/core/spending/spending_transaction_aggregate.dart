@@ -1,5 +1,6 @@
 import '../data/models/finko_enums.dart';
 import '../data/models/ledger_transaction.dart';
+import '../formatting/money_format.dart';
 
 /// Outflow totals for donut / top list (prefers **main** minor; falls back to
 /// [LedgerTransaction.amountMinor] when currency matches [mainCurrency]).
@@ -79,6 +80,6 @@ splitFixedVariableFromPositiveByCategory({
     fixedSpent += byCategoryPositiveMinorMain[id] ?? 0;
   }
   final cappedFixed = fixedSpent.clamp(0, totalExpenseMinorMain);
-  final variable = (totalExpenseMinorMain - cappedFixed).clamp(0, 1 << 62);
+  final variable = nonNegativeMinor(totalExpenseMinorMain - cappedFixed);
   return (fixedMinorMain: cappedFixed, variableMinorMain: variable);
 }

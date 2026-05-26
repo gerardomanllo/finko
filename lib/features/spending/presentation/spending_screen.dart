@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/ledger_transaction.dart';
 import '../../../core/data/providers/finko_stream_providers.dart';
-import '../../../core/formatting/money_format.dart';
+import '../../../core/formatting/money_format.dart'
+    show atLeastMinor, formatMinorUnits;
 import '../../../core/spending/fixed_variable_expense.dart';
 import '../../../core/spending/spending_by_category_expense.dart';
 import '../../../core/spending/spending_granularity.dart';
@@ -535,13 +536,12 @@ class _SpendingMiniCard extends ConsumerWidget {
     final flow = ref.watch(spendingPeriodIncomeExpenseProvider(descriptor));
     return flow.when(
       data: (tuple) {
-        final maxBar =
-            (tuple.income > tuple.expense ? tuple.income : tuple.expense).clamp(
-              1,
-              1 << 62,
-            );
-        final incF = (tuple.income / maxBar).clamp(0.05, 1.0);
-        final expF = (tuple.expense / maxBar).clamp(0.05, 1.0);
+        final peak = tuple.income > tuple.expense
+            ? tuple.income
+            : tuple.expense;
+        final maxBar = atLeastMinor(peak, 1);
+        final incF = (tuple.income / maxBar).clamp(0.05, 1.0).toDouble();
+        final expF = (tuple.expense / maxBar).clamp(0.05, 1.0).toDouble();
         return FinkoMiniIncomeExpenseCard(
           bottomLabel: spendingPeriodCardLabel(localeTag, descriptor),
           incomeFraction: incF,

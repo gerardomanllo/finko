@@ -1,4 +1,14 @@
+import 'dart:math' as math;
+
 import 'package:intl/intl.dart';
+
+/// Prefer over `.clamp(0, 1 << 62)`: on Flutter **web**, `1 << 62` is **0**
+/// (JavaScript bitwise shifts wrap), so positive amounts clamp to 0.
+int nonNegativeMinor(int value) => math.max(0, value);
+
+/// Minimum minor-unit floor (e.g. mini-bar denominators). Prefer over
+/// `.clamp(1, 1 << 62)`, which throws `Invalid argument: 1` on web.
+int atLeastMinor(int value, int min) => math.max(min, value);
 
 final NumberFormat _moneyWholeFormat = NumberFormat('#,##0', 'en_US');
 final NumberFormat _moneyFractionalFormat = NumberFormat('#,##0.00', 'en_US');

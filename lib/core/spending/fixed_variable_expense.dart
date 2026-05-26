@@ -1,5 +1,6 @@
 import '../data/models/finko_category.dart';
 import '../data/models/finko_enums.dart';
+import '../formatting/money_format.dart';
 
 /// Category ids that count toward fixed expense analytics.
 Set<String> fixedExpenseCategoryIds(Iterable<FinkoCategory> categories) {
@@ -45,7 +46,7 @@ int _sumSignedExpenseForIds(
     fixedCategoryIds,
   );
   final cappedFixed = fixedSpent.clamp(0, totalExpenseMinorMain);
-  final variable = (totalExpenseMinorMain - cappedFixed).clamp(0, 1 << 62);
+  final variable = nonNegativeMinor(totalExpenseMinorMain - cappedFixed);
   return (fixedMinorMain: cappedFixed, variableMinorMain: variable);
 }
 
@@ -65,9 +66,8 @@ splitFixedVariableFromPositiveSlices({
     fixedCategoryIds,
   );
   final fixedMinorMain = fixedSlice.clamp(0, totalExpenseMinorMain);
-  final variableMinorMain = (totalExpenseMinorMain - fixedMinorMain).clamp(
-    0,
-    1 << 62,
+  final variableMinorMain = nonNegativeMinor(
+    totalExpenseMinorMain - fixedMinorMain,
   );
   return (fixedMinorMain: fixedMinorMain, variableMinorMain: variableMinorMain);
 }

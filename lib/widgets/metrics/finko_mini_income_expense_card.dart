@@ -52,7 +52,7 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: FractionallySizedBox(
-                          heightFactor: inc,
+                          heightFactor: inc.toDouble(),
                           child: Container(
                             decoration: BoxDecoration(
                               color: ic.withValues(alpha: 0.85),
@@ -67,7 +67,7 @@ class FinkoMiniIncomeExpenseCard extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: FractionallySizedBox(
-                          heightFactor: exp,
+                          heightFactor: exp.toDouble(),
                           child: Container(
                             decoration: BoxDecoration(
                               color: ec.withValues(alpha: 0.85),

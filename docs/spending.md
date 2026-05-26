@@ -82,6 +82,7 @@
 
 ## Revision log
 
+- **2026-05-25**: **Web:** period-strip mini bars and fixed/variable accordion no longer use `1 << 62` in `.clamp` (JS shift → 0); use [`nonNegativeMinor` / `atLeastMinor`](../lib/core/formatting/money_format.dart) instead.
 - **2026-05-13**: **Top transactions** block: localized title (**`spendingTopTransactions`**, e.g. “Gastos más grandes”) is **outside** the paper card (`titleMedium` + 8px gap); card uses **16×12** padding and **6px** vertical padding per row (aligned with Recurring due lists); removed inter-row **Divider**s in favor of row padding.
 - **2026-04-16**: **Separate paper cards** under the pills with **cloud gutters** between strip, accordion, donut block, and top transactions (no single merged white panel).
 - **2026-04-16**: **One accordion** (income + fixed + variable); **auto-scroll strip** to the right on pill change; donut + legend **centered horizontally**.

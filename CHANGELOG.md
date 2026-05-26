@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Spending (web):** Period-strip mini income/expense bars no longer crash with `Invalid argument: 1` after data loads; fixed/variable accordion rows show correct totals instead of `$0` when expense &gt; 0. Root cause: `1 << 62` is **0** on Flutter web (JS bitwise shift wrap), breaking `.clamp(1, 1 << 62)` and `.clamp(0, 1 << 62)`.
+
 ### Changed
 
 - **Fixed expenses:** Optional **`isFixedExpense`** on expense categories (onboarding budgets step + Categories editor). Spending fixed/variable split and Budgets **Fixed expenses** card sum all flagged categories — replaces the reserved **`fixed-expenses`** system category.

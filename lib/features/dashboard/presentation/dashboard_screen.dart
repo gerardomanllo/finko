@@ -468,7 +468,7 @@ class DashboardScreen extends ConsumerWidget {
                           const <String, MonthlyBudgetEntry>{};
                       final budgetTotal = totalExpenseBudgetMinor(budgets);
                       final spent = expenseMinorMainThroughDate(m, todayKey);
-                      final left = (budgetTotal - spent).clamp(0, 1 << 62);
+                      final left = nonNegativeMinor(budgetTotal - spent);
                       final progress = budgetTotal > 0
                           ? (spent / budgetTotal).clamp(0.0, 1.0)
                           : 0.0;
