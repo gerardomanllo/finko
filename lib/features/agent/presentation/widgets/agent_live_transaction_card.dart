@@ -77,21 +77,27 @@ class AgentLiveTransactionCard extends StatelessWidget {
               state: state,
               pending: pending,
               editable: editable,
-              onEditDirection: editable ? () => edit(AgentDraftEditableField.direction) : null,
+              onEditDirection: editable
+                  ? () => edit(AgentDraftEditableField.direction)
+                  : null,
             ),
             const SizedBox(height: 14),
             _AnimatedAmount(
               state: state,
               showSkeleton: showSkeletons,
               editable: editable,
-              onEdit: editable ? () => edit(AgentDraftEditableField.amount) : null,
+              onEdit: editable
+                  ? () => edit(AgentDraftEditableField.amount)
+                  : null,
             ),
             const SizedBox(height: 6),
             _MemoSlot(
               state: state,
               showSkeleton: showSkeletons,
               editable: editable,
-              onEdit: editable ? () => edit(AgentDraftEditableField.memo) : null,
+              onEdit: editable
+                  ? () => edit(AgentDraftEditableField.memo)
+                  : null,
             ),
             const SizedBox(height: 16),
             Divider(
@@ -106,7 +112,9 @@ class AgentLiveTransactionCard extends StatelessWidget {
               value: state.category,
               showSkeleton: needsCategorySlot,
               editable: editable,
-              onEdit: editable ? () => edit(AgentDraftEditableField.category) : null,
+              onEdit: editable
+                  ? () => edit(AgentDraftEditableField.category)
+                  : null,
             ),
             if (needsCategorySlot ||
                 needsAccountSlot ||
@@ -120,7 +128,9 @@ class AgentLiveTransactionCard extends StatelessWidget {
               value: state.account,
               showSkeleton: needsAccountSlot,
               editable: editable,
-              onEdit: editable ? () => edit(AgentDraftEditableField.account) : null,
+              onEdit: editable
+                  ? () => edit(AgentDraftEditableField.account)
+                  : null,
             ),
             if (showInteraction) ...[
               const SizedBox(height: 18),

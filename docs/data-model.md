@@ -115,7 +115,7 @@ Optional. Prefer **one** representation on `users/{uid}` (or move to a subcollec
 | `direction` | `string` | ✓ | `in` \| `out` (map to income/expense UX as needed). |
 | `currency` | `string` | ✓ | ISO 4217; may differ from `mainCurrency`. |
 | `accountId` | `string` | ✓ | |
-| `categoryId` | `string` | ✓ | Non-empty. **Transfer legs** use reserved id **`ledger-transfer`** (see §6). **Adjustments** (e.g. onboarding opening balance) may use **`fixed-expenses`**. |
+| `categoryId` | `string` | ✓ | Non-empty. **Transfer legs** use reserved id **`ledger-transfer`** (see §6). **Adjustments** (e.g. onboarding opening balance) use the user’s **first expense category** by `sortOrder` when no explicit category is chosen at write time. |
 | `type` | `string` | ✓ | `standard`, `transferLeg`, `adjustment`, … |
 | `memo` | `string?` | | |
 | `transferGroupId` | `string?` | | Same UUID on **both** legs of a transfer. |
@@ -237,7 +237,7 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 
 ## 6. `categories/{categoryId}`
 
-**Reserved ids:** **`fixed-expenses`** — system “fixed expenses” bucket from onboarding. **`ledger-transfer`** — internal category for **both** `transferLeg` rows; hidden from `/categories` list in the app but present in Firestore after **`commitOnboarding`** (or client **`ensureLedgerTransferCategory`** for older accounts).
+**Reserved ids:** **`ledger-transfer`** — internal category for **both** `transferLeg` rows; hidden from `/categories` list in the app but present in Firestore after **`commitOnboarding`** (or client **`ensureLedgerTransferCategory`** for older accounts).
 
 | Field | Type | Notes |
 |-------|------|--------|
@@ -247,6 +247,7 @@ When a transfer is **posted**, you always create **two** `transactions` (legs). 
 | `iconKey` | `string` | Key into a **fixed Material icon map** (see [`onboarding.md`](onboarding.md)); stable across platforms. |
 | `colorArgb` | `int?` | Optional UI tint (ARGB); set from **Categories** add/edit or onboarding when provided. Clients use it for list avatars, spending charts, and budget rings; when omitted, UI picks a **stable** fallback from `categoryId`. |
 | `sortOrder` | `int` | |
+| `isFixedExpense` | `bool` | Optional; default **`false`**. When **`true`** and `kind` is **`expense`**, spending/budget rollups treat this category as **fixed** (vs variable) expense analytics. Set during onboarding budgets step or **Categories** edit. Ignored for income categories. |
 
 ---
 
@@ -387,6 +388,7 @@ This is the **only** sanctioned fallback for aggregate conversion in Functions (
 
 | Date | Change |
 |------|--------|
+| 2026-05-22 | §6: **`isFixedExpense`** on expense categories (replaces reserved **`fixed-expenses`** bucket). §4: opening-balance adjustments use first expense category by `sortOrder`; no default `categoryId` except **`ledger-transfer`** on transfer legs. |
 | 2026-05-22 | In-app **agent** (primary): `users/{uid}/agentMessages`, `appAgentSessions/{uid}`, `agentPreferences`, `launchScreen`; see [`agent.md`](agent.md). Legacy `telegramBotPreferences` read fallback. |
 | 2026-05-13 | Account teardown: Callable **`deleteMyAccount`** (authenticated `uid`) — Admin **`recursiveDelete`** on **`users/{uid}`** (profile + all subcollections), **`deleteTelegramChatBinding`** / **`deleteTelegramBotSession`** / **`deleteTelegramLinkState`** when Telegram is linked, then **`auth.deleteUser(uid)`** (idempotent on `auth/user-not-found`). Clients cannot delete the profile doc (`firestore.rules`); full wipe is server-only. |
 | 2026-05-12 | §4.2: **`monthlyTotals.days.*.netWorthEodMinorMain`** = signed sum of all accounts in main currency after aggregates (Functions snapshot + optional **`rebuildNetWorthSeriesForMonth`** replay), not incremental tx-only NW deltas. |

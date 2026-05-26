@@ -19,7 +19,9 @@ String launchScreenToWire(LaunchScreen screen) {
   return screen == LaunchScreen.agent ? 'agent' : 'dashboard';
 }
 
-final launchScreenPreferenceProvider = FutureProvider<LaunchScreen>((ref) async {
+final launchScreenPreferenceProvider = FutureProvider<LaunchScreen>((
+  ref,
+) async {
   final prefs = await SharedPreferences.getInstance();
   final cached = prefs.getString(kLaunchScreenPrefKey);
   final uid = ref.watch(authUidProvider);
@@ -27,7 +29,10 @@ final launchScreenPreferenceProvider = FutureProvider<LaunchScreen>((ref) async 
     return launchScreenFromWire(cached);
   }
   try {
-    final snap = await ref.watch(firestoreProvider).doc(FirestorePaths.userDoc(uid)).get();
+    final snap = await ref
+        .watch(firestoreProvider)
+        .doc(FirestorePaths.userDoc(uid))
+        .get();
     final wire = snap.data()?['launchScreen'] as String?;
     if (wire != null) {
       await prefs.setString(kLaunchScreenPrefKey, wire);
@@ -47,10 +52,9 @@ Future<void> setLaunchScreenPreference({
   final wire = launchScreenToWire(screen);
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString(kLaunchScreenPrefKey, wire);
-  await firestore.doc(FirestorePaths.userDoc(uid)).set(
-    {'launchScreen': wire},
-    SetOptions(merge: true),
-  );
+  await firestore.doc(FirestorePaths.userDoc(uid)).set({
+    'launchScreen': wire,
+  }, SetOptions(merge: true));
 }
 
 Future<bool> readAgentHomePromptSeen() async {

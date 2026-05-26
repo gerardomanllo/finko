@@ -120,6 +120,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     required CategoryKind kind,
     required String iconKey,
     int? colorArgb,
+    bool isFixedExpense = false,
   }) async => 'fake_cat';
 
   @override
@@ -132,6 +133,7 @@ class FakeFirestoreDataRepository implements FirestoreDataRepository {
     required String iconKey,
     int startingBalanceMinor = 0,
     String? openingBalanceTransactionDateYyyyMmDd,
+    String? openingBalanceCategoryId,
   }) async => 'fake_acc';
 
   @override

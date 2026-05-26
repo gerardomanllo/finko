@@ -67,6 +67,20 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
     throw new HttpsError("invalid-argument", "At least one account is required.");
   }
   const categories = Array.isArray(payload.categories) ? payload.categories : [];
+  const openingBalanceCategoryId = (() => {
+    for (const raw of categories) {
+      const category = raw as JsonMap;
+      const kind =
+        typeof category.kind === "string" ? category.kind.trim().toLowerCase() : "";
+      if (kind !== "expense") continue;
+      const categoryId =
+        typeof category.id === "string" && category.id.trim().length > 0
+          ? category.id.trim()
+          : "";
+      if (categoryId) return categoryId;
+    }
+    return null;
+  })();
 
   const recurring = Array.isArray(payload.recurringIncome) ? payload.recurringIncome : [];
   const budgetsMinorByCategory =
@@ -167,6 +181,12 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
 
     const start = typeof account.startingBalanceMinor === "number" ? account.startingBalanceMinor : 0;
     if (start !== 0) {
+      if (!openingBalanceCategoryId) {
+        throw new HttpsError(
+          "invalid-argument",
+          "At least one expense category is required when an account has a starting balance."
+        );
+      }
       const txRef = db.collection(`users/${uid}/transactions`).doc();
       batch.set(txRef, {
         transactionDate: today,
@@ -175,7 +195,7 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
         direction: openingBalanceDirectionForAccount(accountType, start),
         currency: mustString(account.currency, "account.currency"),
         accountId,
-        categoryId: "fixed-expenses",
+        categoryId: openingBalanceCategoryId,
         type: "adjustment",
         memo: "Onboarding starting balance",
         createdAt: FieldValue.serverTimestamp(),
@@ -215,6 +235,11 @@ export const commitOnboarding = onCall({ region: "us-central1" }, async (request
     const ca = category["colorArgb"];
     if (typeof ca === "number" && Number.isFinite(ca)) {
       categoryPayload.colorArgb = ca;
+    }
+    const rawKind =
+      typeof category.kind === "string" ? category.kind.trim().toLowerCase() : "";
+    if (rawKind === "expense" && category.isFixedExpense === true) {
+      categoryPayload.isFixedExpense = true;
     }
     batch.set(
       db.doc(`users/${uid}/categories/${categoryId}`),

@@ -645,6 +645,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'The Fixed expenses category is missing.';
 
   @override
+  String get onboardingValidationCategoriesExpense =>
+      'Add at least one expense category.';
+
+  @override
+  String get onboardingBudgetsFixedExpenseHint =>
+      'Rent, loans, subscriptions, and similar monthly costs.';
+
+  @override
+  String get categoryFixedExpenseToggle => 'Fixed expense';
+
+  @override
+  String get categoryFixedExpenseToggleHint =>
+      'Counts toward fixed vs variable spending and your fixed-expenses budget card.';
+
+  @override
+  String get accountsNeedExpenseCategory =>
+      'Add an expense category before setting a non-zero starting balance.';
+
+  @override
   String get onboardingValidationRecurringAmount =>
       'Enter a recurring amount greater than zero.';
 
@@ -1428,7 +1447,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsBudgeted => 'Budgeted';
 
   @override
-  String get budgetsBillsUtilities => 'Bills & Utilities';
+  String get budgetsBillsUtilities => 'Fixed expenses';
 
   @override
   String get budgetsEarnings => 'Earnings';
@@ -1445,7 +1464,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetsCategoryBudgets => 'Spending by category';
 
   @override
-  String get budgetsBillsLeftLabel => 'Left for bills & utilities';
+  String get budgetsBillsLeftLabel => 'Left for fixed expenses';
 
   @override
   String get budgetsIncomeLeftLabel => 'Left to earn';
@@ -1468,7 +1487,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Spending is over this category’s budget';
 
   @override
-  String get budgetsCompactBillsCaption => 'Left to pay';
+  String get budgetsCompactBillsCaption => 'Paid toward fixed';
 
   @override
   String get budgetsCompactEarningsCaption => 'To earn';

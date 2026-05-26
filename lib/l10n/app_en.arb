@@ -253,6 +253,11 @@
   "onboardingValidationAccountsMinOne": "Add at least one account.",
   "onboardingValidationAccountNameRequired": "Each account needs a name.",
   "onboardingValidationCategoriesFixed": "The Fixed expenses category is missing.",
+  "onboardingValidationCategoriesExpense": "Add at least one expense category.",
+  "onboardingBudgetsFixedExpenseHint": "Rent, loans, subscriptions, and similar monthly costs.",
+  "categoryFixedExpenseToggle": "Fixed expense",
+  "categoryFixedExpenseToggleHint": "Counts toward fixed vs variable spending and your fixed-expenses budget card.",
+  "accountsNeedExpenseCategory": "Add an expense category before setting a non-zero starting balance.",
   "onboardingValidationRecurringAmount": "Enter a recurring amount greater than zero.",
   "onboardingValidationRecurringAccount": "Choose a deposit account for recurring income.",
   "onboardingValidationRecurringDaysTwice": "Choose both paydays (days of the month) for biweekly income.",
@@ -585,7 +590,7 @@
   "budgetsLeftToSpend": "left to spend",
   "budgetsSpent": "Spent",
   "budgetsBudgeted": "Budgeted",
-  "budgetsBillsUtilities": "Bills & Utilities",
+  "budgetsBillsUtilities": "Fixed expenses",
   "budgetsEarnings": "Earnings",
   "budgetsProjectedSavings": "Projected savings",
   "budgetsOfTarget": "Of {amount} target",
@@ -597,7 +602,7 @@
     }
   },
   "budgetsCategoryBudgets": "Spending by category",
-  "budgetsBillsLeftLabel": "Left for bills & utilities",
+  "budgetsBillsLeftLabel": "Left for fixed expenses",
   "budgetsIncomeLeftLabel": "Left to earn",
   "budgetsIncomeEarned": "Earned",
   "budgetsCategorySubtitleRemaining": "{amount} available",
@@ -617,7 +622,7 @@
     }
   },
   "budgetsCategoryOverBudgetTooltip": "Spending is over this category’s budget",
-  "budgetsCompactBillsCaption": "Left to pay",
+  "budgetsCompactBillsCaption": "Paid toward fixed",
   "budgetsCompactEarningsCaption": "To earn",
   "budgetsCompactAmountPaid": "{amount} paid",
   "@budgetsCompactAmountPaid": {

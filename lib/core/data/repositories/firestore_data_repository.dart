@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/firebase_auth_providers.dart';
 import '../firestore_paths.dart';
-import '../../spending/fixed_variable_expense.dart'
-    show kFixedExpensesCategoryId;
 import '../ledger_category_ids.dart';
 import '../models/models.dart';
 import 'ledger_transaction_firestore_maps.dart';
@@ -137,6 +135,7 @@ abstract class FirestoreDataRepository {
     required CategoryKind kind,
     required String iconKey,
     int? colorArgb,
+    bool isFixedExpense = false,
   });
 
   /// Creates `accounts/{id}` and optionally an opening-balance adjustment in one batch.
@@ -153,6 +152,7 @@ abstract class FirestoreDataRepository {
     required String iconKey,
     int startingBalanceMinor = 0,
     String? openingBalanceTransactionDateYyyyMmDd,
+    String? openingBalanceCategoryId,
   });
 
   /// Hard-deletes all transactions with this category, related rules/upcoming rows,
@@ -584,6 +584,9 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
     if (category.colorArgb != null) {
       payload['colorArgb'] = category.colorArgb;
     }
+    if (category.kind == CategoryKind.expense) {
+      payload['isFixedExpense'] = category.isFixedExpense;
+    }
     await _db.doc(FirestorePaths.categoryDoc(uid, category.id)).update(payload);
   }
 
@@ -634,6 +637,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
     required CategoryKind kind,
     required String iconKey,
     int? colorArgb,
+    bool isFixedExpense = false,
   }) async {
     final ref = _db.collection(FirestorePaths.categoriesCollection(uid)).doc();
     final payload = <String, dynamic>{
@@ -645,6 +649,9 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     };
     if (colorArgb != null) payload['colorArgb'] = colorArgb;
+    if (kind == CategoryKind.expense && isFixedExpense) {
+      payload['isFixedExpense'] = true;
+    }
     await ref.set(payload);
     return ref.id;
   }
@@ -659,6 +666,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
     required String iconKey,
     int startingBalanceMinor = 0,
     String? openingBalanceTransactionDateYyyyMmDd,
+    String? openingBalanceCategoryId,
   }) async {
     final accountsCol = _db.collection(FirestorePaths.accountsCollection(uid));
     final ref = accountsCol.doc();
@@ -692,6 +700,14 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
       final txRef = _db
           .collection(FirestorePaths.transactionsCollection(uid))
           .doc();
+      final categoryId = openingBalanceCategoryId?.trim();
+      if (categoryId == null || categoryId.isEmpty) {
+        throw ArgumentError.value(
+          openingBalanceCategoryId,
+          'openingBalanceCategoryId',
+          'required when startingBalanceMinor is non-zero',
+        );
+      }
       final ph = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
       final adj = LedgerTransaction(
         id: txRef.id,
@@ -701,7 +717,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
         direction: openingBalanceDirectionForAccount(type, start),
         currency: currency.trim().toUpperCase(),
         accountId: ref.id,
-        categoryId: kFixedExpensesCategoryId,
+        categoryId: categoryId,
         type: LedgerTransactionKind.adjustment,
         memo: 'Opening balance',
         transferGroupId: null,
@@ -720,8 +736,7 @@ class FirebaseFirestoreDataRepository implements FirestoreDataRepository {
 
   @override
   Future<void> deleteCategoryCascade(String uid, String categoryId) async {
-    if (categoryId == kFixedExpensesCategoryId ||
-        categoryId == kLedgerTransferCategoryId) {
+    if (categoryId == kLedgerTransferCategoryId) {
       throw ArgumentError.value(categoryId, 'categoryId', 'reserved category');
     }
     final txCol = _db.collection(FirestorePaths.transactionsCollection(uid));

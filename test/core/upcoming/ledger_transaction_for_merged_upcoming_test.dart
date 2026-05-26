@@ -8,10 +8,7 @@ void main() {
   test('ledger_preview id maps to ledger row by transaction id', () {
     final t = _ledger('tx1');
     final u = UpcomingTransaction.fromLedgerPreview(t);
-    expect(
-      ledgerTransactionForMergedUpcoming(u, [t])?.id,
-      'tx1',
-    );
+    expect(ledgerTransactionForMergedUpcoming(u, [t])?.id, 'tx1');
   });
 
   test('sourceUpcomingId links materialized ledger to upcoming id', () {

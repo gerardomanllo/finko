@@ -29,7 +29,7 @@
 ## UI — two small cards (same row)
 
 - **Layout (compact tile, not the large spending block):** light **surface** card, soft elevation; **top:** line icon (receipt-style for bills, savings-style for earnings); **section title**; **main line** = formatted **amount** (bold, compact type) with a **smaller caption directly beneath** (**Left to pay** / **To earn**); **thin pill progress**; **footer** (**{amount} paid** / **{amount} earned**) unchanged. No pace line on these tiles.
-- **Left card**: **“Bills & Utilities”**. **Data:** budget = `users/{uid}.budgets['fixed-expenses'].targetMinorMain` (system **fixed-expenses** category — [`spending.md`](spending.md)); spent = positive outflow from signed `monthlyTotals.byCategoryMinorMain['fixed-expenses']` for the viewed month ([`data-model.md`](data-model.md) §3 + §7). Main amount = **budget − spent** (clamped ≥ 0); bar = spent ÷ budget when budget > 0; footer = spent.
+- **Left card**: **“Fixed expenses”**. **Data:** budget = sum of `users/{uid}.budgets.{categoryId}.targetMinorMain` for expense categories with **`isFixedExpense: true`**; spent = sum of positive outflow from signed `monthlyTotals.byCategoryMinorMain` for those ids ([`spending.md`](spending.md), [`data-model.md`](data-model.md) §6–7). Main amount = **budget − spent** (clamped ≥ 0); bar = spent ÷ budget when budget > 0; footer = spent.
 - **Right card**: **“Earnings”**. Let **X** = sum of `users/{uid}.budgets.{categoryId}.targetMinorMain` over every Firestore **income** category (`categories[].kind == income`); **Y** = **`incomeMinorMain`** on the viewed **`monthlyTotals/{yyyy-mm}`** (month inflows, all categories). Main amount = **X − Y** (clamped ≥ 0); bar = **Y ÷ X** when **X > 0** (clamped 0…1); footer = **Y** (earned).
 
 Use a **responsive row**: side-by-side on wide width; stacked on narrow if needed.
@@ -75,6 +75,7 @@ Use a **responsive row**: side-by-side on wide width; stacked on narrow if neede
 
 | Date | Change |
 |------|--------|
+| 2026-05-22 | **Fixed expenses** compact card sums all categories with **`isFixedExpense`** (replaces **`fixed-expenses`** bucket). |
 | 2026-05-13 | Category row subtitle: **remaining** vs **over** copy (l10n; ES: “{amount} disponible” / “{amount} de más”). |
 | 2026-05-13 | Category list: sort by **budget target** descending; **over-budget** rows show a **warning** on the avatar (tooltip). |
 | 2026-04-16 | Bottom list sorted by **category spend** (minor, descending). |

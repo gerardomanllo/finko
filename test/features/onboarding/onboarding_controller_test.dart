@@ -71,6 +71,12 @@ void main() {
         kind: OnboardingCategoryKind.income,
         iconKey: 'work',
       );
+      controller.addSuggestedCategory(
+        id: 'food',
+        name: 'Food',
+        kind: OnboardingCategoryKind.expense,
+        iconKey: 'restaurant',
+      );
       await controller.next(); // recurringIncome
       controller.setRecurring(
         OnboardingRecurringIncomeDraft(

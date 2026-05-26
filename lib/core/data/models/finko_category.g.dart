@@ -19,6 +19,7 @@ FinkoCategory _$FinkoCategoryFromJson(Map<String, dynamic> json) =>
       iconKey: json['iconKey'] as String,
       colorArgb: (json['colorArgb'] as num?)?.toInt(),
       sortOrder: (json['sortOrder'] as num).toInt(),
+      isFixedExpense: json['isFixedExpense'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$FinkoCategoryToJson(FinkoCategory instance) =>
@@ -29,6 +30,7 @@ Map<String, dynamic> _$FinkoCategoryToJson(FinkoCategory instance) =>
       'iconKey': instance.iconKey,
       'colorArgb': ?instance.colorArgb,
       'sortOrder': instance.sortOrder,
+      'isFixedExpense': instance.isFixedExpense,
     };
 
 const _$CategoryKindEnumMap = {

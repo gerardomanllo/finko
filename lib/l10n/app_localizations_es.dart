@@ -652,6 +652,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'Falta la categoría de gastos fijos.';
 
   @override
+  String get onboardingValidationCategoriesExpense =>
+      'Agrega al menos una categoría de gasto.';
+
+  @override
+  String get onboardingBudgetsFixedExpenseHint =>
+      'Renta, préstamos, suscripciones y costos mensuales similares.';
+
+  @override
+  String get categoryFixedExpenseToggle => 'Gasto fijo';
+
+  @override
+  String get categoryFixedExpenseToggleHint =>
+      'Cuenta en gastos fijos vs variables y en la tarjeta de gastos fijos.';
+
+  @override
+  String get accountsNeedExpenseCategory =>
+      'Agrega una categoría de gasto antes de un saldo inicial distinto de cero.';
+
+  @override
   String get onboardingValidationRecurringAmount =>
       'Indica un monto recurrente mayor que cero.';
 
@@ -1478,7 +1497,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'El gasto supera el presupuesto de esta categoría';
 
   @override
-  String get budgetsCompactBillsCaption => 'Por pagar';
+  String get budgetsCompactBillsCaption => 'Pagado en fijos';
 
   @override
   String get budgetsCompactEarningsCaption => 'Por ganar';

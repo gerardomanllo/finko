@@ -15,6 +15,7 @@ class FinkoCategory {
     required this.iconKey,
     this.colorArgb,
     required this.sortOrder,
+    this.isFixedExpense = false,
   });
 
   @JsonKey(includeToJson: false)
@@ -28,6 +29,11 @@ class FinkoCategory {
   final String iconKey;
   final int? colorArgb;
   final int sortOrder;
+
+  /// When true and [kind] is [CategoryKind.expense], spend/budget rollups
+  /// count this category toward fixed (vs variable) expense analytics.
+  @JsonKey(defaultValue: false)
+  final bool isFixedExpense;
 
   factory FinkoCategory.fromJson(Map<String, dynamic> json) =>
       _$FinkoCategoryFromJson(json);

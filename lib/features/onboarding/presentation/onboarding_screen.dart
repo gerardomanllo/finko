@@ -37,7 +37,7 @@ String _validationMessage(AppLocalizations l10n, String? code) {
     'profileNameTooLong' => l10n.onboardingValidationProfileNameTooLong,
     'accountsMinOne' => l10n.onboardingValidationAccountsMinOne,
     'accountNameRequired' => l10n.onboardingValidationAccountNameRequired,
-    'categoriesMissingFixed' => l10n.onboardingValidationCategoriesFixed,
+    'categoriesMissingExpense' => l10n.onboardingValidationCategoriesExpense,
     'recurringAmount' => l10n.onboardingValidationRecurringAmount,
     'recurringAccount' => l10n.onboardingValidationRecurringAccount,
     'recurringDaysTwice' => l10n.onboardingValidationRecurringDaysTwice,
@@ -208,11 +208,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       prev,
       next,
     ) {
-      if (next == OnboardingStep.categories && mounted) {
-        controller.syncFixedExpensesDisplayName(
-          l10n.onboardingCategoryFixedExpenses,
-        );
-      }
       if (next == OnboardingStep.accounts && mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
@@ -727,10 +722,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         .toList();
 
     Widget rowFor(OnboardingCategoryDraft c) {
-      final isFixed = c.id == OnboardingDraft.kFixedExpensesCategory.id;
-      final displayName = isFixed
-          ? l10n.onboardingCategoryFixedExpenses
-          : c.name;
       final kindLabel = c.kind == OnboardingCategoryKind.income
           ? l10n.onboardingCategoryKindIncome
           : l10n.onboardingCategoryKindExpense;
@@ -756,60 +747,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Opacity(
-                    opacity: isFixed ? 0.55 : 1.0,
-                    child: Row(
-                      children: [
-                        OnboardingIconChip(
-                          icon: onboardingIconForKey(c.iconKey),
-                          color: chipColor,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                displayName,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                kindLabel,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (isFixed)
-                  IconButton(
-                    icon: Icon(
-                      Icons.info_outline,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    tooltip: l10n.onboardingFixedExpensesInfoTooltip,
-                    onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text(l10n.onboardingFixedExpensesInfoTitle),
-                          content: SingleChildScrollView(
-                            child: Text(l10n.onboardingFixedExpensesInfoBody),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(ctx).pop(),
-                              child: Text(l10n.onboardingGotIt),
+                  child: Row(
+                    children: [
+                      OnboardingIconChip(
+                        icon: onboardingIconForKey(c.iconKey),
+                        color: chipColor,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              c.name,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              kindLabel,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+                ),
                 if (!c.isSystem)
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
@@ -941,10 +904,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         .toList();
 
     Widget cardFor(OnboardingCategoryDraft category) {
-      final isFixed = category.id == OnboardingDraft.kFixedExpensesCategory.id;
-      final displayName = isFixed
-          ? l10n.onboardingCategoryFixedExpenses
-          : category.name;
       final isIncome = category.kind == OnboardingCategoryKind.income;
       final accent = isIncome ? FinkoColors.income : OnboardingAccents.budgets;
       final chipColor = category.colorArgb != null
@@ -971,7 +930,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            displayName,
+                            category.name,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ),
@@ -983,6 +942,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                       ],
                     ),
+                    if (!isIncome) ...[
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        title: Text(
+                          l10n.categoryFixedExpenseToggle,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        subtitle: Text(
+                          l10n.onboardingBudgetsFixedExpenseHint,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        value: category.isFixedExpense,
+                        onChanged: (v) =>
+                            controller.setCategoryFixedExpense(category.id, v),
+                      ),
+                    ],
                     const SizedBox(height: 10),
                     OnboardingAmountTextField(
                       key: ValueKey('budget-${category.id}'),
@@ -1055,8 +1032,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     final variableSegments = <OnboardingProjectedVariableSegment>[];
     for (final c in draft.categories) {
-      if (c.kind == OnboardingCategoryKind.expense &&
-          c.id != OnboardingDraft.kFixedExpensesCategory.id) {
+      if (c.kind == OnboardingCategoryKind.expense && !c.isFixedExpense) {
         variableSegments.add(
           OnboardingProjectedVariableSegment(
             label: c.name,

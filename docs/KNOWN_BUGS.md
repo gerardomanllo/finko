@@ -32,6 +32,7 @@ Captured **2026-04-27** when tightening priority 4–5 items:
 | **KB-002** | Month/quarter/year **fixed/variable accordion** uses **`splitFixedVariableFromPositiveSlices`** so totals align with **donut** slices ([`fixed_variable_expense.dart`](../lib/core/spending/fixed_variable_expense.dart), [`spending_screen.dart`](../lib/features/spending/presentation/spending_screen.dart)). |
 | **KB-003** | **`materializeDueUpcoming`** uses **deterministic** `transactions` doc ids per upcoming + date (and transfer leg pair ids) to prevent duplicate posts on retry/concurrency ([`materialize.ts`](../functions/src/materialize.ts)). |
 | **KB-008** | **`recurringMergedUpcomingProvider`** + **`mergeUpcomingForUi`** — Recurring screen matches dashboard merge (**today-inclusive** for schedule rows + ledger futures) ([`finko_stream_providers.dart`](../lib/core/data/providers/finko_stream_providers.dart)). |
+| **KB-004** | **`isFixedExpense`** on expense categories; fixed/variable rollups and Budgets **Fixed expenses** card sum flagged categories (replaces system **`fixed-expenses`** bucket). |
 
 ## Index (open items)
 
@@ -39,7 +40,6 @@ Search this file for **`KB-00N`** to jump to a bug.
 
 | ID | Sheet row | Status (sheet) | Priority | Area (sheet) | Title |
 |----|-----------|------------------|----------|--------------|--------|
-| KB-004 | 8 | Backlog | 4 | Onboarding | Fixed expenses vs category budgets |
 | KB-005 | 9 | Backlog | 4 | TODOS | Floating menu |
 | KB-006 | 12 | Backlog | 4 | Transacciones | `$` beside amount |
 | KB-007 | 13 | Backlog | 4 | Home | Net worth vs accounts |
@@ -48,23 +48,6 @@ Search this file for **`KB-00N`** to jump to a bug.
 | KB-011 | 21 | Backlog | 3 | Transacciones | “Nota” vs descripción copy |
 | KB-012 | 23 | Backlog | 2 | TODO | iOS-style scrolls / pickers |
 | KB-013 | 24 | Backlog | 1 | Home | Profile entry placement |
-
----
-
-### KB-004 — Onboarding / fixed expenses vs category budgets
-
-| Field | Value |
-|-------|--------|
-| **Sheet row** | 8 |
-| **Submitted** | 2026-04-21 |
-| **Status (sheet)** | Backlog |
-| **Tipo** | Feature |
-| **Reporter summary** | “Fixed expenses” budget duplicates budgets already set on individual categories (services, therapy); projected chart double-counts. Wants either stricter definition of “fixed” or multi-select of which categories count as fixed. |
-| **Discussed fix** | No |
-| **Ready to fix** | No — product decision: today’s spec is **one** system bucket **`Fixed Expenses`** for fixed + **other** expense categories for variable ([`onboarding.md`](onboarding.md) step 5–6, [`onboarding_projected_chart.dart`](../lib/features/onboarding/presentation/onboarding_projected_chart.dart)). |
-| **Likely code / product area** | Onboarding budgets + projected chart; possibly [`docs/budgets.md`](budgets.md) if we expand the model. |
-
-**Open questions:** Allow **multi-select “which categories are fixed”** (changes chart + spending split), or **education only** (don’t double-fill Fixed Expenses + per-category budgets)?
 
 ---
 

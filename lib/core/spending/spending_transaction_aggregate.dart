@@ -1,6 +1,5 @@
 import '../data/models/finko_enums.dart';
 import '../data/models/ledger_transaction.dart';
-import 'fixed_variable_expense.dart';
 
 /// Outflow totals for donut / top list (prefers **main** minor; falls back to
 /// [LedgerTransaction.amountMinor] when currency matches [mainCurrency]).
@@ -73,8 +72,12 @@ SpendingTxRollup aggregateSpendingTransactions(
 splitFixedVariableFromPositiveByCategory({
   required int totalExpenseMinorMain,
   required Map<String, int> byCategoryPositiveMinorMain,
+  required Set<String> fixedCategoryIds,
 }) {
-  final fixedSpent = byCategoryPositiveMinorMain[kFixedExpensesCategoryId] ?? 0;
+  var fixedSpent = 0;
+  for (final id in fixedCategoryIds) {
+    fixedSpent += byCategoryPositiveMinorMain[id] ?? 0;
+  }
   final cappedFixed = fixedSpent.clamp(0, totalExpenseMinorMain);
   final variable = (totalExpenseMinorMain - cappedFixed).clamp(0, 1 << 62);
   return (fixedMinorMain: cappedFixed, variableMinorMain: variable);

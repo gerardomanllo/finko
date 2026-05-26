@@ -49,7 +49,7 @@
 
 ### 3 — Categories
 
-- **Example categories** + custom rows; **system category `Fixed Expenses`** (expense) — **selected by default**, cannot be removed.
+- **Example categories** + custom rows (user adds at least one **expense** category before continuing).
 - **Per category:** name, **`kind`** income/expense, **`iconKey`** from a **fixed map** (string key → `IconData` / font glyph) chosen via **dropdown** — **same keys on web and mobile**; no “native OS icon” free-for-all.
 - **Maps to:** `users/{uid}/categories/{categoryId}` ([`data-model.md`](data-model.md) §6).
 
@@ -65,15 +65,15 @@
 
 - **Per category**, monthly **target** in minor units (**main currency**).
 - **Income category** → **expected income** for the month.
-- **Expense category** → **expected expenses** for the month.
-- **Maps to:** `users/{uid}.budgets` ([`data-model.md`](data-model.md) §3).
+- **Expense category** → **expected expenses** for the month; optional **Fixed expense** toggle marks the category for fixed vs variable analytics (rent, loans, subscriptions, etc.).
+- **Maps to:** `users/{uid}.budgets` ([`data-model.md`](data-model.md) §3) and `categories/{id}.isFixedExpense`.
 
 ### 6 — Projected savings
 
 - **Read-only** summary; user taps **Continue**.
 - **Total expected income** = sum of **budgets** on **income** categories (includes salary *expectations* and variable income *ballparks* — whatever they entered in step 5).
-- **Total expected expenses — fixed** = budget assigned to the **`Fixed Expenses`** category **only**.
-- **Total expected expenses — variable** = sum of **other expense** category budgets (all expense categories **except** `Fixed Expenses`).
+- **Total expected expenses — fixed** = sum of expense category budgets where **`isFixedExpense`** is true.
+- **Total expected expenses — variable** = sum of expense category budgets where **`isFixedExpense`** is false.
 - **Projected savings** = expected income − (fixed expenses + variable expenses), all in **main currency**.
 - **Chart:** one **stacked column**; **expense** bands (fixed + every variable category) are **ordered by budget amount** (**largest next to $0**, then smaller, then **projected savings** at the top / 100% expected income; green/red/zero for savings). **Y-axis** from **0** to **expected income** (no intermediate grid steps). **Labels** to the right of each band: **`Category` `pct`% − `amount`**. If **projected savings &lt; 0**, the top segment is **red** with **NO SAVINGS − {amount} OVER INCOME** (localized), and expense bands below **scale** to fit the column height.
 
@@ -121,9 +121,9 @@
 - [ ] Step 1: name, timezone, theme, locale.
 - [ ] Account **`type`** stored as canonical enum; labels from **l10n**.
 - [ ] Starting balance via **`adjustment`** transactions (or zero — no row).
-- [ ] Categories: **Fixed Expenses** + **Material `iconKey` map**.
+- [ ] Categories: at least one **expense** + **Material `iconKey` map**.
 - [ ] Recurring income: **per income category**; non-recurring → budgets only.
-- [ ] Projected: income from **budgets**; fixed = **Fixed Expenses** only; variable = other expense budgets.
+- [ ] Projected: income from **budgets**; fixed = sum of **`isFixedExpense`** budgets; variable = other expense budgets.
 - [ ] Messaging: **Remind me later** + **WhatsApp OTP** / **Telegram link**; server-trusted writes.
 - [ ] Commit: **idempotent**; loading then **`/dashboard`**.
 - [ ] **Semantics:** full title for screen readers; reduced motion for typewriter.
@@ -141,7 +141,8 @@
 
 | Date | Change |
 |------|--------|
-| 2026-05-22 | Category/budget lists use **`onboardingCategoriesForDisplay`**: income → **Fixed Expenses** → other expenses (stable within each group). |
+| 2026-05-22 | **`isFixedExpense`** on expense categories; budgets-step toggle; removed system **`fixed-expenses`** category. |
+| 2026-05-22 | Category/budget lists use **`onboardingCategoriesForDisplay`**: income → fixed-flagged expenses → other expenses (stable within each group). |
 | 2026-05-22 | **§4** Account/weekday chips use **`OnboardingChoiceChip`** (cloud fill, visible borders). **§5** Budget targets in per-category **cards** with income/expense badges. **§6** Projected step scrollable; chart **fixed 280px** in card. **Review:** all categories listed with kind cues; recurring copy in **natural language**. |
 | 2026-05-22 | **§1** Theme, locale, and main currency use **segmented toggles** (not dropdowns). **§2–3** “Add” buttons sit **above** account/category lists. **§4** Recurring income cards use icon header, yes/no toggle, and chip pickers. **§6 / review** Projected savings hero + metric tiles; review step uses section cards. |
 | 2026-04-22 | **§2** Account **color** dropdown shows **named colors** (EN/ES, curated ~24-color palette) instead of hex; account + category **icon** dropdowns show **localized labels** (EN/ES) instead of raw icon keys. Stored `colorArgb` / `iconKey` values unchanged. |

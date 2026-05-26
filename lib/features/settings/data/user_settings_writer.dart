@@ -24,17 +24,15 @@ class UserSettingsWriter {
   }
 
   Future<void> setAgentPreferences(String uid, AgentPreferences prefs) async {
-    await _firestore.doc(FirestorePaths.userDoc(uid)).set(
-      {'agentPreferences': prefs.toJson()},
-      SetOptions(merge: true),
-    );
+    await _firestore.doc(FirestorePaths.userDoc(uid)).set({
+      'agentPreferences': prefs.toJson(),
+    }, SetOptions(merge: true));
   }
 
   Future<void> clearAgentPreferences(String uid) async {
-    await _firestore.doc(FirestorePaths.userDoc(uid)).set(
-      {'agentPreferences': <String, dynamic>{}},
-      SetOptions(merge: true),
-    );
+    await _firestore.doc(FirestorePaths.userDoc(uid)).set({
+      'agentPreferences': <String, dynamic>{},
+    }, SetOptions(merge: true));
   }
 
   @Deprecated('Use setAgentPreferences')

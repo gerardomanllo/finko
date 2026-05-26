@@ -17,22 +17,23 @@ void main() {
         yearMonth: '2026-02',
         incomeMinorMain: 50,
         expenseMinorMain: 60,
-        byCategoryMinorMain: {'c1': -20, 'fixed-expenses': -10},
+        byCategoryMinorMain: {'c1': -20, 'car': -10},
         days: const {},
       );
       final m = mergeMonthlyTotals([a, b]);
       expect(m.incomeMinorMain, 150);
       expect(m.expenseMinorMain, 100);
       expect(m.byCategoryMinorMain['c1'], -60);
-      expect(m.byCategoryMinorMain['fixed-expenses'], -10);
+      expect(m.byCategoryMinorMain['car'], -10);
     });
   });
 
   group('splitFixedVariableExpense', () {
-    test('splits from signed fixed-expenses category', () {
+    test('splits from signed fixed-flagged categories', () {
       final r = splitFixedVariableExpense(
         totalExpenseMinorMain: 100,
-        byCategoryMinorMain: {'fixed-expenses': -30, 'other': -70},
+        byCategoryMinorMain: {'car': -30, 'other': -70},
+        fixedCategoryIds: const {'car'},
       );
       expect(r.fixedMinorMain, 30);
       expect(r.variableMinorMain, 70);
@@ -41,7 +42,8 @@ void main() {
     test('caps fixed at total', () {
       final r = splitFixedVariableExpense(
         totalExpenseMinorMain: 50,
-        byCategoryMinorMain: {'fixed-expenses': -80},
+        byCategoryMinorMain: {'car': -80},
+        fixedCategoryIds: const {'car'},
       );
       expect(r.fixedMinorMain, 50);
       expect(r.variableMinorMain, 0);

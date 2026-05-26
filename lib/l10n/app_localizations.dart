@@ -1237,6 +1237,36 @@ abstract class AppLocalizations {
   /// **'Falta la categoría de gastos fijos.'**
   String get onboardingValidationCategoriesFixed;
 
+  /// No description provided for @onboardingValidationCategoriesExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega al menos una categoría de gasto.'**
+  String get onboardingValidationCategoriesExpense;
+
+  /// No description provided for @onboardingBudgetsFixedExpenseHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Renta, préstamos, suscripciones y costos mensuales similares.'**
+  String get onboardingBudgetsFixedExpenseHint;
+
+  /// No description provided for @categoryFixedExpenseToggle.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto fijo'**
+  String get categoryFixedExpenseToggle;
+
+  /// No description provided for @categoryFixedExpenseToggleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta en gastos fijos vs variables y en la tarjeta de gastos fijos.'**
+  String get categoryFixedExpenseToggleHint;
+
+  /// No description provided for @accountsNeedExpenseCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega una categoría de gasto antes de un saldo inicial distinto de cero.'**
+  String get accountsNeedExpenseCategory;
+
   /// No description provided for @onboardingValidationRecurringAmount.
   ///
   /// In es, this message translates to:
@@ -2724,7 +2754,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetsCompactBillsCaption.
   ///
   /// In es, this message translates to:
-  /// **'Por pagar'**
+  /// **'Pagado en fijos'**
   String get budgetsCompactBillsCaption;
 
   /// No description provided for @budgetsCompactEarningsCaption.

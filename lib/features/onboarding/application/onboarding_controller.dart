@@ -59,20 +59,20 @@ class OnboardingController extends Notifier<OnboardingState> {
     );
   }
 
-  /// Localized display name for the system category (Firestore row uses this text).
-  void syncFixedExpensesDisplayName(String localizedName) {
+  void setCategoryFixedExpense(String categoryId, bool isFixed) {
     final categories = state.draft.categories.map((c) {
-      if (c.id == OnboardingDraft.kFixedExpensesCategory.id) {
-        return OnboardingCategoryDraft(
-          id: c.id,
-          name: localizedName,
-          kind: c.kind,
-          iconKey: c.iconKey,
-          isSystem: c.isSystem,
-          colorArgb: c.colorArgb,
-        );
-      }
-      return c;
+      if (c.id != categoryId) return c;
+      if (c.kind != OnboardingCategoryKind.expense) return c;
+      return OnboardingCategoryDraft(
+        id: c.id,
+        name: c.name,
+        kind: c.kind,
+        iconKey: c.iconKey,
+        isSystem: c.isSystem,
+        colorArgb: c.colorArgb,
+        isFixedExpense: isFixed,
+        monthlyBudgetTargetMinorMain: c.monthlyBudgetTargetMinorMain,
+      );
     }).toList();
     state = state.copyWith(
       draft: state.draft.copyWith(categories: categories),
@@ -426,9 +426,9 @@ class OnboardingController extends Notifier<OnboardingState> {
         return null;
       case OnboardingStep.categories:
         if (!draft.categories.any(
-          (c) => c.id == OnboardingDraft.kFixedExpensesCategory.id,
+          (c) => c.kind == OnboardingCategoryKind.expense,
         )) {
-          return 'categoriesMissingFixed';
+          return 'categoriesMissingExpense';
         }
         return null;
       case OnboardingStep.recurringIncome:
