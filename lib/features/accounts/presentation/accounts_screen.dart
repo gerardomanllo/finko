@@ -14,6 +14,9 @@ import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../application/account_editor_bridge.dart';
 import '../../onboarding/presentation/onboarding_account_editor.dart';
 import '../../onboarding/presentation/onboarding_account_icons.dart';
+import '../../product_tutorial/presentation/tour_screen_anchors.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 
 const List<FinkoAccountType> _kAccountTypeSectionOrder = <FinkoAccountType>[
   FinkoAccountType.cash,
@@ -41,6 +44,7 @@ class AccountsScreen extends ConsumerWidget {
     final yearMonth = ref.watch(currentYearMonthProvider);
     final bottomInset =
         88.0 + MediaQuery.paddingOf(context).bottom; // extended FAB + margin
+    final tourAccountsStep = isTourStep(ref, 'accounts');
 
     void openAddAccount() {
       final uid = ref.read(authUidProvider);
@@ -112,7 +116,9 @@ class AccountsScreen extends ConsumerWidget {
         orElse: () => null,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: async.when(
+      body: tourAccountsStep
+          ? TourAccountsBody(bottomInset: bottomInset)
+          : async.when(
         data: (accounts) {
           if (accounts.isEmpty) {
             return Center(
@@ -123,6 +129,7 @@ class AccountsScreen extends ConsumerWidget {
             );
           }
 
+          var spotlightPlaced = false;
           final children = <Widget>[];
           for (final t in _kAccountTypeSectionOrder) {
             final sectionAccounts =
@@ -141,22 +148,31 @@ class AccountsScreen extends ConsumerWidget {
             );
             children.add(const SizedBox(height: 8));
             for (final a in sectionAccounts) {
-              children.add(
-                _AccountRow(
-                  account: a,
-                  mainCurrency: mainCurrency,
-                  locale: locale,
-                  onTap: () {
-                    showFinkoAccountMonthSummarySheet(
-                      context: context,
-                      ref: ref,
-                      account: a,
-                      yearMonth: yearMonth,
-                      mainCurrency: mainCurrency,
-                    );
-                  },
-                ),
+              final row = _AccountRow(
+                account: a,
+                mainCurrency: mainCurrency,
+                locale: locale,
+                onTap: () {
+                  showFinkoAccountMonthSummarySheet(
+                    context: context,
+                    ref: ref,
+                    account: a,
+                    yearMonth: yearMonth,
+                    mainCurrency: mainCurrency,
+                  );
+                },
               );
+              if (!spotlightPlaced) {
+                spotlightPlaced = true;
+                children.add(
+                  TutorialTarget(
+                    id: TutorialTargetId.accountsFirstRow,
+                    child: row,
+                  ),
+                );
+              } else {
+                children.add(row);
+              }
             }
             children.add(const SizedBox(height: 16));
           }

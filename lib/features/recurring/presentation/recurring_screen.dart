@@ -15,6 +15,9 @@ import '../../../widgets/calendar/finko_two_week_calendar.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/open_merged_upcoming_editor.dart';
+import '../../product_tutorial/application/tutorial_preview_providers.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
 DateTime _mondayOfCalendarDay(DateTime dateOnly) {
@@ -92,6 +95,7 @@ class RecurringScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final upcomingAsync = ref.watch(recurringMergedUpcomingProvider);
+    final upcomingList = ref.watch(tourAwareRecurringMergedProvider);
     final categoriesAsync = ref.watch(categoriesStreamProvider);
     final rulesAsync = ref.watch(recurringRulesStreamProvider);
     final accountsAsync = ref.watch(accountsStreamProvider);
@@ -182,8 +186,11 @@ class RecurringScreen extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            upcomingAsync.when(
-              data: (list) {
+            upcomingAsync.isLoading && upcomingList.isEmpty
+                ? const LinearProgressIndicator()
+                : Builder(
+              builder: (context) {
+                final list = upcomingList;
                 final income = <String>{};
                 final expense = <String>{};
                 for (final u in list) {
@@ -196,16 +203,17 @@ class RecurringScreen extends ConsumerWidget {
                     }
                   }
                 }
-                return FinkoTwoWeekCalendar(
-                  weekStart: monday,
-                  incomeDays: income,
-                  expenseDays: expense,
-                  thisWeekLabel: l10n.recurringThisWeek,
-                  nextWeekLabel: l10n.recurringNextWeek,
+                return TutorialTarget(
+                  id: TutorialTargetId.recurringCalendar,
+                  child: FinkoTwoWeekCalendar(
+                    weekStart: monday,
+                    incomeDays: income,
+                    expenseDays: expense,
+                    thisWeekLabel: l10n.recurringThisWeek,
+                    nextWeekLabel: l10n.recurringNextWeek,
+                  ),
                 );
               },
-              loading: () => const LinearProgressIndicator(),
-              error: (Object e, StackTrace stack) => Text('$e'),
             ),
             const SizedBox(height: 24),
             Text(
@@ -213,60 +221,58 @@ class RecurringScreen extends ConsumerWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            upcomingAsync.when(
-              data: (list) => _DueList(
-                list: list,
-                test: (u) {
-                  final d = daysBetweenYyyyMmDd(todayYmd, u.transactionDate);
-                  return d >= 0 && d <= 7;
-                },
-                mainCurrency: mainCurrency,
-                ruleById: ruleById,
-                catById: catById,
-                onRowTap: (u) => openMergedUpcomingEditor(
-                  context,
-                  ref,
-                  u,
-                  ledgerCandidates:
-                      ref
-                          .read(ledgerFromTodayForUpcomingMergeStreamProvider)
-                          .valueOrNull ??
-                      const [],
+            TutorialTarget(
+                id: TutorialTargetId.recurringDueSoon,
+                child: _DueList(
+                  list: upcomingList,
+                  test: (u) {
+                    final d = daysBetweenYyyyMmDd(todayYmd, u.transactionDate);
+                    return d >= 0 && d <= 7;
+                  },
+                  mainCurrency: mainCurrency,
+                  ruleById: ruleById,
+                  catById: catById,
+                  onRowTap: (u) => openMergedUpcomingEditor(
+                    context,
+                    ref,
+                    u,
+                    ledgerCandidates:
+                        ref
+                            .read(ledgerFromTodayForUpcomingMergeStreamProvider)
+                            .valueOrNull ??
+                        const [],
+                  ),
                 ),
               ),
-              loading: () => const LinearProgressIndicator(),
-              error: (Object e, StackTrace stack) => const SizedBox.shrink(),
-            ),
             const SizedBox(height: 24),
             Text(
               l10n.recurringComingLater,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            upcomingAsync.when(
-              data: (list) => _DueList(
-                list: list,
-                test: (u) {
-                  final d = daysBetweenYyyyMmDd(todayYmd, u.transactionDate);
-                  return d >= 8 && d <= 15;
-                },
-                mainCurrency: mainCurrency,
-                ruleById: ruleById,
-                catById: catById,
-                onRowTap: (u) => openMergedUpcomingEditor(
-                  context,
-                  ref,
-                  u,
-                  ledgerCandidates:
-                      ref
-                          .read(ledgerFromTodayForUpcomingMergeStreamProvider)
-                          .valueOrNull ??
-                      const [],
+            TutorialTarget(
+                id: TutorialTargetId.recurringComingLater,
+                child: _DueList(
+                  list: upcomingList,
+                  test: (u) {
+                    final d = daysBetweenYyyyMmDd(todayYmd, u.transactionDate);
+                    return d >= 8 && d <= 15;
+                  },
+                  mainCurrency: mainCurrency,
+                  ruleById: ruleById,
+                  catById: catById,
+                  onRowTap: (u) => openMergedUpcomingEditor(
+                    context,
+                    ref,
+                    u,
+                    ledgerCandidates:
+                        ref
+                            .read(ledgerFromTodayForUpcomingMergeStreamProvider)
+                            .valueOrNull ??
+                        const [],
+                  ),
                 ),
               ),
-              loading: () => const LinearProgressIndicator(),
-              error: (Object e, StackTrace stack) => const SizedBox.shrink(),
-            ),
           ],
         ),
       ),

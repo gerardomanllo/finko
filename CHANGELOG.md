@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Product tutorial:** Back button; tighter tooltip placement and darker scrim; spotlight fixes for accounts scroll, budget teaser, recurring calendar, transactions filter, and agent pill; tour preview data on empty first-run screens (localized EN/ES sample labels); narrower spotlights on list/stack steps; pill-shaped agent highlight; scroll dashboard to top on exit; stack navigation via `goRouterProvider`.
+- **Budgets / monthly totals:** Parse missing `incomeMinorMain` / `expenseMinorMain` as zero (fixes `type 'Null' is not a subtype of type 'num'` on new months).
+
 - **Spending (web):** Period-strip mini income/expense bars no longer crash with `Invalid argument: 1` after data loads; fixed/variable accordion rows show correct totals instead of `$0` when expense &gt; 0. Root cause: `1 << 62` is **0** on Flutter web (JS bitwise shift wrap), breaking `.clamp(1, 1 << 62)` and `.clamp(0, 1 << 62)`.
 
 ### Changed
@@ -18,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **In-app agent UX:** One **live transaction card** per logging flow — fields fade in as choices are made, prompts swap in the same card, then the card **seals** after save (no stacked step bubbles). Before save, **tap any field** on the card to edit amount, note, category, account, or transaction type in a bottom sheet.
 
 ### Added
+
+- **Product tutorial:** Spotlight walkthrough (24 steps) after setup onboarding; auto-start on first dashboard visit; **Show tutorial** in the drawer for 15 days after account creation, then in Settings only. Persists `productTourCompleted` on the user profile. See [`docs/product-tutorial.md`](docs/product-tutorial.md).
 
 - **In-app agent (primary channel):** Full-screen **`/agent`** chat with text, image, and voice input; playful **status labels** and dismissable errors; **`AgentEntryPill`** on shell tabs; optional **open app to agent** (`launchScreen` + first-visit prompt). Cloud Functions: **`sendAgentMessage`**, **`submitAgentAction`**, **`dismissAgentMessage`**; Firestore **`agentMessages`**, **`appAgentSessions`**; Storage **`agentMedia`**. **`agentPreferences`** replaces **`telegramBotPreferences`** (legacy read fallback). See [`docs/agent.md`](docs/agent.md).
 

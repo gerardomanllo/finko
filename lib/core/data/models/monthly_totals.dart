@@ -6,6 +6,13 @@ import 'finko_enums.dart';
 
 part 'monthly_totals.g.dart';
 
+int _rollupMinorFromJson(Object? json) {
+  if (json == null) return 0;
+  if (json is int) return json;
+  if (json is num) return json.toInt();
+  return 0;
+}
+
 /// `users/{uid}/monthlyTotals/{yyyy-mm}` — denormalized month rollup.
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
 class MonthlyTotals {
@@ -23,7 +30,10 @@ class MonthlyTotals {
   @FirestoreNullableUtcDateTimeConverter()
   final DateTime? updatedAt;
 
+  @JsonKey(fromJson: _rollupMinorFromJson)
   final int incomeMinorMain;
+
+  @JsonKey(fromJson: _rollupMinorFromJson)
   final int expenseMinorMain;
   final Map<String, int> byCategoryMinorMain;
 

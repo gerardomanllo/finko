@@ -12,8 +12,8 @@ MonthlyTotals _$MonthlyTotalsFromJson(Map<String, dynamic> json) =>
       updatedAt: const FirestoreNullableUtcDateTimeConverter().fromJson(
         json['updatedAt'],
       ),
-      incomeMinorMain: (json['incomeMinorMain'] as num).toInt(),
-      expenseMinorMain: (json['expenseMinorMain'] as num).toInt(),
+      incomeMinorMain: _rollupMinorFromJson(json['incomeMinorMain']),
+      expenseMinorMain: _rollupMinorFromJson(json['expenseMinorMain']),
       byCategoryMinorMain: Map<String, int>.from(
         json['byCategoryMinorMain'] as Map,
       ),

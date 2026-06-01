@@ -10,6 +10,10 @@ import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/formatting/money_format.dart';
 import '../../../core/theme/finko_theme.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/application/show_tutorial_in_drawer.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 
 Color _drawerMutedFill(ThemeData theme) {
   return theme.brightness == Brightness.light
@@ -60,6 +64,7 @@ class FinkoShellDrawer extends ConsumerWidget {
     final isCategories = location == '/categories';
     final isAccounts = location == '/accounts';
     final isSettings = location == '/settings';
+    final showTutorialRow = ref.watch(showTutorialInDrawerProvider);
 
     final accountsAsync = ref.watch(accountsStreamProvider);
     final userProfileAsync = ref.watch(userProfileStreamProvider);
@@ -121,6 +126,12 @@ class FinkoShellDrawer extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
+        TutorialTarget(
+          id: TutorialTargetId.drawerSnapshot,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -254,7 +265,16 @@ class FinkoShellDrawer extends ConsumerWidget {
             ),
           ],
         ),
+            ],
+          ),
+        ),
         const SizedBox(height: 24),
+        TutorialTarget(
+          id: TutorialTargetId.drawerNav,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
         Text(
           l10n.drawerNavSectionTitle,
           style: theme.textTheme.labelLarge?.copyWith(
@@ -293,6 +313,17 @@ class FinkoShellDrawer extends ConsumerWidget {
             context.push('/accounts');
           },
         ),
+        if (showTutorialRow)
+          _DrawerNavRow(
+            selected: false,
+            icon: Icons.school_outlined,
+            selectedIcon: Icons.school,
+            label: l10n.showTutorial,
+            onTap: () {
+              _closeDrawer(context);
+              ref.read(productTutorialControllerProvider.notifier).start();
+            },
+          ),
         _DrawerNavRow(
           selected: isSettings,
           icon: Icons.settings_outlined,
@@ -302,6 +333,9 @@ class FinkoShellDrawer extends ConsumerWidget {
             _closeDrawer(context);
             context.push('/settings');
           },
+        ),
+            ],
+          ),
         ),
       ],
     );

@@ -64,6 +64,7 @@ users/{uid}/agentMessages/{messageId}    # In-app agent thread (client read; Fun
 | `aggregateLastCompletedAt` | `Timestamp?` | **Server-only**: last time incremental **aggregates** finished applying (`accounts` / `monthlyTotals`) for this user. Clients read for gating; rules block client writes. |
 | `agentPreferences` | `map?` | Optional defaults for the **in-app agent** (and legacy Telegram adapter): `defaultAccountId`, `defaultExpenseCategoryId`, `defaultIncomeCategoryId`, `localeOverride` (`es` \| `en`). Client merge from Settings; **Cloud Functions** read on agent/Telegram turns. Legacy field `telegramBotPreferences` is read as fallback until backfill. |
 | `launchScreen` | `string?` | `dashboard` (default) \| `agent` — cold-start route after onboarding. |
+| `productTourCompleted` | `bool?` | **`false`** until the user finishes or skips the in-app **product tour**; then **`true`**. Client may merge on skip/done. See [`product-tutorial.md`](product-tutorial.md). |
 
 ### 3.1 Integrations (messaging channels)
 

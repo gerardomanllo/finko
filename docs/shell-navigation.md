@@ -44,6 +44,7 @@ Implementation: [`FinkoShellDrawer`](../lib/features/shell/presentation/finko_sh
 - **Dashboard** — switches to shell branch 0 with `initialLocation: true` (does not `push` a route)
 - **Categories** → `/categories`
 - **Accounts** → `/accounts`
+- **Show tutorial** — starts the spotlight product tour (see [`product-tutorial.md`](product-tutorial.md)); shown only for the **first 15 calendar days** after profile `createdAt` (profile timezone)
 - **Settings** → `/settings`
 
 **Active row** highlights from `GoRouterState.matchedLocation` (e.g. Dashboard only on `/dashboard`, not on other shell tabs).
@@ -78,6 +79,7 @@ Close drawer on selection or scrim tap.
 
 | Date | Change |
 |------|--------|
+| 2026-05-25 | **Product tour:** drawer **Show tutorial** row (15 days after `createdAt`); permanent replay in Settings. |
 | 2026-05-13 | **Bottom nav lift:** shell applies explicit **upward** shadow + top border around `NavigationBar` (theme nav `elevation: 0`); Material shadow alone was barely visible at the screen edge. Shadow/hairline strengths tuned for visibility without heaviness. |
 | 2026-05-13 | **Drawer colors:** net worth block uses **paper** surface + primary accent (like metric cards); stats and nav selection use **cloud** / **navy** tints consistent with bottom nav indicator. |
 | 2026-05-13 | **Rich drawer:** profile + plan stub, month snapshot (net worth, MTD income/expense, savings rate), styled menu including **Dashboard** shortcut; implementation in **`finko_shell_drawer.dart`**. |

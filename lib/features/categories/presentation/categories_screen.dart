@@ -13,6 +13,9 @@ import '../../../widgets/summary/finko_month_category_account_summary_sheets.dar
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../onboarding/domain/onboarding_models.dart';
 import '../../onboarding/presentation/onboarding_category_editor.dart';
+import '../../product_tutorial/presentation/tour_screen_anchors.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   const CategoriesScreen({super.key});
@@ -29,6 +32,7 @@ class CategoriesScreen extends ConsumerWidget {
     final byCategory = monthAsync.valueOrNull?.byCategoryMinorMain ?? {};
     final bottomInset =
         88.0 + MediaQuery.paddingOf(context).bottom; // extended FAB + margin
+    final tourCategoriesStep = isTourStep(ref, 'categories');
 
     void openAddCategory() {
       final uid = ref.read(authUidProvider);
@@ -97,7 +101,9 @@ class CategoriesScreen extends ConsumerWidget {
         orElse: () => null,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: catsAsync.when(
+      body: tourCategoriesStep
+          ? TourCategoriesBody(bottomInset: bottomInset)
+          : catsAsync.when(
         data: (categories) {
           if (categories.isEmpty) {
             return Center(
@@ -114,51 +120,47 @@ class CategoriesScreen extends ConsumerWidget {
               .where((c) => c.kind == CategoryKind.expense)
               .toList(growable: false);
 
+          var spotlightPlaced = false;
+
+          Widget categoryRow(FinkoCategory c) {
+            final row = _CategoryRow(
+              category: c,
+              monthMinor: byCategory[c.id] ?? 0,
+              mainCurrency: mainCurrency,
+              locale: locale,
+              onTap: () {
+                showFinkoCategoryMonthSummarySheet(
+                  context: context,
+                  ref: ref,
+                  category: c,
+                  yearMonth: yearMonth,
+                  mainCurrency: mainCurrency,
+                );
+              },
+            );
+            if (!spotlightPlaced) {
+              spotlightPlaced = true;
+              return TutorialTarget(
+                id: TutorialTargetId.categoriesFirstRow,
+                child: row,
+              );
+            }
+            return row;
+          }
+
           return ListView(
             padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset),
             children: [
               if (income.isNotEmpty) ...[
                 _SectionTitle(text: l10n.onboardingCategoryKindIncome),
                 const SizedBox(height: 8),
-                ...income.map(
-                  (c) => _CategoryRow(
-                    category: c,
-                    monthMinor: byCategory[c.id] ?? 0,
-                    mainCurrency: mainCurrency,
-                    locale: locale,
-                    onTap: () {
-                      showFinkoCategoryMonthSummarySheet(
-                        context: context,
-                        ref: ref,
-                        category: c,
-                        yearMonth: yearMonth,
-                        mainCurrency: mainCurrency,
-                      );
-                    },
-                  ),
-                ),
+                ...income.map(categoryRow),
                 const SizedBox(height: 16),
               ],
               if (expense.isNotEmpty) ...[
                 _SectionTitle(text: l10n.onboardingCategoryKindExpense),
                 const SizedBox(height: 8),
-                ...expense.map(
-                  (c) => _CategoryRow(
-                    category: c,
-                    monthMinor: byCategory[c.id] ?? 0,
-                    mainCurrency: mainCurrency,
-                    locale: locale,
-                    onTap: () {
-                      showFinkoCategoryMonthSummarySheet(
-                        context: context,
-                        ref: ref,
-                        category: c,
-                        yearMonth: yearMonth,
-                        mainCurrency: mainCurrency,
-                      );
-                    },
-                  ),
-                ),
+                ...expense.map(categoryRow),
               ],
             ],
           );

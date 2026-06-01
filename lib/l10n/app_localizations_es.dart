@@ -1707,4 +1707,214 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get agentCardBuilding => 'Armando tu transacción…';
+
+  @override
+  String get tutorialNext => 'Siguiente';
+
+  @override
+  String get tutorialBack => 'Atrás';
+
+  @override
+  String get tutorialSkip => 'Omitir tour';
+
+  @override
+  String get tutorialDone => 'Listo';
+
+  @override
+  String get showTutorial => 'Ver tutorial';
+
+  @override
+  String get tutorialWelcomeTitle => 'Te damos la bienvenida a Finko';
+
+  @override
+  String get tutorialWelcomeBody =>
+      'Un recorrido rápido por dónde está todo. Puedes omitirlo cuando quieras.';
+
+  @override
+  String get tutorialNavBottomTitle => 'Navegación principal';
+
+  @override
+  String get tutorialNavBottomBody =>
+      'Cambia entre Panel, Recurrente, Gastos y Transacciones. El + del centro agrega un movimiento.';
+
+  @override
+  String get tutorialMenuCogTitle => 'Menú y ajustes';
+
+  @override
+  String get tutorialMenuCogBody =>
+      'Abre el menú para Categorías, Cuentas y Ajustes. El resumen del mes también está aquí.';
+
+  @override
+  String get tutorialDrawerSnapshotTitle => 'Tu mes de un vistazo';
+
+  @override
+  String get tutorialDrawerSnapshotBody =>
+      'Patrimonio neto, ingresos, gastos y tasa de ahorro del mes actual.';
+
+  @override
+  String get tutorialDrawerNavTitle => 'Accesos directos';
+
+  @override
+  String get tutorialDrawerNavBody =>
+      'Ve a Categorías, Cuentas o Ajustes sin perder tu lugar.';
+
+  @override
+  String get tutorialDashboardCarouselTitle => 'Patrimonio y gastos';
+
+  @override
+  String get tutorialDashboardCarouselBody =>
+      'Desliza entre Patrimonio neto (tendencia 30 días) y Gasto mensual. Toca una tarjeta para Cuentas o Gastos.';
+
+  @override
+  String get tutorialDashboardAccountsTitle => 'Cuentas en el panel';
+
+  @override
+  String get tutorialDashboardAccountsBody =>
+      'Expande cheques, tarjetas y ahorros. Efectivo neto es lo que puedes gastar — toca i para ver cómo se calcula.';
+
+  @override
+  String get tutorialDashboardUpcomingTitle => 'Próximamente';
+
+  @override
+  String get tutorialDashboardUpcomingBody =>
+      'Próximos pagos e ingresos. Toca una tarjeta para editar; Ver todo abre Recurrente.';
+
+  @override
+  String get tutorialDashboardBudgetTitle => 'Presupuesto del mes';
+
+  @override
+  String get tutorialDashboardBudgetBody =>
+      'Lo que queda por gastar y las categorías principales. Toca para abrir Presupuestos.';
+
+  @override
+  String get tutorialRecurringCalendarTitle => 'Calendario recurrente';
+
+  @override
+  String get tutorialRecurringCalendarBody =>
+      'Puntos verdes = ingresos, azules = gastos. Planifica las próximas dos semanas.';
+
+  @override
+  String get tutorialRecurringDueSoonTitle => 'Pronto vence';
+
+  @override
+  String get tutorialRecurringDueSoonBody =>
+      'Vencen en los próximos 7 días. Toca para ver o editar.';
+
+  @override
+  String get tutorialRecurringComingLaterTitle => 'Más adelante';
+
+  @override
+  String get tutorialRecurringComingLaterBody =>
+      'Programados entre 8 y 15 días.';
+
+  @override
+  String get tutorialNewTransactionTitle => 'Registrar un movimiento';
+
+  @override
+  String get tutorialNewTransactionBody =>
+      'Toca + para ingresos, gastos o transferencias. El mismo editor abre al tocar cualquier fila.';
+
+  @override
+  String get tutorialSpendingPillTitle => 'Elige un periodo';
+
+  @override
+  String get tutorialSpendingPillBody =>
+      'Semana, mes, trimestre o año — luego elige el periodo en la franja.';
+
+  @override
+  String get tutorialSpendingStripTitle => 'Resumen por periodo';
+
+  @override
+  String get tutorialSpendingStripBody =>
+      'Cada tarjeta muestra ingresos vs gastos. Solo aparecen periodos con actividad.';
+
+  @override
+  String get tutorialSpendingDonutTitle => 'A dónde fue tu dinero';
+
+  @override
+  String get tutorialSpendingDonutBody =>
+      'Desglose por categoría del periodo elegido, con totales de ingresos, fijos y variables arriba.';
+
+  @override
+  String get tutorialTransactionsSearchTitle => 'Buscar y filtrar';
+
+  @override
+  String get tutorialTransactionsSearchBody =>
+      'Busca por nota o filtra por tipo (estándar, transferencia, ajuste).';
+
+  @override
+  String get tutorialTransactionsListTitle => 'Libro completo';
+
+  @override
+  String get tutorialTransactionsListBody =>
+      'Lo más reciente primero. Toca una fila para editar. Desliza hacia abajo para actualizar.';
+
+  @override
+  String get tutorialCategoriesTitle => 'Categorías';
+
+  @override
+  String get tutorialCategoriesBody =>
+      'Categorías de ingreso y gasto con totales del mes. Toca una fila para editar; Agregar categoría abajo.';
+
+  @override
+  String get tutorialAccountsTitle => 'Cuentas';
+
+  @override
+  String get tutorialAccountsBody =>
+      'Todas las cuentas por tipo. Toca para detalles; Agregar cuenta para crear otra.';
+
+  @override
+  String get tutorialBudgetsTitle => 'Presupuestos';
+
+  @override
+  String get tutorialBudgetsBody =>
+      'Cambia de mes en mes. Sigue lo que queda por gastar, gastos fijos, ingresos, ahorro y presupuestos por categoría.';
+
+  @override
+  String get tutorialSettingsTitle => 'Ajustes';
+
+  @override
+  String get tutorialSettingsBody =>
+      'Tema, integraciones de mensajería, pantalla de inicio y acciones de cuenta. Repite el tour con Ver tutorial aquí — o en el menú durante tus primeras dos semanas.';
+
+  @override
+  String get tutorialAgentTitle => 'Agente Finko';
+
+  @override
+  String get tutorialAgentBody =>
+      'Chatea para registrar movimientos con texto, fotos o voz — tu forma más rápida.';
+
+  @override
+  String get tutorialDoneTitle => 'Todo listo';
+
+  @override
+  String get tutorialDoneBody =>
+      'Empieza en el Panel o abre el Agente cuando quieras.';
+
+  @override
+  String get tutorialPreviewTxnGroceries => 'Supermercado';
+
+  @override
+  String get tutorialPreviewTxnPaycheck => 'Nómina';
+
+  @override
+  String get tutorialPreviewTxnUtilities => 'Servicios';
+
+  @override
+  String get tutorialPreviewUpcomingSalary => 'Salario';
+
+  @override
+  String get tutorialPreviewUpcomingRent => 'Renta';
+
+  @override
+  String get tutorialPreviewCategoryExpense => 'Comida fuera';
+
+  @override
+  String get tutorialPreviewCategoryIncome => 'Ingreso extra';
+
+  @override
+  String get tutorialPreviewAccountChecking => 'Cuenta de cheques';
+
+  @override
+  String get tutorialPreviewBudgetSample => 'Vista de ejemplo del presupuesto';
 }

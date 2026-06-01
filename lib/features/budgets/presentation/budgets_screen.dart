@@ -16,6 +16,12 @@ import '../../../widgets/budgets/finko_category_avatar_ring.dart';
 import '../../../widgets/budgets/finko_month_paginator_field.dart';
 import '../../../widgets/budgets/finko_savings_projection_card.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/application/tutorial_preview_providers.dart';
+import '../../product_tutorial/presentation/tour_screen_anchors.dart';
+import '../../product_tutorial/presentation/tutorial_preview_placeholders.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 
 String _yyyyMm(DateTime d) {
   return '${d.year.toString().padLeft(4, '0')}-'
@@ -57,29 +63,73 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
     final l10n = AppLocalizations.of(context);
     final ym = _yyyyMm(_month);
     final totalsAsync = ref.watch(monthlyTotalsForMonthStreamProvider(ym));
+    final monthTotals = ref.watch(tourAwareMonthTotalsProvider(ym));
     final categoriesAsync = ref.watch(categoriesStreamProvider);
     final profile = ref.watch(userProfileStreamProvider).valueOrNull;
     final main = profile?.mainCurrency ?? 'MXN';
+    final tourBudgetsStep = isTourStep(ref, 'budgets');
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.budgetsTitle)),
-      body: ListView(
+      body: tourBudgetsStep
+          ? TourBudgetsBody(
+              month: _month,
+              onPrevious: () => setState(() => _month = _addMonths(_month, -1)),
+              onNext: () => setState(() => _month = _addMonths(_month, 1)),
+            )
+          : ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          FinkoMonthPaginatorField(
-            month: _month,
-            thisMonthLabel: l10n.budgetsThisMonth,
-            onPrevious: () => setState(() => _month = _addMonths(_month, -1)),
-            onNext: () => setState(() => _month = _addMonths(_month, 1)),
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+          TutorialTarget(
+            id: TutorialTargetId.budgetsMonthPaginator,
+            child: FinkoMonthPaginatorField(
+              month: _month,
+              thisMonthLabel: l10n.budgetsThisMonth,
+              onPrevious: () => setState(() => _month = _addMonths(_month, -1)),
+              onNext: () => setState(() => _month = _addMonths(_month, 1)),
+            ),
           ),
           const SizedBox(height: 20),
           totalsAsync.when(
-            data: (m) {
+            data: (_) {
+              final m = monthTotals;
               if (m == null) {
                 return Text(l10n.emptyNoMonthlyTotals);
               }
               return categoriesAsync.when(
                 data: (categories) {
+                  if (categories.isEmpty &&
+                      ref.watch(productTutorialActiveProvider)) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FinkoBudgetProgressBlock(
+                          title: l10n.budgetsSpendingTitle,
+                          leftLabel: l10n.leftForSpending,
+                          leftAmountText: _fmt(
+                            context,
+                            nonNegativeMinor(75000 - m.expenseMinorMain),
+                            main,
+                          ),
+                          spentLabel: l10n.budgetsSpent,
+                          spentAmountText: _fmt(context, m.expenseMinorMain, main),
+                          budgetedLabel: l10n.budgetsBudgeted,
+                          budgetedAmountText: _fmt(context, 75000, main),
+                          progress: (m.expenseMinorMain / 75000).clamp(0.0, 1.0),
+                        ),
+                        const SizedBox(height: 12),
+                        TutorialPreviewListRow(
+                          title: l10n.tutorialPreviewCategoryExpense,
+                          subtitle: l10n.tutorialPreviewBudgetSample,
+                          trailing: _fmt(context, 15000, main),
+                        ),
+                      ],
+                    );
+                  }
                   final catById = _categoryMap(categories);
                   final budgets = profile?.budgets ?? const {};
                   final budgeted = totalExpenseBudgetMinor(budgets);
@@ -208,6 +258,8 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
             loading: () => const LinearProgressIndicator(),
             error: (e, _) => Text('$e'),
           ),
+              ],
+            ),
         ],
       ),
     );

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../agent/presentation/agent_entry_pill.dart';
+import '../../product_tutorial/application/tutorial_shell_host.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import 'finko_shell_drawer.dart';
 import 'shell_drawer_controller.dart';
 
@@ -59,16 +63,16 @@ Widget _shellBottomNavChrome(BuildContext context, {required Widget child}) {
 }
 
 /// App shell: [Scaffold] + bottom navigation + [Drawer].
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends ConsumerState<AppShell> {
   static const int _plusSlotIndex = 2;
   static const Set<String> _agentPillTabPaths = {
     '/dashboard',
@@ -79,6 +83,45 @@ class _AppShellState extends State<AppShell> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _drawerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _registerTutorialShellHost());
+  }
+
+  @override
+  void didUpdateWidget(covariant AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.navigationShell != widget.navigationShell) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _registerTutorialShellHost());
+    }
+  }
+
+  @override
+  void dispose() {
+    final hostNotifier = ref.read(tutorialShellHostProvider.notifier);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      hostNotifier.state = null;
+    });
+    super.dispose();
+  }
+
+  void _registerTutorialShellHost() {
+    if (!mounted) return;
+    final scroll = ref.read(dashboardScrollControllerProvider);
+    ref.read(tutorialShellHostProvider.notifier).state = TutorialShellHost(
+      openDrawer: _openDrawer,
+      closeDrawer: () => _scaffoldKey.currentState?.closeDrawer(),
+      navigationShell: widget.navigationShell,
+      scaffoldKey: _scaffoldKey,
+      scrollDashboardToTop: scroll != null
+          ? () {
+              if (scroll.hasClients) scroll.jumpTo(0);
+            }
+          : null,
+    );
+  }
 
   int _slotForBranch(int branchIndex) {
     return branchIndex < _plusSlotIndex ? branchIndex : branchIndex + 1;
@@ -108,6 +151,25 @@ class _AppShellState extends State<AppShell> {
     return true;
   }
 
+  Widget _plusNavIconInner(BuildContext context, {required bool selected}) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: selected
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.primaryContainer,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.add,
+        color: selected
+            ? Theme.of(context).colorScheme.onPrimary
+            : Theme.of(context).colorScheme.onPrimaryContainer,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -127,7 +189,12 @@ class _AppShellState extends State<AppShell> {
                 left: 0,
                 right: 0,
                 bottom: 12,
-                child: const Center(child: AgentEntryPill()),
+                child: Center(
+                  child: TutorialTarget(
+                    id: TutorialTargetId.agentEntryPill,
+                    child: const AgentEntryPill(),
+                  ),
+                ),
               ),
           ],
         ),
@@ -136,9 +203,11 @@ class _AppShellState extends State<AppShell> {
             child: FinkoShellDrawer(navigationShell: widget.navigationShell),
           ),
         ),
-        bottomNavigationBar: _shellBottomNavChrome(
-          context,
-          child: NavigationBar(
+        bottomNavigationBar: TutorialTarget(
+          id: TutorialTargetId.shellBottomNav,
+          child: _shellBottomNavChrome(
+            context,
+            child: NavigationBar(
             elevation: 0,
             shadowColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
@@ -168,30 +237,11 @@ class _AppShellState extends State<AppShell> {
                 label: l10n.navRecurring,
               ),
               NavigationDestination(
-                icon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
+                icon: TutorialTarget(
+                  id: TutorialTargetId.shellNewTransaction,
+                  child: _plusNavIconInner(context, selected: false),
                 ),
-                selectedIcon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
+                selectedIcon: _plusNavIconInner(context, selected: true),
                 label: l10n.navNewTransaction,
               ),
               NavigationDestination(
@@ -205,6 +255,7 @@ class _AppShellState extends State<AppShell> {
                 label: l10n.navTransactions,
               ),
             ],
+            ),
           ),
         ),
       ),

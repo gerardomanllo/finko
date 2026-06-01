@@ -9,6 +9,7 @@ import '../core/locale/locale_support.dart';
 import 'materialize_listener.dart';
 import 'profile_theme_sync_listener.dart';
 import 'router.dart';
+import '../features/product_tutorial/presentation/product_tutorial_host.dart';
 
 class FinkoApp extends ConsumerWidget {
   const FinkoApp({super.key});
@@ -30,9 +31,11 @@ class FinkoApp extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: router,
-      builder: (context, child) => MaterializeDueUpcomingListener(
-        child: ProfileThemeSyncListener(
-          child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => ProductTutorialHost(
+        child: MaterializeDueUpcomingListener(
+          child: ProfileThemeSyncListener(
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     );

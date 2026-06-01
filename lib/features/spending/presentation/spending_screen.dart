@@ -25,6 +25,11 @@ import '../../../widgets/metrics/finko_mini_income_expense_card.dart';
 import '../../../widgets/surfaces/finko_paper_card.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/application/tutorial_preview_providers.dart';
+import '../../product_tutorial/presentation/tour_screen_anchors.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 import 'spending_providers.dart';
 
@@ -120,16 +125,17 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
         ? today
         : fullStrip.first.startYyyyMmDd;
     final windowEnd = fullStrip.isEmpty ? today : fullStrip.last.endYyyyMmDd;
-    final windowAsync = ref.watch(
-      transactionsForDateRangeStreamProvider((
-        start: windowStart,
-        end: windowEnd,
-      )),
-    );
+    final range = (start: windowStart, end: windowEnd);
+    final windowTxs = ref.watch(tourAwareTransactionsForRangeProvider(range));
+    final windowLoading = ref
+        .watch(transactionsForDateRangeStreamProvider(range))
+        .isLoading;
 
     final profile = ref.watch(userProfileStreamProvider).valueOrNull;
     final mainCurrency = profile?.mainCurrency ?? 'MXN';
     final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final tourActive = ref.watch(productTutorialActiveProvider);
+    final tourDonutStep = isTourStep(ref, 'spending_donut');
 
     return Scaffold(
       appBar: AppBar(
@@ -143,31 +149,43 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          PillToggleGroup<SpendingGranularity>(
-            values: SpendingGranularity.values,
-            selected: _granularity,
-            onChanged: (v) {
-              setState(() {
-                _granularity = v;
-                _selectedPeriodKey = null;
-                _scrollStripAfterPillChange = true;
-              });
-              _scheduleScrollStripToEnd();
-            },
-            labelOf: (g) => _granularityLabel(l10n, g),
+          TutorialTarget(
+            id: TutorialTargetId.spendingPeriodPill,
+            child: PillToggleGroup<SpendingGranularity>(
+              values: SpendingGranularity.values,
+              selected: _granularity,
+              onChanged: (v) {
+                setState(() {
+                  _granularity = v;
+                  _selectedPeriodKey = null;
+                  _scrollStripAfterPillChange = true;
+                });
+                _scheduleScrollStripToEnd();
+              },
+              labelOf: (g) => _granularityLabel(l10n, g),
+            ),
           ),
           const SizedBox(height: 20),
           if (fullStrip.isEmpty)
             const SizedBox.shrink()
+          else if (windowLoading && windowTxs.isEmpty)
+            const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            )
           else
-            windowAsync.when(
-              loading: () => const SizedBox(
-                height: 200,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, _) => Text('$e'),
-              data: (windowTxs) {
-                final filtered = periodsWithTransactions(fullStrip, windowTxs);
+            Builder(
+              builder: (context) {
+                var filtered = periodsWithTransactions(fullStrip, windowTxs);
+                var txsForPeriod = windowTxs;
+                if (tourActive && filtered.isEmpty && fullStrip.isNotEmpty) {
+                  filtered = [fullStrip.last];
+                  if (txsForPeriod.isEmpty) {
+                    txsForPeriod = ref.watch(
+                      tourAwareTransactionsForRangeProvider(range),
+                    );
+                  }
+                }
                 if (filtered.isEmpty) {
                   _scrollStripAfterPillChange = false;
                   return Padding(
@@ -182,34 +200,38 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                 final selectedIdx = filtered.indexWhere(
                   (e) => e.key == selected.key,
                 );
-                final selectedTxs = _txsInSelectedPeriod(windowTxs, selected);
+                final selectedTxs = _txsInSelectedPeriod(txsForPeriod, selected);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    FinkoPaperCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      child: SizedBox(
-                        height: 148,
-                        child: ListView.separated(
-                          controller: _stripScrollController,
-                          scrollDirection: Axis.horizontal,
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 10),
-                          itemBuilder: (context, i) {
-                            final d = filtered[i];
-                            return _SpendingMiniCard(
-                              descriptor: d,
-                              isSelected: i == selectedIdx,
-                              localeTag: localeTag,
-                              onTap: () =>
-                                  setState(() => _selectedPeriodKey = d.key),
-                            );
-                          },
+                    TutorialTarget(
+                      id: TutorialTargetId.spendingPeriodStrip,
+                      child: FinkoPaperCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        child: SizedBox(
+                          height: 148,
+                          child: ListView.separated(
+                            controller: _stripScrollController,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 10),
+                            itemBuilder: (context, i) {
+                              final d = filtered[i];
+                              return _SpendingMiniCard(
+                                descriptor: d,
+                                isSelected: i == selectedIdx,
+                                localeTag: localeTag,
+                                onTap: () =>
+                                    setState(() => _selectedPeriodKey = d.key),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -225,6 +247,10 @@ class _SpendingScreenState extends ConsumerState<SpendingScreen> {
                 );
               },
             ),
+          if (tourDonutStep) ...[
+            const SizedBox(height: kSpendingSectionCloudGap),
+            const TourSpendingDonutAnchor(),
+          ],
         ],
       ),
     );
@@ -261,8 +287,9 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final mergedAsync = ref.watch(
-      spendingMergedMonthlyRollupProvider(selected),
+      tourAwareSpendingMergedRollupProvider(selected),
     );
+    final tourDonutStep = isTourStep(ref, 'spending_donut');
     final flowAsync = ref.watch(spendingPeriodIncomeExpenseProvider(selected));
     final categories = ref.watch(categoriesStreamProvider).valueOrNull ?? [];
     final fixedCategoryIds = fixedExpenseCategoryIds(categories);
@@ -341,7 +368,7 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: kSpendingSectionCloudGap),
-        mergedAsync.when(
+        if (tourDonutStep) const SizedBox.shrink() else mergedAsync.when(
           data: (merged) {
             final useTxDonut = granularity == SpendingGranularity.week;
             final txRollup = aggregateSpendingTransactions(
@@ -422,8 +449,8 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
 
             final periodLabel = spendingPeriodCardLabel(localeTag, selected);
 
-            return FinkoPaperCard(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            final donutCard = SizedBox(
+              height: 200,
               child: FinkoDonutWithSideLegend(
                 sections: sections,
                 centerTitle: l10n.spendingTotalSpendIn,
@@ -434,14 +461,23 @@ class _SpendingPeriodDetailColumn extends ConsumerWidget {
                 sectionsSpace: 0,
               ),
             );
+            return FinkoPaperCard(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: tourDonutStep
+                  ? donutCard
+                  : TutorialTarget(
+                      id: TutorialTargetId.spendingDonut,
+                      child: donutCard,
+                    ),
+            );
           },
           loading: () => FinkoPaperCard(
-            padding: const EdgeInsets.all(24),
-            child: const SizedBox(
-              height: 200,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          ),
+                  padding: const EdgeInsets.all(24),
+                  child: const SizedBox(
+                    height: 200,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ),
           error: (e, _) => FinkoPaperCard(
             padding: const EdgeInsets.all(16),
             child: Text('$e'),

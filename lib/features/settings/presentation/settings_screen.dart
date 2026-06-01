@@ -17,6 +17,9 @@ import '../../../widgets/layout/finko_settings_section.dart';
 import '../../../widgets/settings/finko_theme_mode_toggle.dart';
 import '../data/account_deletion_service.dart';
 import '../data/user_settings_writer.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import 'settings_messaging_sheets.dart';
 import 'telegram_bot_preferences_sheet.dart';
 
@@ -305,7 +308,9 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          FinkoSettingsSection(
+          TutorialTarget(
+            id: TutorialTargetId.settingsAppearance,
+            child: FinkoSettingsSection(
             title: l10n.settingsAppearanceSection,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -324,6 +329,14 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.school_outlined),
+            title: Text(l10n.showTutorial),
+            onTap: () {
+              ref.read(productTutorialControllerProvider.notifier).start();
+            },
           ),
           const SizedBox(height: 24),
           FinkoSettingsSection(

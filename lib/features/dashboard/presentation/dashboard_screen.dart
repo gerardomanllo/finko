@@ -28,6 +28,13 @@ import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../../widgets/transactions/open_merged_upcoming_editor.dart';
 import '../../../widgets/transactions/finko_upcoming_transaction_strip.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/application/tutorial_navigation.dart';
+import '../../product_tutorial/application/tutorial_preview_providers.dart';
+import '../../product_tutorial/application/tutorial_shell_host.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/product_tutorial_auto_start.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 
 /// Horizontal inset for dashboard copy and lists (carousel is full-bleed).
@@ -35,8 +42,39 @@ const EdgeInsets _kDashboardHorizontalPadding = EdgeInsets.symmetric(
   horizontal: 20,
 );
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  late final ScrollController _scroll;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll = ScrollController()..addListener(_onScrollForTutorial);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(dashboardScrollControllerProvider.notifier).state = _scroll;
+    });
+  }
+
+  void _onScrollForTutorial() {
+    if (ref.read(productTutorialActiveProvider)) {
+      ref.read(tutorialScrollTickProvider.notifier).state++;
+    }
+  }
+
+  @override
+  void dispose() {
+    _scroll.removeListener(_onScrollForTutorial);
+    _scroll.dispose();
+    ref.read(dashboardScrollControllerProvider.notifier).state = null;
+    super.dispose();
+  }
 
   static String _formatMoney(
     BuildContext context,
@@ -142,20 +180,17 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     final accountsAsync = ref.watch(accountsStreamProvider);
     final categoriesAsync = ref.watch(categoriesStreamProvider);
     final userProfileAsync = ref.watch(userProfileStreamProvider);
-    final monthAsync = ref.watch(
-      monthlyTotalsForMonthStreamProvider(
-        ref.watch(dashboardYearMonthProvider),
-      ),
-    );
-    final recentAsync = ref.watch(recentTransactionsStreamProvider);
-    final upcomingAsync = ref.watch(dashboardUpcomingStripProvider);
+    final monthTotals = ref.watch(tourAwareDashboardMonthTotalsProvider);
+    final recent = ref.watch(tourAwareRecentTransactionsProvider);
+    final recentLoading = ref.watch(recentTransactionsStreamProvider).isLoading;
+    final upcomingList = ref.watch(tourAwareDashboardUpcomingProvider);
     final todayKey = ref.watch(todayYyyyMmDdProvider);
     final sparkline = ref.watch(netWorthSparklineSeriesProvider);
     final dailyExpenseSeries = ref.watch(
@@ -180,13 +215,17 @@ class DashboardScreen extends ConsumerWidget {
         ? sparkline.last.toInt()
         : netWorthFromAccounts;
 
-    return Scaffold(
+    return ProductTutorialAutoStart(
+      child: Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        leading: IconButton(
-          onPressed: () => ShellDrawerController.open(context),
-          tooltip: l10n.openShellMenu,
-          icon: const Icon(Icons.settings_outlined),
+        leading: TutorialTarget(
+          id: TutorialTargetId.shellMenuCog,
+          child: IconButton(
+            onPressed: () => ShellDrawerController.open(context),
+            tooltip: l10n.openShellMenu,
+            icon: const Icon(Icons.settings_outlined),
+          ),
         ),
         title: Text(
           dateLine,
@@ -204,13 +243,16 @@ class DashboardScreen extends ConsumerWidget {
           await ref.read(ledgerAwareAppRefreshProvider).runPullToRefresh(ref);
         },
         child: ListView(
+          controller: _scroll,
           physics: const AlwaysScrollableScrollPhysics(),
           clipBehavior: Clip.none,
           padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
             Padding(
               padding: _kDashboardHorizontalPadding,
-              child: FinkoTwoMetricCarousel(
+              child: TutorialTarget(
+                id: TutorialTargetId.dashboardMetricCarousel,
+                child: FinkoTwoMetricCarousel(
                 first: FinkoMetricCarouselCard(
                   label: l10n.metricNetWorth,
                   valueText: _formatMoney(
@@ -245,16 +287,13 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 second: FinkoMetricCarouselCard(
                   label: l10n.metricMonthlyExpense,
-                  valueText: monthAsync.maybeWhen(
-                    data: (m) => m == null
-                        ? '—'
-                        : _formatMoney(
-                            context,
-                            expenseMinorMainThroughDate(m, todayKey),
-                            mainCurrency,
-                          ),
-                    orElse: () => '—',
-                  ),
+                  valueText: monthTotals == null
+                      ? '—'
+                      : _formatMoney(
+                          context,
+                          expenseMinorMainThroughDate(monthTotals, todayKey),
+                          mainCurrency,
+                        ),
                   deltaText: l10n.metricDeltaStubDown,
                   expandChartVertically: true,
                   chart: FinkoNetWorthSparkline(values: dailyExpenseSeries),
@@ -281,6 +320,7 @@ class DashboardScreen extends ConsumerWidget {
                   onTap: () => context.go('/spending'),
                 ),
               ),
+              ),
             ),
             Padding(
               padding: _kDashboardHorizontalPadding,
@@ -296,7 +336,9 @@ class DashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   accountsAsync.when(
                     data: (accounts) {
-                      return FinkoCashFlowAccountsAccordion(
+                      return TutorialTarget(
+                        id: TutorialTargetId.dashboardAccountsAccordion,
+                        child: FinkoCashFlowAccountsAccordion(
                         accounts: accounts,
                         mainCurrencyCode: mainCurrency,
                         netCashMinorMain: netCashFromAccountsMinor(accounts),
@@ -310,21 +352,24 @@ class DashboardScreen extends ConsumerWidget {
                         },
                         accountTypeLabel: (t) => _accountTypeLabel(l10n, t),
                         netCashTitle: l10n.netCashLabel,
+                      ),
                       );
                     },
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('$e'),
                   ),
-                  upcomingAsync.when(
-                    data: (list) {
-                      if (list.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
+                  if (upcomingList.isEmpty)
+                    const SizedBox.shrink()
+                  else ...[
+                    Builder(
+                      builder: (context) {
                       const previewCount = 5;
-                      final preview = list.length > previewCount
-                          ? list.sublist(0, previewCount)
-                          : list;
-                      return Column(
+                      final preview = upcomingList.length > previewCount
+                          ? upcomingList.sublist(0, previewCount)
+                          : upcomingList;
+                      return TutorialTarget(
+                        id: TutorialTargetId.dashboardUpcomingStrip,
+                        child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -395,36 +440,23 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                         ],
+                      ),
                       );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (e, _) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 24),
-                        Text(
-                          l10n.dashboardUpcomingHeading,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text('$e'),
-                      ],
+                      },
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 24),
                   Text(
                     l10n.dashboardRecentHeading,
                     style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  recentAsync.when(
-                    data: (list) {
-                      final recent = list;
-                      if (recent.isEmpty) {
-                        return Text(l10n.emptyNoTransactions);
-                      }
-                      return FinkoPaperSeeMoreList(
+                  if (recentLoading && recent.isEmpty)
+                    const LinearProgressIndicator()
+                  else if (recent.isEmpty)
+                    Text(l10n.emptyNoTransactions)
+                  else
+                      FinkoPaperSeeMoreList(
                         seeMoreLabel: l10n.seeMore,
                         onSeeMore: () => context.go('/transactions'),
                         children: [
@@ -452,47 +484,22 @@ class DashboardScreen extends ConsumerWidget {
                               ),
                             ),
                         ],
-                      );
-                    },
-                    loading: () => const LinearProgressIndicator(),
-                    error: (e, _) => Text('$e'),
-                  ),
+                      ),
                   const SizedBox(height: 24),
-                  monthAsync.when(
-                    data: (m) {
-                      if (m == null) {
-                        return Text(l10n.emptyNoMonthlyTotals);
-                      }
-                      final budgets =
+                  TutorialTarget(
+                    id: TutorialTargetId.dashboardBudgetTeaser,
+                    child: _buildBudgetTeaser(
+                      context: context,
+                      l10n: l10n,
+                      scheme: theme.colorScheme,
+                      m: monthTotals,
+                      budgets:
                           userProfileAsync.valueOrNull?.budgets ??
-                          const <String, MonthlyBudgetEntry>{};
-                      final budgetTotal = totalExpenseBudgetMinor(budgets);
-                      final spent = expenseMinorMainThroughDate(m, todayKey);
-                      final left = nonNegativeMinor(budgetTotal - spent);
-                      final progress = budgetTotal > 0
-                          ? (spent / budgetTotal).clamp(0.0, 1.0)
-                          : 0.0;
-                      return FinkoMonthlyBudgetTeaser(
-                        title: l10n.thisMonthsBudget,
-                        leftForSpendingLabel: l10n.leftForSpending,
-                        leftForSpendingText: _formatMoney(
-                          context,
-                          left,
-                          mainCurrency,
-                        ),
-                        progress: progress,
-                        categoryRings: _topCategoryRings(
-                          m,
-                          budgets,
-                          todayKey,
-                          catById,
-                          theme.colorScheme,
-                        ),
-                        onTap: () => context.push('/budgets'),
-                      );
-                    },
-                    loading: () => const LinearProgressIndicator(),
-                    error: (e, _) => Text('$e'),
+                          const <String, MonthlyBudgetEntry>{},
+                      todayKey: todayKey,
+                      catById: catById,
+                      mainCurrency: mainCurrency,
+                    ),
                   ),
                   const SizedBox(height: 32),
                 ],
@@ -501,6 +508,67 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
+    ),
+    );
+  }
+
+  Widget _buildBudgetTeaser({
+    required BuildContext context,
+    required AppLocalizations l10n,
+    required MonthlyTotals? m,
+    required Map<String, MonthlyBudgetEntry> budgets,
+    required String todayKey,
+    required Map<String, FinkoCategory> catById,
+    required String mainCurrency,
+    required ColorScheme scheme,
+  }) {
+    final effective = m;
+    if (effective == null) {
+      final placeholderRings = catById.values
+          .where((c) => c.kind == CategoryKind.expense)
+          .take(3)
+          .map(
+            (c) => (
+              categoryId: c.id,
+              iconKey: c.iconKey,
+              colorArgb: c.colorArgb,
+              ringProgress: 0.35,
+              ringColor: categoryAccentColor(
+                scheme,
+                c.id,
+                colorArgb: c.colorArgb,
+              ),
+            ),
+          )
+          .toList();
+      return FinkoMonthlyBudgetTeaser(
+        title: l10n.thisMonthsBudget,
+        leftForSpendingLabel: l10n.leftForSpending,
+        leftForSpendingText: _formatMoney(context, 0, mainCurrency),
+        progress: 0,
+        categoryRings: placeholderRings,
+        onTap: () => context.push('/budgets'),
+      );
+    }
+    final budgetTotal = totalExpenseBudgetMinor(budgets);
+    final spent = expenseMinorMainThroughDate(effective, todayKey);
+    final left = nonNegativeMinor(budgetTotal - spent);
+    final progress = budgetTotal > 0
+        ? (spent / budgetTotal).clamp(0.0, 1.0)
+        : 0.0;
+    return FinkoMonthlyBudgetTeaser(
+      title: l10n.thisMonthsBudget,
+      leftForSpendingLabel: l10n.leftForSpending,
+      leftForSpendingText: _formatMoney(context, left, mainCurrency),
+      progress: progress,
+      categoryRings: _topCategoryRings(
+        effective,
+        budgets,
+        todayKey,
+        catById,
+        scheme,
+      ),
+      onTap: () => context.push('/budgets'),
     );
   }
 

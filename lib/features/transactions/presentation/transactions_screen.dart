@@ -14,6 +14,10 @@ import '../../../widgets/transactions/finko_search_filter_bar.dart';
 import '../../../widgets/transactions/finko_transaction_row_compact.dart';
 import '../../../widgets/transactions/ledger_transaction_editor_sheet.dart';
 import '../../../widgets/transactions/transaction_kind_filter_sheet.dart';
+import '../../product_tutorial/application/product_tutorial_controller.dart';
+import '../../product_tutorial/application/tutorial_preview_providers.dart';
+import '../../product_tutorial/domain/tutorial_target_id.dart';
+import '../../product_tutorial/presentation/tutorial_target.dart';
 import '../../shell/presentation/shell_drawer_controller.dart';
 import '../application/transactions_list_notifier.dart';
 import '../application/transactions_list_state.dart';
@@ -156,6 +160,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     };
 
     final filtered = notifier.filteredItems();
+    final tourActive = ref.watch(productTutorialActiveProvider);
+    final displayItems = filtered.isNotEmpty
+        ? filtered
+        : (tourActive
+              ? ref.watch(tourPreviewLedgerTransactionsProvider)
+              : filtered);
 
     return Scaffold(
       appBar: AppBar(
@@ -180,6 +190,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               onFilterTap: _openFilterSheet,
               filterTooltip: _filterTooltip(l10n, listState),
               belowSearch: _historyBelowRow(context, l10n, listState),
+              filterButton: TutorialTarget(
+                id: TutorialTargetId.transactionsFilterButton,
+                child: IconButton.filledTonal(
+                  onPressed: _openFilterSheet,
+                  icon: const Icon(Icons.filter_list),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -214,7 +231,48 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       },
                       child: Builder(
                         builder: (context) {
-                          if (filtered.isEmpty) {
+                          if (displayItems.isEmpty) {
+                            if (tourActive) {
+                              final preview = ref.watch(
+                                tourPreviewLedgerTransactionsProvider,
+                              );
+                              if (preview.isNotEmpty) {
+                                final t = preview.first;
+                                return ListView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  controller: _scroll,
+                                  children: [
+                                    TutorialTarget(
+                                      id: TutorialTargetId
+                                          .transactionsListFirstRow,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        child: FinkoTransactionRowCompact(
+                                          leading:
+                                              ledgerTransactionCategoryLeading(
+                                            t,
+                                            catById,
+                                          ),
+                                          title: t.memo ?? t.type.wireName,
+                                          subtitle: t.transactionDate,
+                                          amountText: _amount(
+                                            context,
+                                            t,
+                                            minor: t.amountMinor,
+                                            currency: mainCurrency,
+                                          ),
+                                          onTap: () {},
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                            }
                             final emptyMessage =
                                 listState.debouncedSearchQuery.isNotEmpty
                                 ? l10n.transactionsSearchNoMatches
@@ -245,10 +303,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             controller: _scroll,
                             physics: const AlwaysScrollableScrollPhysics(),
                             itemCount:
-                                filtered.length +
+                                displayItems.length +
                                 (listState.loadingMore ? 1 : 0),
                             itemBuilder: (context, i) {
-                              if (i >= filtered.length) {
+                              if (i >= displayItems.length) {
                                 return const Padding(
                                   padding: EdgeInsets.all(16),
                                   child: Center(
@@ -256,47 +314,54 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   ),
                                 );
                               }
-                              final t = filtered[i];
-                              return Column(
+                              final t = displayItems[i];
+                              final row = Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: FinkoTransactionRowCompact(
+                                  leading: ledgerTransactionCategoryLeading(
+                                    t,
+                                    catById,
+                                  ),
+                                  title: t.memo ?? t.type.wireName,
+                                  subtitle: t.transactionDate,
+                                  amountText: _amount(
+                                    context,
+                                    t,
+                                    minor:
+                                        t.amountMinorMain != null &&
+                                            t.currency != mainCurrency
+                                        ? t.amountMinorMain!
+                                        : t.amountMinor,
+                                    currency: mainCurrency,
+                                  ),
+                                  secondaryAmountText: _secondaryAmount(
+                                    context,
+                                    t,
+                                    mainCurrency,
+                                  ),
+                                  onTap: () => LedgerTransactionEditorSheet.show(
+                                    context,
+                                    transaction: t,
+                                  ),
+                                ),
+                              );
+                              final rowColumn = Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (i > 0) const Divider(height: 1),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: FinkoTransactionRowCompact(
-                                      leading: ledgerTransactionCategoryLeading(
-                                        t,
-                                        catById,
-                                      ),
-                                      title: t.memo ?? t.type.wireName,
-                                      subtitle: t.transactionDate,
-                                      amountText: _amount(
-                                        context,
-                                        t,
-                                        minor:
-                                            t.amountMinorMain != null &&
-                                                t.currency != mainCurrency
-                                            ? t.amountMinorMain!
-                                            : t.amountMinor,
-                                        currency: mainCurrency,
-                                      ),
-                                      secondaryAmountText: _secondaryAmount(
-                                        context,
-                                        t,
-                                        mainCurrency,
-                                      ),
-                                      onTap: () =>
-                                          LedgerTransactionEditorSheet.show(
-                                            context,
-                                            transaction: t,
-                                          ),
-                                    ),
-                                  ),
+                                  i == 0
+                                      ? TutorialTarget(
+                                          id: TutorialTargetId
+                                              .transactionsListFirstRow,
+                                          child: row,
+                                        )
+                                      : row,
                                 ],
                               );
+                              return rowColumn;
                             },
                           );
                         },

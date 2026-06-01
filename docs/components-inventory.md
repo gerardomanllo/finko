@@ -10,6 +10,8 @@ Use these names as **implementation targets** (rename to match `lib/` convention
 | **Agent screen** | Full-screen conversational agent (`/agent`): **`AgentLiveTransactionCard`** (evolving flow; tap-to-edit via **`AgentDraftFieldEditorSheet`**), **`AgentThreadItem`**, **`AgentStatusRow`**, **`AgentFailedRow`**, **`AgentComposer`** | [`agent.md`](agent.md) |
 | **App drawer** | Rich shell drawer: profile (avatar + display name) + plan stub chip; **paper-style** net worth block (dashboard metric vocabulary) + stub month delta; MTD income / expense / savings on **cloud**/**navy** fills; nav rows match bottom-nav tints (**Dashboard** shell branch, **Categories**, **Accounts**, **Settings**) | [`finko_shell_drawer.dart`](../lib/features/shell/presentation/finko_shell_drawer.dart) |
 | **Screen scaffold** | Title (and optional actions) consistent with app style | Most routes |
+| **Tutorial overlay** | Dim scrim + spotlight hole + tooltip card (Next / Skip / Done) | `FinkoTutorialOverlay` via `ProductTutorialHost` |
+| **Tutorial target** | Registers a widget for spotlight measurement by `TutorialTargetId` | Shell, tabs, drawer, stack routes |
 
 ## Surfaces
 

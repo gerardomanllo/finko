@@ -12,6 +12,10 @@
 
 - Standard **settings** page structure (grouped sections / list tiles).
 
+### Product tutorial
+
+- **Show tutorial** — replays the in-app spotlight walkthrough from step 1 (always available). During the **first 15 calendar days** after account creation, the same action also appears in the shell drawer.
+
 ### Appearance
 
 - **Color theme:** three-way control (**Light** / **Dark** / **System**) with icons (`FinkoThemeModeToggle`). Persists to `users/{uid}.themePreference` and applies via `themeModeProvider`; profile stream is mirrored into the app theme in `ProfileThemeSyncListener` (`lib/app/profile_theme_sync_listener.dart`).

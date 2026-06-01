@@ -10,6 +10,7 @@ class FinkoSearchFilterBar extends StatelessWidget {
     this.onFilterTap,
     this.filterTooltip,
     this.belowSearch,
+    this.filterButton,
   });
 
   final TextEditingController controller;
@@ -23,12 +24,17 @@ class FinkoSearchFilterBar extends StatelessWidget {
   /// Optional row under the search field (e.g. history scan status).
   final Widget? belowSearch;
 
+  /// When set (e.g. product tour spotlight), wraps the filter control only.
+  final Widget? filterButton;
+
   @override
   Widget build(BuildContext context) {
-    final filterButton = IconButton.filledTonal(
-      onPressed: onFilterTap,
-      icon: const Icon(Icons.filter_list),
-    );
+    final filterControl =
+        filterButton ??
+        IconButton.filledTonal(
+          onPressed: onFilterTap,
+          icon: const Icon(Icons.filter_list),
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -51,8 +57,8 @@ class FinkoSearchFilterBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             filterTooltip == null
-                ? filterButton
-                : Tooltip(message: filterTooltip!, child: filterButton),
+                ? filterControl
+                : Tooltip(message: filterTooltip!, child: filterControl),
           ],
         ),
         if (belowSearch != null) ...[const SizedBox(height: 8), belowSearch!],

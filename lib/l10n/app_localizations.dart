@@ -3158,6 +3158,378 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Armando tu transacción…'**
   String get agentCardBuilding;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In es, this message translates to:
+  /// **'Siguiente'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Atrás'**
+  String get tutorialBack;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In es, this message translates to:
+  /// **'Omitir tour'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo'**
+  String get tutorialDone;
+
+  /// No description provided for @showTutorial.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver tutorial'**
+  String get showTutorial;
+
+  /// No description provided for @tutorialWelcomeTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Te damos la bienvenida a Finko'**
+  String get tutorialWelcomeTitle;
+
+  /// No description provided for @tutorialWelcomeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Un recorrido rápido por dónde está todo. Puedes omitirlo cuando quieras.'**
+  String get tutorialWelcomeBody;
+
+  /// No description provided for @tutorialNavBottomTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Navegación principal'**
+  String get tutorialNavBottomTitle;
+
+  /// No description provided for @tutorialNavBottomBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambia entre Panel, Recurrente, Gastos y Transacciones. El + del centro agrega un movimiento.'**
+  String get tutorialNavBottomBody;
+
+  /// No description provided for @tutorialMenuCogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Menú y ajustes'**
+  String get tutorialMenuCogTitle;
+
+  /// No description provided for @tutorialMenuCogBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Abre el menú para Categorías, Cuentas y Ajustes. El resumen del mes también está aquí.'**
+  String get tutorialMenuCogBody;
+
+  /// No description provided for @tutorialDrawerSnapshotTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu mes de un vistazo'**
+  String get tutorialDrawerSnapshotTitle;
+
+  /// No description provided for @tutorialDrawerSnapshotBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio neto, ingresos, gastos y tasa de ahorro del mes actual.'**
+  String get tutorialDrawerSnapshotBody;
+
+  /// No description provided for @tutorialDrawerNavTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Accesos directos'**
+  String get tutorialDrawerNavTitle;
+
+  /// No description provided for @tutorialDrawerNavBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Ve a Categorías, Cuentas o Ajustes sin perder tu lugar.'**
+  String get tutorialDrawerNavBody;
+
+  /// No description provided for @tutorialDashboardCarouselTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Patrimonio y gastos'**
+  String get tutorialDashboardCarouselTitle;
+
+  /// No description provided for @tutorialDashboardCarouselBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Desliza entre Patrimonio neto (tendencia 30 días) y Gasto mensual. Toca una tarjeta para Cuentas o Gastos.'**
+  String get tutorialDashboardCarouselBody;
+
+  /// No description provided for @tutorialDashboardAccountsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas en el panel'**
+  String get tutorialDashboardAccountsTitle;
+
+  /// No description provided for @tutorialDashboardAccountsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Expande cheques, tarjetas y ahorros. Efectivo neto es lo que puedes gastar — toca i para ver cómo se calcula.'**
+  String get tutorialDashboardAccountsBody;
+
+  /// No description provided for @tutorialDashboardUpcomingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximamente'**
+  String get tutorialDashboardUpcomingTitle;
+
+  /// No description provided for @tutorialDashboardUpcomingBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximos pagos e ingresos. Toca una tarjeta para editar; Ver todo abre Recurrente.'**
+  String get tutorialDashboardUpcomingBody;
+
+  /// No description provided for @tutorialDashboardBudgetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuesto del mes'**
+  String get tutorialDashboardBudgetTitle;
+
+  /// No description provided for @tutorialDashboardBudgetBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo que queda por gastar y las categorías principales. Toca para abrir Presupuestos.'**
+  String get tutorialDashboardBudgetBody;
+
+  /// No description provided for @tutorialRecurringCalendarTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Calendario recurrente'**
+  String get tutorialRecurringCalendarTitle;
+
+  /// No description provided for @tutorialRecurringCalendarBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Puntos verdes = ingresos, azules = gastos. Planifica las próximas dos semanas.'**
+  String get tutorialRecurringCalendarBody;
+
+  /// No description provided for @tutorialRecurringDueSoonTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pronto vence'**
+  String get tutorialRecurringDueSoonTitle;
+
+  /// No description provided for @tutorialRecurringDueSoonBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Vencen en los próximos 7 días. Toca para ver o editar.'**
+  String get tutorialRecurringDueSoonBody;
+
+  /// No description provided for @tutorialRecurringComingLaterTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Más adelante'**
+  String get tutorialRecurringComingLaterTitle;
+
+  /// No description provided for @tutorialRecurringComingLaterBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Programados entre 8 y 15 días.'**
+  String get tutorialRecurringComingLaterBody;
+
+  /// No description provided for @tutorialNewTransactionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrar un movimiento'**
+  String get tutorialNewTransactionTitle;
+
+  /// No description provided for @tutorialNewTransactionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca + para ingresos, gastos o transferencias. El mismo editor abre al tocar cualquier fila.'**
+  String get tutorialNewTransactionBody;
+
+  /// No description provided for @tutorialSpendingPillTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un periodo'**
+  String get tutorialSpendingPillTitle;
+
+  /// No description provided for @tutorialSpendingPillBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Semana, mes, trimestre o año — luego elige el periodo en la franja.'**
+  String get tutorialSpendingPillBody;
+
+  /// No description provided for @tutorialSpendingStripTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen por periodo'**
+  String get tutorialSpendingStripTitle;
+
+  /// No description provided for @tutorialSpendingStripBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada tarjeta muestra ingresos vs gastos. Solo aparecen periodos con actividad.'**
+  String get tutorialSpendingStripBody;
+
+  /// No description provided for @tutorialSpendingDonutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'A dónde fue tu dinero'**
+  String get tutorialSpendingDonutTitle;
+
+  /// No description provided for @tutorialSpendingDonutBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Desglose por categoría del periodo elegido, con totales de ingresos, fijos y variables arriba.'**
+  String get tutorialSpendingDonutBody;
+
+  /// No description provided for @tutorialTransactionsSearchTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar y filtrar'**
+  String get tutorialTransactionsSearchTitle;
+
+  /// No description provided for @tutorialTransactionsSearchBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Busca por nota o filtra por tipo (estándar, transferencia, ajuste).'**
+  String get tutorialTransactionsSearchBody;
+
+  /// No description provided for @tutorialTransactionsListTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Libro completo'**
+  String get tutorialTransactionsListTitle;
+
+  /// No description provided for @tutorialTransactionsListBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo más reciente primero. Toca una fila para editar. Desliza hacia abajo para actualizar.'**
+  String get tutorialTransactionsListBody;
+
+  /// No description provided for @tutorialCategoriesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías'**
+  String get tutorialCategoriesTitle;
+
+  /// No description provided for @tutorialCategoriesBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías de ingreso y gasto con totales del mes. Toca una fila para editar; Agregar categoría abajo.'**
+  String get tutorialCategoriesBody;
+
+  /// No description provided for @tutorialAccountsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get tutorialAccountsTitle;
+
+  /// No description provided for @tutorialAccountsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las cuentas por tipo. Toca para detalles; Agregar cuenta para crear otra.'**
+  String get tutorialAccountsBody;
+
+  /// No description provided for @tutorialBudgetsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Presupuestos'**
+  String get tutorialBudgetsTitle;
+
+  /// No description provided for @tutorialBudgetsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambia de mes en mes. Sigue lo que queda por gastar, gastos fijos, ingresos, ahorro y presupuestos por categoría.'**
+  String get tutorialBudgetsBody;
+
+  /// No description provided for @tutorialSettingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes'**
+  String get tutorialSettingsTitle;
+
+  /// No description provided for @tutorialSettingsBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema, integraciones de mensajería, pantalla de inicio y acciones de cuenta. Repite el tour con Ver tutorial aquí — o en el menú durante tus primeras dos semanas.'**
+  String get tutorialSettingsBody;
+
+  /// No description provided for @tutorialAgentTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agente Finko'**
+  String get tutorialAgentTitle;
+
+  /// No description provided for @tutorialAgentBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Chatea para registrar movimientos con texto, fotos o voz — tu forma más rápida.'**
+  String get tutorialAgentBody;
+
+  /// No description provided for @tutorialDoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo listo'**
+  String get tutorialDoneTitle;
+
+  /// No description provided for @tutorialDoneBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza en el Panel o abre el Agente cuando quieras.'**
+  String get tutorialDoneBody;
+
+  /// No description provided for @tutorialPreviewTxnGroceries.
+  ///
+  /// In es, this message translates to:
+  /// **'Supermercado'**
+  String get tutorialPreviewTxnGroceries;
+
+  /// No description provided for @tutorialPreviewTxnPaycheck.
+  ///
+  /// In es, this message translates to:
+  /// **'Nómina'**
+  String get tutorialPreviewTxnPaycheck;
+
+  /// No description provided for @tutorialPreviewTxnUtilities.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicios'**
+  String get tutorialPreviewTxnUtilities;
+
+  /// No description provided for @tutorialPreviewUpcomingSalary.
+  ///
+  /// In es, this message translates to:
+  /// **'Salario'**
+  String get tutorialPreviewUpcomingSalary;
+
+  /// No description provided for @tutorialPreviewUpcomingRent.
+  ///
+  /// In es, this message translates to:
+  /// **'Renta'**
+  String get tutorialPreviewUpcomingRent;
+
+  /// No description provided for @tutorialPreviewCategoryExpense.
+  ///
+  /// In es, this message translates to:
+  /// **'Comida fuera'**
+  String get tutorialPreviewCategoryExpense;
+
+  /// No description provided for @tutorialPreviewCategoryIncome.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso extra'**
+  String get tutorialPreviewCategoryIncome;
+
+  /// No description provided for @tutorialPreviewAccountChecking.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta de cheques'**
+  String get tutorialPreviewAccountChecking;
+
+  /// No description provided for @tutorialPreviewBudgetSample.
+  ///
+  /// In es, this message translates to:
+  /// **'Vista de ejemplo del presupuesto'**
+  String get tutorialPreviewBudgetSample;
 }
 
 class _AppLocalizationsDelegate
