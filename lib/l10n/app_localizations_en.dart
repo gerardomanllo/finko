@@ -778,6 +778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginErrorGeneric => 'Sign-in could not be completed';
 
   @override
+  String get loginErrorGoogleConfig =>
+      'Google sign-in is not configured for this build. Use the matching dev/prod flavor and check Firebase OAuth setup.';
+
+  @override
   String get settingsSignOut => 'Sign out';
 
   @override

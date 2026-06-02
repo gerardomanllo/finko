@@ -1471,6 +1471,12 @@ abstract class AppLocalizations {
   /// **'No se pudo completar el inicio de sesión'**
   String get loginErrorGeneric;
 
+  /// No description provided for @loginErrorGoogleConfig.
+  ///
+  /// In es, this message translates to:
+  /// **'El inicio de sesión con Google no está configurado para esta compilación. Usa el flavor dev/prod correcto y revisa OAuth en Firebase.'**
+  String get loginErrorGoogleConfig;
+
   /// No description provided for @settingsSignOut.
   ///
   /// In es, this message translates to:

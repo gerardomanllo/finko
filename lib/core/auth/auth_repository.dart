@@ -8,12 +8,25 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:crypto/crypto.dart';
 
+import '../locale/app_environment_provider.dart';
 import 'firebase_auth_providers.dart';
+import 'google_auth_config.dart';
+
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  final env = ref.watch(appEnvironmentProvider);
+  return GoogleSignIn(
+    scopes: const <String>['email', 'profile'],
+    serverClientId: GoogleAuthConfig.webClientId(env),
+    clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+        ? GoogleAuthConfig.iosClientId(env)
+        : null,
+  );
+});
 
 final authRepositoryProvider = Provider<AuthActions>(
   (ref) => AuthRepository(
     auth: ref.watch(firebaseAuthProvider),
-    googleSignIn: GoogleSignIn(scopes: const <String>['email', 'profile']),
+    googleSignIn: ref.watch(googleSignInProvider),
   ),
 );
 
@@ -76,9 +89,13 @@ class AuthRepository implements AuthActions {
       throw AuthCancelledException();
     }
     final ga = await account.authentication;
+    final idToken = ga.idToken;
+    if (idToken == null) {
+      throw GoogleIdTokenMissingException();
+    }
     final credential = GoogleAuthProvider.credential(
       accessToken: ga.accessToken,
-      idToken: ga.idToken,
+      idToken: idToken,
     );
     return _auth.signInWithCredential(credential);
   }
@@ -138,3 +155,6 @@ String _generateNonce([int length = 32]) {
 
 /// User closed the Google account picker or cancelled the flow.
 class AuthCancelledException implements Exception {}
+
+/// Google returned no ID token (usually missing `serverClientId` / OAuth setup).
+class GoogleIdTokenMissingException implements Exception {}

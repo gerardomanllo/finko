@@ -43,6 +43,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '654834705056',
     projectId: 'finkoappmx-dev',
     storageBucket: 'finkoappmx-dev.firebasestorage.app',
+    iosClientId:
+        '654834705056-9ukst9cus177f9o33e4up9eolth1206v.apps.googleusercontent.com',
     iosBundleId: 'com.example.finko.dev',
   );
 }

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_repository.dart';
@@ -73,9 +75,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await auth.signInWithGoogle();
     } on AuthCancelledException {
       // User dismissed picker; not an error.
+    } on GoogleIdTokenMissingException {
+      setState(() => _errorCode = 'google-config');
     } on FirebaseAuthException catch (e) {
       setState(() => _errorCode = e.code);
-    } catch (_) {
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        debugPrint('Google sign-in PlatformException: ${e.code} ${e.message}');
+      }
+      setState(() => _errorCode = e.code);
+    } catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('Google sign-in error: $e\n$st');
+      }
       setState(() => _errorCode = 'unknown');
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -225,6 +237,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return l10n.loginValidationPasswordLength;
       case 'missing-email':
         return l10n.loginForgotPasswordMissingEmail;
+      case 'google-config':
+        return l10n.loginErrorGoogleConfig;
       case 'unknown':
         return l10n.loginErrorGeneric;
       default:

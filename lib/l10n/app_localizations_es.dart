@@ -783,6 +783,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginErrorGeneric => 'No se pudo completar el inicio de sesión';
 
   @override
+  String get loginErrorGoogleConfig =>
+      'El inicio de sesión con Google no está configurado para esta compilación. Usa el flavor dev/prod correcto y revisa OAuth en Firebase.';
+
+  @override
   String get settingsSignOut => 'Cerrar sesión';
 
   @override

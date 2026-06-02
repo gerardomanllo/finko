@@ -299,6 +299,7 @@
   "loginErrorInvalidCredential": "Correo o contraseña incorrectos",
   "loginErrorEmailInUse": "Este correo ya está registrado",
   "loginErrorGeneric": "No se pudo completar el inicio de sesión",
+  "loginErrorGoogleConfig": "El inicio de sesión con Google no está configurado para esta compilación. Usa el flavor dev/prod correcto y revisa OAuth en Firebase.",
   "settingsSignOut": "Cerrar sesión",
   "settingsDeleteAccount": "Eliminar mi cuenta",
   "settingsDeleteAccountDialog1Title": "¿Eliminar tu cuenta?",

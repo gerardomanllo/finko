@@ -53,6 +53,10 @@ If this step is missing, Google auth can work in debug and fail in release.
 1. Add app hosts to authorized domains in Firebase Auth settings.
 2. Validate popup flow in web build (`signInWithPopup` path).
 
+### Flutter app (native Google → Firebase)
+
+`lib/core/auth/google_auth_config.dart` passes the Firebase **Web client ID** as `GoogleSignIn.serverClientId` (required on Android for an `idToken`) and the flavor **iOS client ID** as `clientId`. IDs must match the active `dev` / `prod` Firebase project. After changing OAuth clients in Console, update that file and re-download `google-services.json` / plists if needed.
+
 ## 3) Apple sign-in manual steps
 
 Firebase Apple provider asks for:

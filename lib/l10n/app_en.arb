@@ -299,6 +299,7 @@
   "loginErrorInvalidCredential": "Incorrect email or password",
   "loginErrorEmailInUse": "This email is already registered",
   "loginErrorGeneric": "Sign-in could not be completed",
+  "loginErrorGoogleConfig": "Google sign-in is not configured for this build. Use the matching dev/prod flavor and check Firebase OAuth setup.",
   "settingsSignOut": "Sign out",
   "settingsDeleteAccount": "Delete my account",
   "settingsDeleteAccountDialog1Title": "Delete your account?",
