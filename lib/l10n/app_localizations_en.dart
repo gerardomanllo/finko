@@ -1680,6 +1680,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentPickAccount => 'Which account should I use?';
 
   @override
+  String get agentMissingCategoryHint => 'Choose a category below to continue.';
+
+  @override
+  String get agentMissingAccountHint => 'Choose an account below to continue.';
+
+  @override
   String get agentPickTransferAccount => 'Pick an account for this transfer';
 
   @override
@@ -1696,6 +1702,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentCardBuilding => 'Building your transaction…';
+
+  @override
+  String get agentFieldSuggested => 'Suggested';
 
   @override
   String get tutorialNext => 'Next';

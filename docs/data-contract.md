@@ -104,6 +104,7 @@ When a **transaction is created/updated**:
 - **`AsyncValue.when`** in UI: loading, error (retry), data (empty vs populated).
 - **Write lag:** Expect **one or two** snapshot updates after a save while Functions run; listen to **aggregate** docs for stable numbers.
 - **Offline:** Firestore persistence optional—surface offline indicator if product requires.
+- **Agent catalog (device):** **`AgentCatalogSyncListener`** persists **`finko_agent_catalog_{uid}`** in SharedPreferences when category/account/profile streams emit (slim JSON: id, name, kind/sortOrder, currency). **`agentCatalogProvider`** reads live streams first, else snapshot — see [`agent.md`](agent.md).
 
 ---
 
@@ -177,6 +178,7 @@ When a **transaction is created/updated**:
 
 | Date | Change |
 |------|--------|
+| 2026-06-01 | **§6** Agent device catalog: **`finko_agent_catalog_{uid}`** SharedPreferences snapshot + **`agentCatalogProvider`**; see [`agent.md`](agent.md). |
 | 2026-05-13 | **§5** Dashboard: **`dashboardMonthDailyExpenseSeriesProvider`** — **running total** (cumulative) spend by calendar day for the monthly expense chart (supersedes per-day-only wording). |
 | 2026-05-01 | **§3.4** Optional **`users/{uid}.telegramBotPreferences`** for Telegram DM bot defaults; client merge via **`UserSettingsWriter`**; surfaced on **`userProfileStreamProvider`**. |
 | 2026-04-27 | **§5** Recurring: **`ledgerFromTodayForUpcomingMergeStreamProvider`**, **`mergeUpcomingForUi`** ledger branch respects **`includeDueToday`** (today’s ledger previews). **`recurringMergedUpcomingProvider`** + **`mergeUpcomingForUi`** (existing). **§11** `materializeDueUpcoming`: deterministic **`transactions`** doc ids per materialized upcoming (+ transfer leg ids). |

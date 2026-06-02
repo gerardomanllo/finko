@@ -5,6 +5,8 @@ enum AgentFlowPhase { gathering, confirm, sealed, cancelled }
 
 enum AgentFlowFieldKey { amount, memo, category, account, direction }
 
+enum AgentFieldSource { explicit, implicit, defaulted, unset }
+
 /// Stored in [_localFlowFields] to override a field with an explicit clear.
 const agentLocalFieldCleared = '__cleared__';
 
@@ -20,6 +22,7 @@ class AgentLiveTransactionState {
     this.successText,
     this.isTransfer = false,
     this.transfer,
+    this.fieldSources = const {},
   });
 
   final bool? directionIsIncome;
@@ -31,6 +34,10 @@ class AgentLiveTransactionState {
   final String? successText;
   final bool isTransfer;
   final AgentTransferPreview? transfer;
+  final Map<AgentFlowFieldKey, AgentFieldSource> fieldSources;
+
+  AgentFieldSource sourceFor(AgentFlowFieldKey key) =>
+      fieldSources[key] ?? AgentFieldSource.unset;
 
   bool get directionKnown => directionIsIncome != null;
   bool get isIncome => directionIsIncome ?? false;
@@ -48,6 +55,7 @@ class AgentLiveTransactionState {
     String? successText,
     bool? isTransfer,
     AgentTransferPreview? transfer,
+    Map<AgentFlowFieldKey, AgentFieldSource>? fieldSources,
   }) {
     return AgentLiveTransactionState(
       directionIsIncome: directionIsIncome ?? this.directionIsIncome,
@@ -59,6 +67,7 @@ class AgentLiveTransactionState {
       successText: successText ?? this.successText,
       isTransfer: isTransfer ?? this.isTransfer,
       transfer: transfer ?? this.transfer,
+      fieldSources: fieldSources ?? this.fieldSources,
     );
   }
 

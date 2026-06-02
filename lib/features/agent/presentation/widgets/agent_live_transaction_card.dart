@@ -36,16 +36,25 @@ class AgentLiveTransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = flow.state;
     final active = flow.activeMessage;
-    final showSkeletons =
-        pending || (state.phase == AgentFlowPhase.gathering && !state.isSealed);
-    final needsCategorySlot =
-        showSkeletons && state.category == null && _planNeedsCategory(plan);
-    final needsAccountSlot =
-        showSkeletons && state.account == null && _planNeedsAccount(plan);
+    final currentStep = plan?.stepAt(stepIndex);
+    final pickingCategory =
+        currentStep?.kind == AgentFlowStepKind.pickCategory &&
+        state.category == null;
+    final pickingAccount =
+        currentStep?.kind == AgentFlowStepKind.pickAccount &&
+        state.account == null;
+    final isPickStep = pickingCategory || pickingAccount;
+    final showAmountSkeleton = pending && state.amount == null;
+    final showMemoSkeleton = pending && state.memo == null;
     final showInteraction = !state.isSealed && (plan != null || active != null);
-    final editable = !state.isSealed && onEditField != null;
+    final editable = !state.isSealed && onEditField != null && !isPickStep;
 
     void edit(AgentDraftEditableField field) => onEditField?.call(field);
+
+    Widget maybeDim(Widget child) {
+      if (!isPickStep) return child;
+      return Opacity(opacity: 0.55, child: child);
+    }
 
     if (state.isTransfer &&
         state.transfer != null &&
@@ -77,27 +86,34 @@ class AgentLiveTransactionCard extends StatelessWidget {
               state: state,
               pending: pending,
               editable: editable,
+              directionSuggested:
+                  state.sourceFor(AgentFlowFieldKey.direction) ==
+                  AgentFieldSource.defaulted,
               onEditDirection: editable
                   ? () => edit(AgentDraftEditableField.direction)
                   : null,
             ),
             const SizedBox(height: 14),
-            _AnimatedAmount(
-              state: state,
-              showSkeleton: showSkeletons,
-              editable: editable,
-              onEdit: editable
-                  ? () => edit(AgentDraftEditableField.amount)
-                  : null,
+            maybeDim(
+              _AnimatedAmount(
+                state: state,
+                showSkeleton: showAmountSkeleton,
+                editable: editable,
+                onEdit: editable
+                    ? () => edit(AgentDraftEditableField.amount)
+                    : null,
+              ),
             ),
             const SizedBox(height: 6),
-            _MemoSlot(
-              state: state,
-              showSkeleton: showSkeletons,
-              editable: editable,
-              onEdit: editable
-                  ? () => edit(AgentDraftEditableField.memo)
-                  : null,
+            maybeDim(
+              _MemoSlot(
+                state: state,
+                showSkeleton: showMemoSkeleton,
+                editable: editable,
+                onEdit: editable
+                    ? () => edit(AgentDraftEditableField.memo)
+                    : null,
+              ),
             ),
             const SizedBox(height: 16),
             Divider(
@@ -110,14 +126,17 @@ class AgentLiveTransactionCard extends StatelessWidget {
               label: AppLocalizations.of(context).agentFieldCategory,
               icon: Icons.category_outlined,
               value: state.category,
-              showSkeleton: needsCategorySlot,
-              editable: editable,
-              onEdit: editable
+              isActivePick: pickingCategory,
+              suggested:
+                  state.sourceFor(AgentFlowFieldKey.category) ==
+                  AgentFieldSource.defaulted,
+              editable: editable && !pickingCategory,
+              onEdit: editable && !pickingCategory
                   ? () => edit(AgentDraftEditableField.category)
                   : null,
             ),
-            if (needsCategorySlot ||
-                needsAccountSlot ||
+            if (pickingCategory ||
+                pickingAccount ||
                 state.category != null ||
                 state.account != null)
               const SizedBox(height: 12),
@@ -126,23 +145,28 @@ class AgentLiveTransactionCard extends StatelessWidget {
               label: AppLocalizations.of(context).agentFieldAccount,
               icon: Icons.account_balance_wallet_outlined,
               value: state.account,
-              showSkeleton: needsAccountSlot,
-              editable: editable,
-              onEdit: editable
+              isActivePick: pickingAccount,
+              suggested:
+                  state.sourceFor(AgentFlowFieldKey.account) ==
+                  AgentFieldSource.defaulted,
+              editable: editable && !pickingAccount,
+              onEdit: editable && !pickingAccount
                   ? () => edit(AgentDraftEditableField.account)
                   : null,
             ),
             if (showInteraction) ...[
               const SizedBox(height: 18),
-              if (plan != null && plan!.steps.length > 1)
+              if (plan != null && plan!.steps.length > 1 && !isPickStep)
                 _StepIndicator(current: stepIndex, total: plan!.steps.length),
               _InteractionZone(
                 message: active,
+                state: state,
                 phase: state.phase,
                 plan: plan,
                 stepIndex: stepIndex,
                 onAction: onAction,
                 enabled: actionsEnabled && !pending,
+                showPromptInPanel: !isPickStep,
               ),
             ],
             if (state.isSealed) ...[
@@ -157,16 +181,6 @@ class AgentLiveTransactionCard extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _planNeedsCategory(AgentFlowPlan? plan) {
-  if (plan == null) return true;
-  return plan.steps.any((s) => s.kind == AgentFlowStepKind.pickCategory);
-}
-
-bool _planNeedsAccount(AgentFlowPlan? plan) {
-  if (plan == null) return true;
-  return plan.steps.any((s) => s.kind == AgentFlowStepKind.pickAccount);
 }
 
 class _StepIndicator extends StatelessWidget {
@@ -249,12 +263,14 @@ class _CardHeader extends StatelessWidget {
     required this.state,
     required this.pending,
     this.editable = false,
+    this.directionSuggested = false,
     this.onEditDirection,
   });
 
   final AgentLiveTransactionState state;
   final bool pending;
   final bool editable;
+  final bool directionSuggested;
   final VoidCallback? onEditDirection;
 
   @override
@@ -269,7 +285,10 @@ class _CardHeader extends StatelessWidget {
             enabled: editable && onEditDirection != null,
             onTap: onEditDirection,
             borderRadius: BorderRadius.circular(999),
-            child: AgentDirectionBadge(isIncome: state.directionIsIncome!),
+            child: _SuggestedWrap(
+              suggested: directionSuggested,
+              child: AgentDirectionBadge(isIncome: state.directionIsIncome!),
+            ),
           )
         else if (editable && onEditDirection != null)
           _TappableField(
@@ -526,7 +545,8 @@ class _DetailFieldSlot extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.value,
-    required this.showSkeleton,
+    this.isActivePick = false,
+    this.suggested = false,
     this.editable = false,
     this.onEdit,
   });
@@ -535,13 +555,32 @@ class _DetailFieldSlot extends StatelessWidget {
   final String label;
   final IconData icon;
   final String? value;
-  final bool showSkeleton;
+  final bool isActivePick;
+  final bool suggested;
   final bool editable;
   final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
     final hasValue = value != null && value!.isNotEmpty;
+    final l10n = AppLocalizations.of(context);
+
+    if (isActivePick && !hasValue) {
+      final title = fieldKey == 'category'
+          ? l10n.agentPickCategory
+          : l10n.agentPickAccount;
+      final hint = fieldKey == 'category'
+          ? l10n.agentMissingCategoryHint
+          : l10n.agentMissingAccountHint;
+      return _MissingFieldHero(
+        key: ValueKey('hero-$fieldKey'),
+        icon: icon,
+        title: title,
+        hint: hint,
+      );
+    }
+
+    if (!hasValue) return SizedBox.shrink(key: ValueKey('empty-$fieldKey'));
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 320),
@@ -557,27 +596,17 @@ class _DetailFieldSlot extends StatelessWidget {
           child: child,
         ),
       ),
-      child: showSkeleton && !hasValue
-          ? _TappableField(
-              enabled: editable,
-              onTap: onEdit,
-              child: _AgentDetailRowSkeleton(
-                key: ValueKey('sk-$fieldKey'),
-                label: label,
-              ),
-            )
-          : hasValue
-          ? _TappableField(
-              enabled: editable,
-              onTap: onEdit,
-              child: AgentDetailRow(
-                key: ValueKey('val-$fieldKey'),
-                icon: icon,
-                label: label,
-                value: value!,
-              ),
-            )
-          : SizedBox.shrink(key: ValueKey('empty-$fieldKey')),
+      child: _TappableField(
+        enabled: editable,
+        onTap: onEdit,
+        child: _SuggestedFieldRow(
+          key: ValueKey('val-$fieldKey'),
+          suggested: suggested,
+          icon: icon,
+          label: label,
+          value: value!,
+        ),
+      ),
     );
   }
 }
@@ -654,50 +683,6 @@ class _AgentShimmerBoxState extends State<_AgentShimmerBox>
   }
 }
 
-class _AgentDetailRowSkeleton extends StatelessWidget {
-  const _AgentDetailRowSkeleton({super.key, required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        const _AgentShimmerBox(
-          height: 34,
-          width: 34,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.55,
-                  ),
-                  letterSpacing: 0.4,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const _AgentShimmerBox(
-                height: 14,
-                width: 112,
-                borderRadius: BorderRadius.all(Radius.circular(4)),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _FadeField extends StatelessWidget {
   const _FadeField({
     required this.fieldKey,
@@ -735,22 +720,160 @@ class _FadeField extends StatelessWidget {
   }
 }
 
+class _MissingFieldHero extends StatelessWidget {
+  const _MissingFieldHero({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.hint,
+  });
+
+  final IconData icon;
+  final String title;
+  final String hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.55),
+          width: 1.5,
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: 0.1),
+            theme.colorScheme.primary.withValues(alpha: 0.04),
+          ],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      icon,
+                      size: 26,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: -6,
+                  right: -6,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.35,
+                          ),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.auto_awesome,
+                        size: 16,
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.85,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    hint,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _InteractionZone extends StatelessWidget {
   const _InteractionZone({
     required this.message,
+    required this.state,
     required this.phase,
     required this.onAction,
     required this.enabled,
     this.plan,
     this.stepIndex = 0,
+    this.showPromptInPanel = true,
   });
 
   final AgentMessage? message;
+  final AgentLiveTransactionState state;
   final AgentFlowPhase phase;
   final ValueChanged<String> onAction;
   final bool enabled;
   final AgentFlowPlan? plan;
   final int stepIndex;
+  final bool showPromptInPanel;
+
+  bool _stepNeedsInput(AgentFlowStep? step) {
+    if (step == null) return false;
+    return switch (step.kind) {
+      AgentFlowStepKind.pickCategory => state.category == null,
+      AgentFlowStepKind.pickAccount => state.account == null,
+      AgentFlowStepKind.confirm => false,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -758,6 +881,9 @@ class _InteractionZone extends StatelessWidget {
     final presentation = message != null
         ? resolveAgentPresentation(message!)
         : null;
+    final serverPanel = presentation?.choicePanel;
+    final serverPanelRelevant =
+        serverPanel != null && serverChoicePanelIsRelevant(serverPanel, state);
 
     Widget child;
     if (step?.kind == AgentFlowStepKind.confirm ||
@@ -772,14 +898,7 @@ class _InteractionZone extends StatelessWidget {
         onAction: onAction,
         enabled: enabled && phase == AgentFlowPhase.confirm,
       );
-    } else if (presentation?.choicePanel != null) {
-      child = AgentChoicePanel(
-        panel: presentation!.choicePanel!,
-        cancelAction: presentation.cancelAction,
-        onAction: onAction,
-        enabled: enabled,
-      );
-    } else if (step?.panel != null) {
+    } else if (step?.panel != null && _stepNeedsInput(step)) {
       child = AgentChoicePanel(
         panel: step!.panel!,
         cancelAction: const AgentActionChip(
@@ -789,6 +908,15 @@ class _InteractionZone extends StatelessWidget {
         ),
         onAction: onAction,
         enabled: enabled,
+        showPrompt: showPromptInPanel,
+      );
+    } else if (serverPanelRelevant) {
+      child = AgentChoicePanel(
+        panel: serverPanel,
+        cancelAction: presentation?.cancelAction,
+        onAction: onAction,
+        enabled: enabled,
+        showPrompt: showPromptInPanel,
       );
     } else {
       child = const SizedBox.shrink();
@@ -809,6 +937,105 @@ class _InteractionZone extends StatelessWidget {
       child: KeyedSubtree(
         key: ValueKey('step-$stepIndex-${step?.kind.name ?? phase.name}'),
         child: child,
+      ),
+    );
+  }
+}
+
+class _SuggestedWrap extends StatelessWidget {
+  const _SuggestedWrap({required this.suggested, required this.child});
+
+  final bool suggested;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!suggested) return child;
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.55),
+          width: 1.5,
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SuggestedFieldRow extends StatelessWidget {
+  const _SuggestedFieldRow({
+    super.key,
+    required this.suggested,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final bool suggested;
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: suggested
+            ? Border(
+                left: BorderSide(color: theme.colorScheme.primary, width: 3),
+              )
+            : null,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(left: suggested ? 8 : 0),
+        child: Row(
+          children: [
+            Expanded(
+              child: AgentDetailRow(icon: icon, label: label, value: value),
+            ),
+            if (suggested) ...[
+              const SizedBox(width: 8),
+              _SuggestedChip(label: l10n.agentFieldSuggested),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SuggestedChip extends StatelessWidget {
+  const _SuggestedChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        child: Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

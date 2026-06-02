@@ -3,13 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/firebase_auth_providers.dart';
-import '../../../core/data/models/finko_enums.dart';
-import '../../../core/data/models/finko_account.dart';
-import '../../../core/data/models/finko_category.dart';
-import '../../../core/data/providers/finko_stream_providers.dart';
 import '../../../core/launch/launch_screen_preference.dart';
 import '../../../l10n/app_localizations.dart';
+import '../data/agent_catalog_provider.dart';
+import '../data/agent_catalog_snapshot.dart';
 import '../data/agent_repository.dart';
+import '../domain/agent_draft_resolver.dart';
 import '../domain/agent_flow_plan.dart';
 import '../domain/agent_message.dart';
 import '../domain/agent_outbound.dart';
@@ -37,7 +36,6 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
 
   final List<AgentOutboundMessage> _outbound = [];
   final Map<String, Map<AgentFlowFieldKey, String>> _localFlowFields = {};
-  final Map<String, int> _localStepIndex = {};
 
   @override
   void initState() {
@@ -99,90 +97,85 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
     });
   }
 
-  AgentFlowPlan? _planForUserText(String? text) {
+  AgentFlowPlan? _planForUserText(String? text, {String? flowId}) {
     if (text == null || text.trim().isEmpty) return null;
-    final intent = parseUserTransactionIntent(text);
-    if (intent.amount == null && (intent.memo?.isEmpty ?? true)) return null;
-
-    final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
-    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
-    final profile = ref.read(userProfileStreamProvider).valueOrNull;
+    final catalog = ref.read(agentCatalogProvider);
+    final local = flowId != null ? _localFlowFields[flowId] : null;
+    final draft = resolveAgentDraft(
+      text: text,
+      catalog: catalog,
+      localOverrides: local,
+    );
+    if (!draft.hasResolvableIntent) return null;
 
     return buildAgentFlowPlan(
-      intent: intent,
-      categories: categories,
-      accounts: accounts,
-      prefs: profile?.agentPreferences,
+      draft: draft,
+      categories: catalog.finkoCategories,
+      accounts: catalog.finkoAccounts,
     );
   }
 
   AgentLiveTransactionState _enrichState({
     required AgentTransactionFlowSegment flow,
     required AgentFlowPlan? plan,
-    required List<FinkoCategory> categories,
-    required List<FinkoAccount> accounts,
+    required AgentCatalogSnapshot catalog,
   }) {
     final local = _localFlowFields[flow.id] ?? {};
+    final draft = resolveAgentDraft(
+      text: flow.userMessage.text ?? '',
+      catalog: catalog,
+      localOverrides: local.isEmpty ? null : local,
+    );
+    final clientState = draftToLiveState(draft, catalog);
+
+    if (flow.assistantMessages.isEmpty) {
+      return clientState;
+    }
+
     var state = buildLiveTransactionState(
       flow.userMessage,
       flow.assistantMessages,
       localFields: local,
     );
 
-    if (plan != null) {
-      if (!state.directionKnown && plan.directionIsIncome != null) {
-        state = state.copyWith(directionIsIncome: plan.directionIsIncome);
+    if (state.phase != AgentFlowPhase.confirm &&
+        state.phase != AgentFlowPhase.sealed) {
+      if (state.amount == null && clientState.amount != null) {
+        state = state.copyWith(amount: clientState.amount);
       }
-      if (state.category == null && plan.prefilledCategoryId != null) {
-        for (final c in categories) {
-          if (c.id == plan.prefilledCategoryId) {
-            state = state.copyWith(
-              category: c.name,
-              directionIsIncome: c.kind == CategoryKind.income,
-            );
-            break;
-          }
-        }
+      if (state.memo == null && clientState.memo != null) {
+        state = state.copyWith(memo: clientState.memo);
       }
-      if (state.account == null && plan.prefilledAccountId != null) {
-        for (final a in accounts) {
-          if (a.id == plan.prefilledAccountId) {
-            state = state.copyWith(account: _accountLabel(a));
-            break;
-          }
-        }
+      if (!state.directionKnown && clientState.directionKnown) {
+        state = state.copyWith(
+          directionIsIncome: clientState.directionIsIncome,
+        );
+      }
+      if (state.category == null && clientState.category != null) {
+        state = state.copyWith(category: clientState.category);
+      }
+      if (state.account == null && clientState.account != null) {
+        state = state.copyWith(account: clientState.account);
       }
     }
 
-    if (!state.directionKnown && state.category != null) {
-      final fromCat = directionFromCategoryLabel(state.category, categories);
-      if (fromCat != null) {
-        state = state.copyWith(directionIsIncome: fromCat);
-      }
+    final sources = Map<AgentFlowFieldKey, AgentFieldSource>.from(
+      plan?.fieldSources ?? draft.sources,
+    );
+    if (state.phase == AgentFlowPhase.confirm ||
+        state.phase == AgentFlowPhase.sealed) {
+      return state;
     }
 
-    return state;
-  }
-
-  String _accountLabel(FinkoAccount account) {
-    final name = account.name.length > 20
-        ? account.name.substring(0, 20)
-        : account.name;
-    return '$name (${account.currency})';
+    return state.copyWith(fieldSources: sources);
   }
 
   AgentTransactionFlowSegment _flowWithEnrichment(
     AgentTransactionFlowSegment flow,
     AgentFlowPlan? plan,
   ) {
-    final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
-    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
-    final state = _enrichState(
-      flow: flow,
-      plan: plan,
-      categories: categories,
-      accounts: accounts,
-    );
+    final catalog = ref.read(agentCatalogProvider);
+    final state = _enrichState(flow: flow, plan: plan, catalog: catalog);
     return AgentTransactionFlowSegment(
       id: flow.id,
       userMessage: flow.userMessage,
@@ -192,15 +185,8 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
     );
   }
 
-  int _stepIndexForFlow(
-    String flowId,
-    AgentFlowPlan plan,
-    AgentLiveTransactionState state,
-  ) {
-    return _localStepIndex.putIfAbsent(
-      flowId,
-      () => resolveFlowStepIndex(plan: plan, state: state),
-    );
+  int _stepIndexForFlow(AgentFlowPlan plan, AgentLiveTransactionState state) {
+    return resolveFlowStepIndex(plan: plan, state: state);
   }
 
   Future<void> _editDraftField({
@@ -211,21 +197,15 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
   }) async {
     if (_actionInFlight) return;
 
-    final categories = ref.read(categoriesStreamProvider).valueOrNull ?? [];
-    final accounts = ref.read(accountsStreamProvider).valueOrNull ?? [];
-    final state = _enrichState(
-      flow: flow,
-      plan: plan,
-      categories: categories,
-      accounts: accounts,
-    );
+    final catalog = ref.read(agentCatalogProvider);
+    final state = _enrichState(flow: flow, plan: plan, catalog: catalog);
 
     final updates = await showAgentDraftFieldEditor(
       context: context,
       field: field,
       state: state,
-      categories: categories,
-      accounts: accounts,
+      categories: catalog.finkoCategories,
+      accounts: catalog.finkoAccounts,
     );
     if (updates == null || !mounted) return;
 
@@ -238,19 +218,6 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
           fields[entry.key] = entry.value;
         }
       }
-
-      if (plan != null) {
-        final nextState = _enrichState(
-          flow: flow,
-          plan: plan,
-          categories: categories,
-          accounts: accounts,
-        );
-        _localStepIndex[flowId] = resolveFlowStepIndex(
-          plan: plan,
-          state: nextState,
-        );
-      }
     });
   }
 
@@ -258,17 +225,18 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
     required AgentRepository repo,
     required String flowId,
     required AgentFlowPlan plan,
+    required AgentLiveTransactionState state,
     required String code,
     required AgentMessage? activeMessage,
   }) async {
     if (_actionInFlight) return;
 
+    final stepKind = plan
+        .stepAt(resolveFlowStepIndex(plan: plan, state: state))
+        ?.kind;
     final fieldKey =
         fieldKeyForCallback(code) ??
-        fieldKeyForStep(
-          plan.stepAt(_localStepIndex[flowId] ?? 0)?.kind ??
-              AgentFlowStepKind.confirm,
-        );
+        (stepKind != null ? fieldKeyForStep(stepKind) : null);
 
     final label =
         labelForPlanCallback(plan, code) ??
@@ -281,18 +249,13 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
         final fields = _localFlowFields.putIfAbsent(flowId, () => {});
         fields[fieldKey] = label;
         if (fieldKey == AgentFlowFieldKey.category) {
-          final categories =
-              ref.read(categoriesStreamProvider).valueOrNull ?? [];
+          final catalog = ref.read(agentCatalogProvider);
           final dir =
-              directionFromCategoryLabel(label, categories) ??
+              directionFromCategoryLabel(label, catalog.finkoCategories) ??
               plan.directionIsIncome;
           if (dir != null) {
             fields[AgentFlowFieldKey.direction] = dir ? 'IN' : 'OUT';
           }
-        }
-        final current = _localStepIndex[flowId] ?? 0;
-        if (current < plan.steps.length - 1) {
-          _localStepIndex[flowId] = current + 1;
         }
       });
     }
@@ -355,6 +318,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
     final messagesAsync = ref.watch(agentMessagesStreamProvider);
     final uid = ref.watch(authUidProvider);
     final repo = ref.watch(agentRepositoryProvider);
+    ref.watch(agentCatalogProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -402,7 +366,6 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                   _localFlowFields.removeWhere(
                     (id, _) => !flowIds.contains(id),
                   );
-                  _localStepIndex.removeWhere((id, _) => !flowIds.contains(id));
 
                   final children = <Widget>[];
                   var animIndex = 0;
@@ -436,10 +399,13 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                           ),
                         );
                       case AgentThreadFlowSegment(:final flow):
-                        final plan = _planForUserText(flow.userMessage.text);
+                        final plan = _planForUserText(
+                          flow.userMessage.text,
+                          flowId: flow.id,
+                        );
                         final enriched = _flowWithEnrichment(flow, plan);
                         final stepIndex = plan != null
-                            ? _stepIndexForFlow(flow.id, plan, enriched.state)
+                            ? _stepIndexForFlow(plan, enriched.state)
                             : 0;
                         children.add(
                           Padding(
@@ -464,6 +430,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                                       repo: repo,
                                       flowId: flow.id,
                                       plan: plan,
+                                      state: enriched.state,
                                       code: code,
                                       activeMessage: enriched.activeMessage,
                                     )
@@ -500,7 +467,6 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                     }
                   }
 
-                  final serverBusy = processing.isNotEmpty;
                   final showPendingCard =
                       (_localThinking || _outbound.any((o) => o.sending)) &&
                       !hasActiveFlow;
@@ -548,7 +514,10 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                       pendingUser,
                     );
                     if (pendingFlow != null) {
-                      final plan = _planForUserText(lastOutbound?.text);
+                      final plan = _planForUserText(
+                        lastOutbound?.text,
+                        flowId: pendingFlow.id,
+                      );
                       final enriched = plan != null
                           ? _flowWithEnrichment(pendingFlow, plan)
                           : pendingFlow;
@@ -562,15 +531,10 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                             flow: enriched,
                             plan: plan,
                             stepIndex: plan != null
-                                ? _stepIndexForFlow(
-                                    pendingFlow.id,
-                                    plan,
-                                    enriched.state,
-                                  )
+                                ? _stepIndexForFlow(plan, enriched.state)
                                 : 0,
-                            actionsEnabled:
-                                serverBusy && !_actionInFlight && plan != null,
-                            pending: !serverBusy,
+                            actionsEnabled: !_actionInFlight && plan != null,
+                            pending: false,
                             onEditField: plan != null
                                 ? (field) => _editDraftField(
                                     flowId: pendingFlow.id,
@@ -584,6 +548,7 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
                                     repo: repo,
                                     flowId: pendingFlow.id,
                                     plan: plan,
+                                    state: enriched.state,
                                     code: code,
                                     activeMessage: null,
                                   )
@@ -641,24 +606,25 @@ class _AgentScreenState extends ConsumerState<AgentScreen> {
     AgentMessage? userMessage,
   ) {
     if (userMessage == null) return null;
-    final plan = _planForUserText(text);
+    final flowId = 'pending-${userMessage.id}';
+    final plan = _planForUserText(text, flowId: flowId);
     if (plan == null) return null;
 
+    final catalog = ref.read(agentCatalogProvider);
     final state = _enrichState(
       flow: AgentTransactionFlowSegment(
-        id: 'pending-${userMessage.id}',
+        id: flowId,
         userMessage: userMessage,
         assistantMessages: const [],
-        state: buildLiveTransactionState(userMessage, const []),
+        state: const AgentLiveTransactionState(),
         activeMessage: null,
       ),
       plan: plan,
-      categories: ref.read(categoriesStreamProvider).valueOrNull ?? [],
-      accounts: ref.read(accountsStreamProvider).valueOrNull ?? [],
+      catalog: catalog,
     );
 
     return AgentTransactionFlowSegment(
-      id: 'pending-${userMessage.id}',
+      id: flowId,
       userMessage: userMessage,
       assistantMessages: const [],
       state: state,

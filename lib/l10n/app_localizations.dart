@@ -3123,6 +3123,18 @@ abstract class AppLocalizations {
   /// **'¿En qué cuenta lo registro?'**
   String get agentPickAccount;
 
+  /// No description provided for @agentMissingCategoryHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una categoría abajo para continuar.'**
+  String get agentMissingCategoryHint;
+
+  /// No description provided for @agentMissingAccountHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una cuenta abajo para continuar.'**
+  String get agentMissingAccountHint;
+
   /// No description provided for @agentPickTransferAccount.
   ///
   /// In es, this message translates to:
@@ -3158,6 +3170,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Armando tu transacción…'**
   String get agentCardBuilding;
+
+  /// No description provided for @agentFieldSuggested.
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerido'**
+  String get agentFieldSuggested;
 
   /// No description provided for @tutorialNext.
   ///

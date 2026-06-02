@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../data/agent_catalog_provider.dart';
 
-class AgentEntryPill extends StatelessWidget {
+class AgentEntryPill extends ConsumerWidget {
   const AgentEntryPill({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(agentCatalogProvider);
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 

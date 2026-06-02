@@ -12,12 +12,14 @@ class AgentChoicePanel extends StatelessWidget {
     required this.cancelAction,
     required this.onAction,
     this.enabled = true,
+    this.showPrompt = true,
   });
 
   final AgentChoicePanelData panel;
   final AgentActionChip? cancelAction;
   final ValueChanged<String> onAction;
   final bool enabled;
+  final bool showPrompt;
 
   static const int _gridMax = 4;
 
@@ -26,17 +28,20 @@ class AgentChoicePanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final useGrid = panel.choices.length <= _gridMax;
+    final prompt = _promptForStyle(l10n, panel);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          _promptForStyle(l10n, panel),
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        if (showPrompt) ...[
+          Text(
+            prompt,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
+          const SizedBox(height: 14),
+        ],
         if (useGrid)
           _ChoiceGrid(
             choices: panel.choices,
@@ -48,7 +53,7 @@ class AgentChoicePanel extends StatelessWidget {
           _ChoiceSelect(
             choices: panel.choices,
             enabled: enabled,
-            hint: _promptForStyle(l10n, panel),
+            hint: prompt,
             onAction: onAction,
           ),
         if (cancelAction != null) ...[

@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../core/locale/locale_notifier.dart';
 import '../core/locale/locale_support.dart';
 import 'materialize_listener.dart';
+import 'agent_catalog_sync_listener.dart';
 import 'profile_theme_sync_listener.dart';
 import 'router.dart';
 import '../features/product_tutorial/presentation/product_tutorial_host.dart';
@@ -33,8 +34,10 @@ class FinkoApp extends ConsumerWidget {
       routerConfig: router,
       builder: (context, child) => ProductTutorialHost(
         child: MaterializeDueUpcomingListener(
-          child: ProfileThemeSyncListener(
-            child: child ?? const SizedBox.shrink(),
+          child: AgentCatalogSyncListener(
+            child: ProfileThemeSyncListener(
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         ),
       ),

@@ -1,7 +1,7 @@
-import '../../../core/data/models/agent_preferences.dart';
 import '../../../core/data/models/finko_account.dart';
 import '../../../core/data/models/finko_category.dart';
 import '../../../core/data/models/finko_enums.dart';
+import 'agent_draft_resolver.dart';
 import 'agent_message.dart';
 import 'agent_message_presentation.dart';
 import 'agent_transaction_flow.dart';
@@ -23,12 +23,14 @@ class AgentFlowPlan {
     this.directionIsIncome,
     this.prefilledCategoryId,
     this.prefilledAccountId,
+    this.fieldSources = const {},
   });
 
   final List<AgentFlowStep> steps;
   final bool? directionIsIncome;
   final String? prefilledCategoryId;
   final String? prefilledAccountId;
+  final Map<AgentFlowFieldKey, AgentFieldSource> fieldSources;
 
   int get confirmStepIndex =>
       steps.indexWhere((s) => s.kind == AgentFlowStepKind.confirm);
@@ -40,12 +42,11 @@ class AgentFlowPlan {
 }
 
 AgentFlowPlan buildAgentFlowPlan({
-  required ParsedUserIntent intent,
+  required ResolvedAgentDraft draft,
   required List<FinkoCategory> categories,
   required List<FinkoAccount> accounts,
-  AgentPreferences? prefs,
 }) {
-  final isIncome = intent.isIncome;
+  final isIncome = draft.directionIsIncome;
   final kind = isIncome == true ? CategoryKind.income : CategoryKind.expense;
 
   final filteredCats =
@@ -57,25 +58,16 @@ AgentFlowPlan buildAgentFlowPlan({
   final sortedAccounts = [...accounts]
     ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  final defaultCatId = isIncome == true
-      ? prefs?.defaultIncomeCategoryId?.trim()
-      : isIncome == false
-      ? prefs?.defaultExpenseCategoryId?.trim()
-      : null;
-  final defaultAccId = prefs?.defaultAccountId?.trim();
-
-  final hasDefaultCat =
-      defaultCatId != null &&
-      defaultCatId.isNotEmpty &&
-      filteredCats.any((c) => c.id == defaultCatId);
-  final hasDefaultAcc =
-      defaultAccId != null &&
-      defaultAccId.isNotEmpty &&
-      sortedAccounts.any((a) => a.id == defaultAccId);
+  final hasCategory =
+      draft.categoryResolved &&
+      filteredCats.any((c) => c.id == draft.categoryId);
+  final hasAccount =
+      draft.accountResolved &&
+      sortedAccounts.any((a) => a.id == draft.accountId);
 
   final steps = <AgentFlowStep>[];
 
-  if (!hasDefaultCat && filteredCats.isNotEmpty) {
+  if (!hasCategory && filteredCats.isNotEmpty) {
     steps.add(
       AgentFlowStep(
         kind: AgentFlowStepKind.pickCategory,
@@ -95,7 +87,7 @@ AgentFlowPlan buildAgentFlowPlan({
     );
   }
 
-  if (!hasDefaultAcc && sortedAccounts.isNotEmpty) {
+  if (!hasAccount && sortedAccounts.isNotEmpty) {
     steps.add(
       AgentFlowStep(
         kind: AgentFlowStepKind.pickAccount,
@@ -120,8 +112,9 @@ AgentFlowPlan buildAgentFlowPlan({
   return AgentFlowPlan(
     steps: steps,
     directionIsIncome: isIncome,
-    prefilledCategoryId: hasDefaultCat ? defaultCatId : null,
-    prefilledAccountId: hasDefaultAcc ? defaultAccId : null,
+    prefilledCategoryId: hasCategory ? draft.categoryId : null,
+    prefilledAccountId: hasAccount ? draft.accountId : null,
+    fieldSources: draft.sources,
   );
 }
 
@@ -192,4 +185,17 @@ bool? directionFromCategoryLabel(
     }
   }
   return null;
+}
+
+/// Server picker is only shown when the field it asks for is still empty.
+bool serverChoicePanelIsRelevant(
+  AgentChoicePanelData panel,
+  AgentLiveTransactionState state,
+) {
+  return switch (panel.style) {
+    AgentChoicePanelStyle.category => state.category == null,
+    AgentChoicePanelStyle.account => state.account == null,
+    AgentChoicePanelStyle.transfer => state.account == null,
+    AgentChoicePanelStyle.recurring || AgentChoicePanelStyle.generic => true,
+  };
 }

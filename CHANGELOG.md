@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **In-app agent:** Categories and accounts cached on device (`finko_agent_catalog_{uid}`); client resolves amount, direction, category, and account on send with **Suggested** highlight when a field uses your defaults. Confirm can appear instantly without waiting for server pickers.
+
 - **Fixed expenses:** Optional **`isFixedExpense`** on expense categories (onboarding budgets step + Categories editor). Spending fixed/variable split and Budgets **Fixed expenses** card sum all flagged categories — replaces the reserved **`fixed-expenses`** system category.
 
 - **In-app agent UX:** One **live transaction card** per logging flow — fields fade in as choices are made, prompts swap in the same card, then the card **seals** after save (no stacked step bubbles). Before save, **tap any field** on the card to edit amount, note, category, account, or transaction type in a bottom sheet.
